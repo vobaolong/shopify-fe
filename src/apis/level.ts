@@ -117,10 +117,10 @@ export const getStoreLevelById = async (userId: string, storeLevelId: string) =>
 	}
 }
 
-export const createStoreLevel = async (userId: string, storeLevel: any) => {
+export const createStoreLevel = async (storeLevel: any) => {
 	try {
 		const res = await axiosClient.post(
-			`/store/level/create/${userId}`,
+			'/store/level-create',
 			storeLevel
 		)
 		return res
@@ -130,10 +130,10 @@ export const createStoreLevel = async (userId: string, storeLevel: any) => {
 	}
 }
 
-export const updateStoreLevel = async (userId: string, storeLevelId: string, storeLevel: any) => {
+export const updateStoreLevel = async (storeLevelId: string, storeLevel: any) => {
 	try {
 		const res = await axiosClient.put(
-			`/store/level/${storeLevelId}/${userId}`,
+			`/store/level/${storeLevelId}`,
 			storeLevel
 		)
 		return res
@@ -143,10 +143,10 @@ export const updateStoreLevel = async (userId: string, storeLevelId: string, sto
 	}
 }
 
-export const removeStoreLevel = async (userId: string, storeLevelId: string) => {
+export const removeStoreLevel = async (storeLevelId: string) => {
 	try {
 		const res = await axiosClient.delete(
-			`/store/level/${storeLevelId}/${userId}`
+			`/store/level/${storeLevelId}`
 		)
 		return res
 	} catch (error) {
@@ -155,10 +155,10 @@ export const removeStoreLevel = async (userId: string, storeLevelId: string) => 
 	}
 }
 
-export const restoreStoreLevel = async (userId: string, storeLevelId: string) => {
+export const restoreStoreLevel = async (storeLevelId: string) => {
 	try {
 		const res = await axiosClient.get(
-			`/store/level/restore/${storeLevelId}/${userId}`
+			`/store/level/${storeLevelId}`
 		)
 		return res
 	} catch (error) {

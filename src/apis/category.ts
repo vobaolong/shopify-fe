@@ -30,10 +30,10 @@ export const listActiveCategories = async (filter: any) => {
 	}
 }
 
-export const listCategories = async (userId: string, filter: any) => {
+export const listCategories = async (filter: any) => {
 	const { search, sortBy, order, limit, page, categoryId } = filter
 	try {
-		const res = await axiosClient.get(`/categories/${userId}`, {
+		const res = await axiosClient.get(`/categories`, {
 			params: {
 				search,
 				categoryId,

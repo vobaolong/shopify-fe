@@ -189,7 +189,7 @@ export const updateProduct = async (userId: string, product: any, productId: str
 export const addListImages = async (userId: string, photo: any, productId: string, storeId: string) => {
 	try {
 		return await axiosClientImg.post(
-			`/product/images/${productId}/${storeId}/${userId}`,
+			`/store/${storeId}/user/${userId}/product/${productId}/images`,
 			photo,
 		)
 	} catch (error) {
@@ -205,24 +205,19 @@ export const updateListImages = async (
 	productId: string,
 	storeId: string
 ) => {
-	try {
-		return await axiosClientImg.put(
-			`/product/images/${productId}/${storeId}/${userId}`,
-			photo,
-			{
-				params: { index },
-			}
-		)
-	} catch (error) {
-		console.log(error)
-		throw error
-	}
+	return await axiosClientImg.put(
+		`/store/${storeId}/user/${userId}/product/${productId}/images`,
+		photo,
+		{
+			params: { index },
+		}
+	)
 }
 
 export const removeListImages = async (userId: string, index: number, productId: string, storeId: string) => {
 	try {
 		return await axiosClient.delete(
-			`/product/images/${productId}/${storeId}/${userId}`,
+			`/store/${storeId}/user/${userId}/product/${productId}/images`,
 			{
 				params: { index }
 			}

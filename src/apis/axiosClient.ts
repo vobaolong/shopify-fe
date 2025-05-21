@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const axiosClient = axios.create({
-	baseURL: process.env.VITE_API_URL,
+	baseURL: import.meta.env.VITE_API_URL,
 	headers: {
 		'Content-Type': 'application/json',
 		Accept: 'application/json'
@@ -9,7 +9,7 @@ const axiosClient = axios.create({
 })
 
 export const axiosClientImg = axios.create({
-	baseURL: process.env.VITE_API_URL,
+	baseURL: import.meta.env.VITE_API_URL,
 	headers: {
 		'Content-Type': 'multipart/form-data',
 		Accept: 'application/json'

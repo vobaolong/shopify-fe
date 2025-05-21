@@ -108,8 +108,6 @@ export const restoreVariant = async (userId: string, variantId: string) => {
 	}
 }
 
-// Variant value
-//variant value
 export const listActiveValues = async (variantId: string) => {
 	try {
 		const res = await axiosClient.get(

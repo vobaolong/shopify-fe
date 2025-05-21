@@ -40,7 +40,7 @@ export const refreshTokenApi = async (refreshToken: string, userId: string, role
 				() => { }
 			)
 		}
-	} catch (error) {
+	} catch (error: any) {
 		signout(refreshToken, () => { })
 		console.log(error)
 	}
@@ -50,7 +50,7 @@ export const refreshTokenApi = async (refreshToken: string, userId: string, role
 export const signup = async (user: any) => {
 	try {
 		return await axiosClient.post('/auth/signup', user)
-	} catch (error) {
+	} catch (error: any) {
 		return { error: error.message }
 	}
 }
@@ -58,7 +58,7 @@ export const signup = async (user: any) => {
 export const signin = async (user: any) => {
 	try {
 		return await axiosClient.post('/auth/signin', user)
-	} catch (error) {
+	} catch (error: any) {
 		return { error: error.message }
 	}
 }
@@ -66,7 +66,7 @@ export const signin = async (user: any) => {
 export const signout = async (refreshToken: string, next: () => void) => {
 	try {
 		await axiosClient.post('/auth/signout', { refreshToken })
-	} catch (error) {
+	} catch (error: any) {
 		console.log(error)
 	} finally {
 		removeToken()
@@ -77,7 +77,7 @@ export const signout = async (refreshToken: string, next: () => void) => {
 export const authSocial = async (user: any) => {
 	try {
 		return await axiosClient.post('/auth/social', user)
-	} catch (error) {
+	} catch (error: any) {
 		return { error: error.message }
 	}
 }
@@ -85,7 +85,7 @@ export const authSocial = async (user: any) => {
 export const sendConfirmationEmail = async (userId: string) => {
 	try {
 		return await axiosClient.get(`/auth/confirm-email/${userId}`)
-	} catch (error) {
+	} catch (error: any) {
 		return { error: error.message }
 	}
 }
@@ -93,7 +93,7 @@ export const sendConfirmationEmail = async (userId: string) => {
 export const verifyEmail = async (emailCode: string) => {
 	try {
 		return await axiosClient.get(`/auth/verify-email/${emailCode}`)
-	} catch (error) {
+	} catch (error: any) {
 		return { error: error.message }
 	}
 }
@@ -101,7 +101,7 @@ export const verifyEmail = async (emailCode: string) => {
 export const forgotPassword = async (username: string) => {
 	try {
 		return await axiosClient.post('/auth/forgot-password', username)
-	} catch (error) {
+	} catch (error: any) {
 		return { error: error.message }
 	}
 }
@@ -112,7 +112,7 @@ export const changePassword = async (passwordCode: string, newPassword: string) 
 			`/auth/change-password/${passwordCode}`,
 			newPassword
 		)
-	} catch (error) {
+	} catch (error: any) {
 		return { error: error.message }
 	}
 }
