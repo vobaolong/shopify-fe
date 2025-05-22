@@ -115,7 +115,7 @@ const Routers = () => {
         />
 
         <Route
-          path='/admin/user'
+          path='/admin/users'
           element={
             <AdminRoute>
               <AdminUserPage />

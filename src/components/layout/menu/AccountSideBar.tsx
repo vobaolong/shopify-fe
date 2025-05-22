@@ -1,8 +1,19 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Avatar from '../../image/Avatar'
+import { UserType } from '../../../@types/entity.types'
 
-const AccountSideBar = ({ user = {}, isCollapsed, onToggle }) => {
+interface AccountSideBarProps {
+  user: UserType
+  isCollapsed?: boolean
+  onToggle?: () => void
+}
+
+const AccountSideBar = ({
+  user,
+  isCollapsed,
+  onToggle
+}: AccountSideBarProps) => {
   const { t } = useTranslation()
   const path = useLocation().pathname.split('/')[2]
   return (

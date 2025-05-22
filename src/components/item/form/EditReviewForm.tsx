@@ -1,15 +1,14 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
 import { getToken } from '../../../apis/auth'
 import { updateReview } from '../../../apis/review'
 import { numberTest, regexTest } from '../../../helper/test'
 import Loading from '../../ui/Loading'
-import ConfirmDialog from '../../ui/ConfirmDialog'
 import TextArea from '../../ui/TextArea'
-import Error from '../../ui/Error'
 import RatingInput from '../../ui/RatingInput'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
+import { useMutation } from '@tanstack/react-query'
+import { notification } from 'antd'
 
 interface ReviewType {
   rating: number
@@ -24,16 +23,31 @@ interface EditReviewFormProps {
 
 const EditReviewForm = ({ oldReview, onRun }: EditReviewFormProps) => {
   const { t } = useTranslation()
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
   const [newReview, setNewReview] = useState({
     rating: 1,
     content: '',
     isValidRating: true,
     isValidContent: true
   })
-
   const { _id } = getToken()
+
+  const updateReviewMutation = useMutation({
+    mutationFn: (review: typeof newReview) =>
+      updateReview(_id, review, oldReview?._id || ''),
+    onSuccess: (res: { data: { error?: string } }) => {
+      if (res.data.error) {
+        notification.error({ message: res.data.error })
+      } else {
+        if (onRun) {
+          onRun()
+          toast.success(t('toastSuccess.review.update'))
+        }
+      }
+    },
+    onError: () => {
+      notification.error({ message: 'Server Error' })
+    }
+  })
 
   useEffect(() => {
     if (oldReview) {
@@ -77,41 +91,13 @@ const EditReviewForm = ({ oldReview, onRun }: EditReviewFormProps) => {
       })
       return
     }
-
     if (!newReview.isValidRating || !newReview.isValidContent) return
-
-    onSubmit()
-  }
-
-  const onSubmit = () => {
-    setError('')
-    setIsLoading(true)
-    updateReview(_id, newReview, oldReview?._id || '')
-      .then((res: { data: { error?: string } }) => {
-        if (res.data.error) setError(res.data.error)
-        else {
-          if (onRun) {
-            onRun()
-            toast.success(t('toastSuccess.review.update'))
-          }
-        }
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
-      .catch(() => {
-        setError('Server Error')
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
+    updateReviewMutation.mutate(newReview)
   }
 
   return (
     <div className='position-relative'>
-      {isLoading && <Loading />}
+      {updateReviewMutation.isPending && <Loading />}
 
       <form className='row mb-2' onSubmit={handleSubmit}>
         <div className='col-12'>
@@ -137,12 +123,6 @@ const EditReviewForm = ({ oldReview, onRun }: EditReviewFormProps) => {
             onValidate={(flag) => handleValidate('isValidContent', flag)}
           />
         </div>
-
-        {error && (
-          <div className='col-12'>
-            <Error msg={error} />
-          </div>
-        )}
 
         <div className='col-12 d-grid mt-4'>
           <button type='submit' className='btn btn-primary ripple rounded-1'>

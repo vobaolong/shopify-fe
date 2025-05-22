@@ -199,7 +199,7 @@ const SellerOrdersTable = ({
                         currentOrder={filter.order}
                         currentSortBy={filter.sortBy}
                         title={t('orderDetail.commission')}
-                        sortBy='amountToBuynow'
+                        sortBy='amountToPlatform'
                         onSet={(order, sortBy) =>
                           handleSetSortBy(order, sortBy)
                         }
@@ -278,7 +278,7 @@ const SellerOrdersTable = ({
                       </td>
                       <td className='text-end'>
                         <small className='text-nowrap'>
-                          {formatPrice(order.amountToBuynow?.$numberDecimal)}
+                          {formatPrice(order.amountToPlatform?.$numberDecimal)}
                           <sup>₫</sup>
                         </small>
                       </td>

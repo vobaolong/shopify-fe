@@ -12,12 +12,26 @@ import { timeAgo } from '../../../helper/calcTime'
 import { humanReadableDate } from '../../../helper/humanReadable'
 import { socketId } from '../../../socket'
 
-const BellButton = ({ navFor = '' }) => {
+interface Notification {
+  _id: string
+  message: string
+  objectId: string
+  isRead: boolean
+  createdAt: string
+}
+
+interface BellButtonProps {
+  navFor?: string
+}
+
+const BellButton = ({ navFor = '' }: BellButtonProps) => {
   const { t } = useTranslation()
-  const [list, setList] = useState([])
-  const user = useSelector((state) => state.account.user)
-  const store = useSelector((state) => state.seller.store)
-  const [notificationCount, setNotificationCount] = useState(list.length)
+  const [list, setList] = useState<Notification[]>([])
+  const user = useSelector((state: any) => state.account.user)
+  const store = useSelector((state: any) => state.seller.store)
+  const [notificationCount, setNotificationCount] = useState<number>(
+    list.length
+  )
 
   const handleDelete = async () => {
     try {
@@ -28,7 +42,7 @@ const BellButton = ({ navFor = '' }) => {
     }
   }
 
-  const handleNotificationClick = async (notificationId) => {
+  const handleNotificationClick = async (notificationId: string) => {
     try {
       await updateRead(user._id)
       setList((prevList) =>
@@ -41,14 +55,29 @@ const BellButton = ({ navFor = '' }) => {
     }
   }
 
-  const fetchNotifications = async (id) => {
+  const fetchNotifications = async (id: string) => {
     try {
       const res = await getNotifications(id)
-      const sortedNotifications = res.notifications.sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      // Support both AxiosResponse and fallback array
+      let notifications: Notification[] = []
+      let numberHidden = 0
+      if (Array.isArray(res)) {
+        notifications = []
+        numberHidden = 0
+      } else if ('data' in res && res.data) {
+        notifications = res.data.notifications || []
+        numberHidden = res.data.numberHidden || 0
+      } else if (!('data' in res)) {
+        // Only access these if res is not an AxiosResponse
+        notifications = (res as any).notifications || []
+        numberHidden = (res as any).numberHidden || 0
+      }
+      const sortedNotifications = notifications.sort(
+        (a: Notification, b: Notification) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       )
       setList(sortedNotifications)
-      setNotificationCount(res.numberHidden)
+      setNotificationCount(numberHidden)
     } catch (error) {
       console.log(error)
     }

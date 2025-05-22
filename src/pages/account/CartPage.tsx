@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react'
 import { getToken } from '../../apis/auth'
 import { useTranslation } from 'react-i18next'
@@ -17,6 +16,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { createOrder } from '../../apis/order'
 import useUpdateDispatch from '../../hooks/useUpdateDispatch'
 import { socketId } from '../../socket'
+import { CartType } from '../../@types/entity.types'
 
 function useQuery() {
   const { search } = useLocation()
@@ -29,9 +29,9 @@ const CartPage = () => {
   const { t } = useTranslation()
   const [error, setError] = useState('')
   const [run, setRun] = useState(false)
-  const [carts, setCarts] = useState([])
+  const [carts, setCarts] = useState<CartType[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const { cartCount } = useSelector((state) => state.account.user)
+  const { cartCount } = useSelector((state: any) => state.account.user)
   const [updateDispatch] = useUpdateDispatch()
   let query = useQuery()
 
@@ -42,8 +42,8 @@ const CartPage = () => {
     setError('')
     listCarts(_id, { limit: '1000', page: '1' })
       .then((data) => {
-        if (data.error) setError(data.error)
-        else setCarts(data.carts)
+        if (data?.data?.error) setError(data.data.error)
+        else setCarts(data?.data?.carts || [])
         setTimeout(() => setError(''), 3000)
         setIsLoading(false)
       })
@@ -61,15 +61,15 @@ const CartPage = () => {
 
     if (isOrder && cartId && storeId) {
       const orderString = localStorage.getItem('order')
-      const orderBody = JSON.parse(orderString)
+      const orderBody = orderString ? JSON.parse(orderString) : null
 
       createOrder(_id, cartId, orderBody)
         .then((data) => {
-          if (data.error) setError(data.error)
+          if (data?.data?.error) setError(data.data.error)
           else {
-            updateDispatch('account', data.user)
+            updateDispatch('account', data.data.user)
             socketId.emit('createNotificationOrder', {
-              objectId: data.order?._id,
+              objectId: data.data.order?._id,
               from: _id,
               to: storeId
             })
@@ -108,7 +108,7 @@ const CartPage = () => {
                 alt=''
               />
               <span className='text-danger'>{t('cartDetail.empty')}</span>
-              <span class>{t('cartDetail.emptyRefer')}</span>
+              <span className=''>{t('cartDetail.emptyRefer')}</span>
             </div>
             <ListBestSellerProduct sortBy='sold' heading={t('bestSeller')} />
           </div>
@@ -142,7 +142,7 @@ const CartPage = () => {
               </div>
             </div>
             {carts.map((cart, index) => (
-              <div className='accordion-item mb-2' key={index}>
+              <div className='accordion-item mb-2' key={cart._id || index}>
                 <h2
                   className='accordion-header'
                   id={`panelsStayOpen-heading-${index}`}
@@ -155,7 +155,7 @@ const CartPage = () => {
                     aria-expanded='true'
                     aria-controls={`panelsStayOpen-collapse-${index}`}
                   >
-                    <StoreSmallCard store={cart.storeId} />
+                    <StoreSmallCard store={cart.store} />
                     <i
                       style={{ fontSize: '0.9rem' }}
                       className='fa-solid fa-angle-right ms-1 text-secondary'
@@ -168,20 +168,32 @@ const CartPage = () => {
                   aria-labelledby={`panelsStayOpen-collapse-${index}`}
                 >
                   <div className='accordion-body px-3'>
-                    {!cart.storeId?.isActive && (
+                    {!('isActive' in cart.store) && (
                       <Error msg={t('toastError.storeBanned')} />
                     )}
 
-                    {cart.storeId?.isActive && !cart.storeId?.isOpen && (
+                    {'isActive' in cart.store && !cart.store.isOpen && (
                       <Error msg={t('toastError.storeClosing')} />
                     )}
 
-                    {cart.storeId?.isActive && cart.storeId?.isOpen && (
+                    {'isActive' in cart.store && cart.store.isOpen && (
                       <ListCartItemsForm
                         cartId={cart._id}
-                        storeId={cart.storeId._id}
-                        storeAddress={cart.storeId.address}
-                        userId={cart.userId._id}
+                        storeId={
+                          typeof cart.store === 'string'
+                            ? cart.store
+                            : cart.store._id
+                        }
+                        storeAddress={
+                          typeof cart.store === 'string'
+                            ? ''
+                            : cart.store.address
+                        }
+                        userId={
+                          typeof cart.userId === 'string'
+                            ? cart.userId
+                            : cart.userId._id
+                        }
                         onRun={() => setRun(!run)}
                       />
                     )}

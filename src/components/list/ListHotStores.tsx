@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { notification } from 'antd'
 import { getListStores } from '../../apis/store'
 import Loading from '../ui/Loading'
 import StoreCard from '../card/StoreCard'
@@ -6,9 +7,6 @@ import Slider from 'react-slick'
 import Error from '../ui/Error'
 
 const ListHotStores = ({ heading = '' }) => {
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [stores, setStores] = useState([])
   const settings = {
     className: 'center',
     infinite: false,
@@ -48,41 +46,34 @@ const ListHotStores = ({ heading = '' }) => {
       }
     ]
   }
-  const init = () => {
-    setError('')
-    setIsLoading(true)
-    getListStores({
-      search: '',
-      sortBy: 'rating',
-      sortMoreBy: 'point',
-      isActive: 'true',
-      order: 'desc',
-      limit: 10,
-      page: 1
-    })
-      .then((data) => {
-        if (data.error) setError(data.error)
-        else setStores(data.stores)
-        setIsLoading(false)
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ['hotStores'],
+    queryFn: async () =>
+      getListStores({
+        search: '',
+        sortBy: 'rating',
+        sortMoreBy: 'point',
+        isActive: 'true',
+        order: 'desc',
+        limit: 10,
+        page: 1
       })
-      .catch(() => {
-        setError('Server Error')
-        setIsLoading(false)
-      })
-  }
-
-  useEffect(() => {
-    init()
-  }, [])
+        .then((res) => res.data)
+        .catch((err) => {
+          notification.error({ message: err?.message || 'Server Error' })
+          return {}
+        })
+  })
+  const stores: any[] = data?.stores || []
 
   return (
     <div className='position-relative bg-body box-shadow rounded-3 p-3'>
       {heading && <h5>{heading}</h5>}
       {isLoading && <Loading />}
-      {error && <Error msg={error} />}
+      {isError && <Error msg={error?.message || 'Server Error'} />}
       <div className='slider-container'>
         <Slider {...settings}>
-          {stores?.map((store, index) => (
+          {stores?.map((store: any, index: number) => (
             <div className='my-2' key={index}>
               <StoreCard store={store} />
             </div>

@@ -125,7 +125,7 @@ interface OrderState {
   amountFromStore: number
   amountToStore: number
   commissionId: string
-  amountToBuynow: number
+  amountToPlatform: number
 }
 
 interface AddressType {
@@ -220,7 +220,7 @@ const CheckoutForm = ({
         amountFromStore: amountFromStore || 0,
         amountToStore: amountToStore || 0,
         commissionId: res2.data.commission._id || '',
-        amountToBuynow: amountFromUser - amountToStore || 0
+        amountToPlatform: amountFromUser - amountToStore || 0
       })
     } catch {
       setError('Server Error')
@@ -280,7 +280,7 @@ const CheckoutForm = ({
       amountFromUser,
       amountFromStore,
       amountToStore,
-      amountToBuynow
+      amountToPlatform
     } = order
     if (
       !cartId ||
@@ -293,7 +293,7 @@ const CheckoutForm = ({
       !amountFromUser ||
       !amountFromStore ||
       !amountToStore ||
-      !amountToBuynow
+      !amountToPlatform
     ) {
       setOrder({
         ...order,
@@ -325,7 +325,7 @@ const CheckoutForm = ({
       amountFromUser,
       amountFromStore,
       amountToStore,
-      amountToBuynow
+      amountToPlatform
     } = order
     const orderBody = {
       firstName,
@@ -337,7 +337,7 @@ const CheckoutForm = ({
       amountFromUser,
       amountFromStore,
       amountToStore,
-      amountToBuynow,
+      amountToPlatform,
       isPaidBefore: false
     }
     setIsLoading(true)
@@ -451,7 +451,7 @@ const CheckoutForm = ({
                           amountFromStore: order.amountFromStore || 0,
                           amountToStore: order.amountToStore || 0,
                           commissionId: order.commissionId || '',
-                          amountToBuynow: order.amountToBuynow || 0,
+                          amountToPlatform: order.amountToPlatform || 0,
                           isValidPhone: order.isValidPhone
                         })
                       }}
@@ -508,7 +508,7 @@ const CheckoutForm = ({
                           amountFromStore: order.amountFromStore || 0,
                           amountToStore: order.amountToStore || 0,
                           commissionId: order.commissionId || '',
-                          amountToBuynow: order.amountToBuynow || 0,
+                          amountToPlatform: order.amountToPlatform || 0,
                           isValidFirstName: order.isValidFirstName,
                           isValidLastName: order.isValidLastName
                         })
@@ -555,7 +555,7 @@ const CheckoutForm = ({
                         amountFromStore: order.amountFromStore || 0,
                         amountToStore: order.amountToStore || 0,
                         commissionId: order.commissionId || '',
-                        amountToBuynow: order.amountToBuynow || 0,
+                        amountToPlatform: order.amountToPlatform || 0,
                         isValidFirstName: order.isValidFirstName,
                         isValidLastName: order.isValidLastName,
                         isValidPhone: order.isValidPhone
@@ -760,7 +760,7 @@ const CheckoutForm = ({
                         amountFromUser,
                         amountFromStore,
                         amountToStore,
-                        amountToBuynow
+                        amountToPlatform
                       } = order
                       const vnpay = new VNPay({
                         tmnCode: 'M81536UR',
@@ -788,7 +788,7 @@ const CheckoutForm = ({
                         amountFromUser,
                         amountFromStore,
                         amountToStore,
-                        amountToBuynow,
+                        amountToPlatform,
                         isPaidBefore: true
                       }
                       localStorage.setItem('order', JSON.stringify(orderBody))

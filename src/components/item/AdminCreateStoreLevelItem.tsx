@@ -2,7 +2,13 @@ import { useTranslation } from 'react-i18next'
 import Modal from '../ui/Modal'
 import AdminCreateStoreLevelForm from './form/AdminCreateStoreLevelForm'
 
-const AdminCreateStoreLevelItem = ({ onRun = () => {} }) => {
+interface AdminCreateStoreLevelItemProps {
+  onRun?: () => void
+}
+
+const AdminCreateStoreLevelItem = ({
+  onRun = () => {}
+}: AdminCreateStoreLevelItemProps) => {
   const { t } = useTranslation()
   return (
     <div className='d-inline-block'>

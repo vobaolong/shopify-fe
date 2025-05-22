@@ -1,17 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
 import { listActiveCategories } from '../../apis/category'
 import Skeleton from 'react-loading-skeleton'
+import { useQuery } from '@tanstack/react-query'
+import { notification } from 'antd'
 
-const ListCategoryFooter = ({ category = {} }) => {
-  const [categoryValue, setCategoryValue] = useState({})
-  const [children, setChildren] = useState([])
-
-  useEffect(() => {
-    let isMounted = true
-    const init = () => {
-      setCategoryValue(category)
+const ListCategoryFooter = ({ category = {} as any }) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['categoryChildren', category._id],
+    queryFn: () =>
       listActiveCategories({
         search: '',
         categoryId: category._id,
@@ -19,31 +17,24 @@ const ListCategoryFooter = ({ category = {} }) => {
         order: 'asc',
         limit: 20,
         page: 1
-      })
-        .then((data) => {
-          if (!isMounted) return
-          if (data.error) return
-          else setChildren(data.categories)
-        })
-        .catch((error) => {
-          if (!isMounted) return
-          return
-        })
-    }
-    init()
-    return () => {
-      isMounted = false
-    }
-  }, [category])
+      }).then((res) => res.data),
+    enabled: !!category._id
+  })
+
+  if (error) {
+    notification.error({ message: error?.message || 'Server Error' })
+  }
+
+  const children = data?.categories || []
 
   return (
     <>
-      {categoryValue.name ? (
+      {category.name ? (
         <Link
           className='link-hover d-flex mt-1 text-start flex-wrap'
           style={{ whiteSpace: 'normal' }}
-          to={`/category/${categoryValue._id}`}
-          title={categoryValue.name}
+          to={`/category/${category._id}`}
+          title={category.name}
         >
           <span
             style={{
@@ -52,16 +43,16 @@ const ListCategoryFooter = ({ category = {} }) => {
             }}
             className='text-uppercase text-dark-emphasis'
           >
-            {categoryValue.name}
+            {category.name}
           </span>
         </Link>
       ) : (
         <Skeleton />
       )}
 
-      {children?.length > 0 ? (
+      {!isLoading && children?.length > 0 ? (
         <div className='d-flex gap-1 text-secondary flex-wrap'>
-          {children.map((child, index) => (
+          {children.map((child: any, index: number) => (
             <React.Fragment key={index}>
               <Link
                 className='text-decoration-none footer-category-child text-secondary'

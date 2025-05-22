@@ -1,20 +1,26 @@
 import { useTranslation } from 'react-i18next'
 import Modal from '../ui/Modal'
 import StoreEditProfileForm from './form/StoreEditProfileForm'
+import { StoreType } from '../../@types/entity.types'
+import { Button } from 'antd'
 
-const StoreEditProfileItem = ({ store = {} }) => {
+interface StoreEditProfileItemProps {
+  store: StoreType
+}
+
+const StoreEditProfileItem = ({ store }: StoreEditProfileItemProps) => {
   const { t } = useTranslation()
   return (
     <div className='position-relative d-inline-block'>
-      <button
-        type='button'
+      <Button
+        type='primary'
         className='btn btn-outline-primary rounded-1 ripple cus-tooltip'
         data-bs-toggle='modal'
         data-bs-target='#store-profile-edit-form'
       >
         <i className='fa-duotone fa-pen-to-square'></i>
         <span className='res-hide ms-2'>{t('button.edit')}</span>
-      </button>
+      </Button>
 
       <Modal
         id='store-profile-edit-form'
@@ -24,7 +30,6 @@ const StoreEditProfileItem = ({ store = {} }) => {
         <StoreEditProfileForm
           storeId={store._id}
           name={store.name}
-          bio={store.bio}
           address={store.address}
         />
       </Modal>

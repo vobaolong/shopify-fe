@@ -2,7 +2,15 @@ import Modal from '../ui/Modal'
 import CreateTransactionFormForUser from './form/CreateTransactionFormForUser'
 import { useTranslation } from 'react-i18next'
 
-const CreateTransactionItemForUser = ({ eWallet = 0, onRun }) => {
+interface CreateTransactionItemForUserProps {
+  eWallet?: number
+  onRun?: () => void
+}
+
+const CreateTransactionItemForUser = ({
+  eWallet = 0,
+  onRun
+}: CreateTransactionItemForUserProps) => {
   const { t } = useTranslation()
   return (
     <div className='position-relative d-inline-block'>

@@ -115,24 +115,10 @@ export const listProductsForManager = async (userId: string, filter: any, storeI
 	}
 }
 
-export const listProductsForAdmin = async (userId: string, filter: any) => {
-	const { search, sortBy, order, limit, page, isActive } = filter
-	try {
-		return await axiosClient.get(`/products/${userId}`, {
-			params: {
-				search,
-				isActive,
-				sortBy,
-				order,
-				limit,
-				page
-			}
-		})
-	} catch (error) {
-		console.log(error)
-		throw error
-	}
-}
+type ProductsResponse = { size: number, products: any[], filter: any }
+export const listProductsForAdmin = async (params: any): Promise<ProductsResponse> => {
+	return axiosClient.get('/admin/products', { params });
+};
 
 //sell-store product
 export const sellingProduct = async (userId: string, value: any, storeId: string, productId: string) => {

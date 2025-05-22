@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
-const SalePercentLabel = ({ salePercent = {} }) => {
+const SalePercentLabel = ({ salePercent }: { salePercent: number }) => {
   const { t } = useTranslation()
   return (
     <small

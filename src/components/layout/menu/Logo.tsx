@@ -1,7 +1,12 @@
 import logo from '../../../assets/Buynow.svg'
 import logoAdmin from '../../../assets/BuynowAdmin.svg'
 
-const Logo = ({ width = '180px', navFor = '' }) => (
+interface LogoProps {
+  width?: string
+  navFor?: string
+}
+
+const Logo = ({ width = '180px', navFor = '' }: LogoProps) => (
   <img
     loading='lazy'
     src={navFor !== 'user' ? logoAdmin : logo}

@@ -1,14 +1,19 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { getToken } from '../../apis/auth'
+import { ReactNode } from 'react'
 
-const AdminRoute = () => {
+interface Props {
+  children: ReactNode
+}
+
+const AdminRoute = ({ children }: Props) => {
   const location = useLocation()
 
   if (!getToken() || getToken().role !== 'admin') {
     return <Navigate to='/' state={{ from: location }} replace />
   }
 
-  return <Outlet />
+  return <>{children}</>
 }
 
 export default AdminRoute

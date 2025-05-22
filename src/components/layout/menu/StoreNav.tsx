@@ -6,13 +6,14 @@ import StoreInit from '../../init/StoreInit'
 import FollowStoreButton from '../../button/FollowStoreButton'
 import StoreSmallCard from '../../card/StoreSmallCard'
 import { useTranslation } from 'react-i18next'
+import { StoreType } from '../../../@types/entity.types'
 
-const StoreNav = ({ store = {} }) => {
+const StoreNav = ({ store }: { store: StoreType }) => {
   const { t } = useTranslation()
   const path = useLocation().pathname.split('/')[2]
   const [updateDispatch] = useUpdateDispatch()
 
-  const onHandleRun = (newStore) => {
+  const onHandleRun = (newStore: StoreType) => {
     updateDispatch('store', newStore)
   }
 
@@ -70,7 +71,9 @@ const StoreNav = ({ store = {} }) => {
             <FollowStoreButton
               storeId={store._id}
               isFollowing={store.isFollowing}
-              onRun={(store) => onHandleRun(store)}
+              onRun={(data) =>
+                onHandleRun({ ...store, isFollowing: data.isFollowing })
+              }
             />
           </div>
         )}
@@ -87,7 +90,7 @@ const StoreNav = ({ store = {} }) => {
 
         <div
           className='offcanvas offcanvas-end d-none res-dis-md'
-          tabIndex='-1'
+          tabIndex={-1}
           id='offcanvasNavbarStoreNav'
           aria-labelledby='offcanvasNavbarStoreNavLabel'
           style={{

@@ -23,7 +23,7 @@ const ListCartItemOffCanvas = () => {
       </div>
       <div
         className='offcanvas offcanvas-end'
-        tabIndex='-1'
+        tabIndex={-1}
         id='offcanvasFilter'
         aria-labelledby='offcanvasFilterLabel'
       >

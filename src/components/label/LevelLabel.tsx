@@ -1,6 +1,11 @@
 import { useTranslation } from 'react-i18next'
+import { LevelType } from '../../@types/entity.types'
 
-const LevelLabel = ({ level = {}, detail = true }) => {
+interface LevelLabelProps {
+  level: LevelType
+  detail?: boolean
+}
+const LevelLabel = ({ level, detail = true }: LevelLabelProps) => {
   const { t } = useTranslation()
   return (
     <span className='position-relative d-inline-block'>

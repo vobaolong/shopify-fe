@@ -34,9 +34,9 @@ export const getOrderByStore = async (userId: string, orderId: string, storeId: 
 	}
 }
 
-export const getOrderForAdmin = async (userId: string, orderId: string) => {
+export const getOrderForAdmin = async (orderId: string) => {
 	try {
-		const res = await axiosClient.get(`/order/for/admin/${orderId}/${userId}`)
+		const res = await axiosClient.get(`/order/admin/${orderId}`)
 		return res
 	} catch (error) {
 		console.log(error)
@@ -85,10 +85,10 @@ export const listItemsByOrderByStore = async (
 	}
 }
 
-export const listItemsByOrderForAdmin = async (userId: string, orderId: string) => {
+export const listItemsByOrderForAdmin = async (orderId: string) => {
 	try {
 		const res = await axiosClient.get(
-			`/order/items/for/admin/${orderId}/${userId}`
+			`/order/admin/${orderId}/items`
 		)
 		return res
 	} catch (error) {
@@ -160,25 +160,10 @@ export const listReturnByStore = async (userId: string, filter: any, storeId: st
 	}
 }
 
-export const listOrdersForAdmin = async (userId: string, filter: any) => {
-	const { search, sortBy, order, limit, page, status } = filter
-	try {
-		const res = await axiosClient.get(`/orders/for/admin/${userId}`, {
-			params: {
-				search,
-				status,
-				sortBy,
-				order,
-				limit,
-				page
-			}
-		})
-		return res
-	} catch (error) {
-		console.log(error)
-		throw error
-	}
-}
+type OrdersResponse = { size: number, orders: any[], filter: any }
+export const listOrdersForAdmin = async (params: any): Promise<OrdersResponse> => {
+	return axiosClient.get('/orders/admin', { params });
+};
 
 export const userCancelOrder = async (userId: string, status: string, orderId: string) => {
 	try {

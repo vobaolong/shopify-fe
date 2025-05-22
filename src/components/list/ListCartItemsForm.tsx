@@ -22,6 +22,8 @@ import MallLabel from '../label/MallLabel'
 import HotSaleLabel from '../label/HotSale'
 import { calcPercent } from '../../helper/calcPercent'
 import { toast } from 'react-toastify'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { notification } from 'antd'
 
 const ListCartItems = ({
   cartId = '',
@@ -29,116 +31,93 @@ const ListCartItems = ({
   userId = '',
   storeAddress = '',
   onRun
+}: {
+  cartId?: string
+  storeId?: string
+  userId?: string
+  storeAddress?: string
+  onRun?: () => void
 }) => {
   const { t } = useTranslation()
   const [run, setRun] = useState(false)
-  const [error, setError] = useState('false')
-  const [items, setItems] = useState([])
-  const [isLoading, setIsLoading] = useState(false)
   const [isConfirming, setIsConfirming] = useState(false)
   const [showCheckoutFlag, toggleShowCheckoutFlag] = useToggle(false)
-  const { level } = useSelector((state) => state.account.user)
+  const { level } = useSelector((state: any) => state.account.user)
   const [updateDispatch] = useUpdateDispatch()
   const { _id } = getToken()
-  const [deleteItem, setDeleteItem] = useState({})
-  const [totals, setTotals] = useState({
+  const [deleteItem, setDeleteItem] = useState<any>({})
+  const queryClient = useQueryClient()
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['cartItems', _id, cartId, run, level],
+    queryFn: () => listItemsByCart(_id, cartId).then((res) => res.data),
+    enabled: !!cartId
+  })
+  const items: any[] = data?.items || []
+  const totals = data?.totals || {
     totalPrice: 0,
     totalSalePrice: 0,
     amountFromUser1: 0
-  })
-  const init = () => {
-    setError('')
-    setIsLoading(true)
-    listItemsByCart(_id, cartId)
-      .then(async (data) => {
-        if (data.error) setError(data.error)
-        else {
-          setItems(data.items)
-          const { totalPrice, totalSalePrice, amountFromUser1 } = totalProducts(
-            data.items,
-            level
-          )
-          setTotals({
-            totalPrice,
-            totalSalePrice,
-            amountFromUser1
-          })
-        }
-        setIsLoading(false)
-      })
-      .catch((error) => {
-        setError(`Server Error`)
-        setIsLoading(false)
-      })
   }
 
-  useEffect(() => {
-    if (cartId) init()
-  }, [cartId, storeId, userId, level, run])
+  const deleteMutation = useMutation({
+    mutationFn: (itemId: string) =>
+      deleteFromCart(_id, itemId).then((res) => res.data),
+    onSuccess: (data) => {
+      if (data.error) {
+        notification.error({ message: data.error })
+      } else {
+        toast.success(t('toastSuccess.cart.delete'))
+        updateDispatch('account', data.user)
+        setRun((prev) => !prev)
+        if (onRun) onRun()
+      }
+      setIsConfirming(false)
+      setTimeout(() => notification.destroy(), 3000)
+    },
+    onError: () => {
+      notification.error({ message: 'Server Error' })
+      setIsConfirming(false)
+    }
+  })
 
-  const handleDelete = (item) => {
+  const updateMutation = useMutation({
+    mutationFn: ({ value, item }: { value: number; item: any }) =>
+      updateCartItem(_id, value, item._id).then((res) => res.data),
+    onSuccess: (data) => {
+      if (data.error) {
+        notification.error({ message: data.error })
+      } else {
+        toast.success(t('toastSuccess.cart.update'))
+        updateDispatch('account', data.user)
+        setRun((prev) => !prev)
+        if (onRun) onRun()
+      }
+      setTimeout(() => notification.destroy(), 3000)
+    },
+    onError: () => {
+      notification.error({ message: 'Server Error' })
+    }
+  })
+
+  const handleDelete = (item: any) => {
     if (!item) return
     setDeleteItem(item)
     setIsConfirming(true)
   }
 
   const onSubmit = () => {
-    setError('')
-    setIsLoading(true)
-    deleteFromCart(_id, deleteItem._id)
-      .then((data) => {
-        if (data.error) setError(data.error)
-        else {
-          toast.success(t('toastSuccess.cart.delete'))
-          updateDispatch('account', data.user)
-          setRun(!run)
-          if (onRun) onRun()
-        }
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
-      .catch((error) => {
-        setError(`Server Error`)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
+    deleteMutation.mutate(deleteItem._id)
   }
 
-  const handleUpdate = (value, item) => {
-    setError('')
-    setIsLoading(true)
-    updateCartItem(_id, { count: value }, item._id)
-      .then((data) => {
-        if (data.error) {
-          setError(data.error)
-        } else {
-          toast.success(t('toastSuccess.cart.update'))
-          updateDispatch('account', data.user)
-          setRun(!run)
-          if (onRun) {
-            onRun()
-          }
-        }
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
-      .catch((error) => {
-        setError(`Server Error`)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
+  const handleUpdate = (value: number, item: any) => {
+    updateMutation.mutate({ value, item })
   }
 
   return (
     <div className='position-relative'>
       {isLoading && <Loading />}
-      {error && <Error msg={error} />}
+      {error && <Error msg={error?.message || 'Server Error'} />}
       {isConfirming && (
         <ConfirmDialog
           title={t('dialog.removeProductFromCart')}
@@ -149,7 +128,7 @@ const ListCartItems = ({
         />
       )}
 
-      {items.map((item, index) => (
+      {items.map((item: any, index: number) => (
         <div
           key={index}
           className={`d-flex py-2 align-items-center gap-2 item${
@@ -212,7 +191,7 @@ const ListCartItems = ({
                 {item.productId?.name}
               </Link>
               <div>
-                {item.variantValueIds?.map((value, index) => (
+                {item.variantValueIds?.map((value: any, index: number) => (
                   <span className='text-muted' key={index}>
                     <small>
                       {value.variantId?.name}: {value.name}
@@ -249,15 +228,17 @@ const ListCartItems = ({
                           { length: Math.min(item.productId?.quantity, 5) },
                           (_, i) => {
                             return {
-                              value: i + 1,
-                              label: i + 1
+                              value: String(i + 1),
+                              label: String(i + 1)
                             }
                           }
                         )
                       }
                       resetDefault={false}
-                      value={item.count}
-                      setValue={(value) => handleUpdate(value, item)}
+                      value={String(item.count)}
+                      setValue={(value: string) =>
+                        handleUpdate(Number(value), item)
+                      }
                       borderBtn={false}
                       size='sm'
                     />

@@ -9,28 +9,68 @@ import ConfirmDialog from '../../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import Error from '../../ui/Error'
+import { notification } from 'antd'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-const UserEditAddressForm = ({ oldAddress = '', index = null }) => {
+interface Address {
+  street: string
+  ward: string
+  district: string
+  province: string
+  isValidStreet: boolean
+  isValidWard: boolean
+  isValidDistrict: boolean
+  isValidProvince: boolean
+}
+
+const UserEditAddressForm = ({
+  oldAddress = '',
+  index = null
+}: {
+  oldAddress?: string
+  index?: number | null
+}) => {
   const { t } = useTranslation()
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
   const [isConfirming, setIsConfirming] = useState(false)
-  const [address, setAddress] = useState({
-    street: oldAddress.split(', ')[0],
-    ward: oldAddress.split(', ')[1],
-    district: oldAddress.split(', ')[2],
-    province: oldAddress.split(', ')[3]
+  const [address, setAddress] = useState<Address>({
+    street: oldAddress.split(', ')[0] || '',
+    ward: oldAddress.split(', ')[1] || '',
+    district: oldAddress.split(', ')[2] || '',
+    province: oldAddress.split(', ')[3] || '',
+    isValidStreet: true,
+    isValidWard: true,
+    isValidDistrict: true,
+    isValidProvince: true
   })
 
   const [updateDispatch] = useUpdateDispatch()
   const { _id } = getToken()
+  const queryClient = useQueryClient()
+
+  const updateAddressMutation = useMutation({
+    mutationFn: (addressString: string) =>
+      updateAddress(_id, index ?? 0, { address: addressString }),
+    onSuccess: (res) => {
+      const data = res.data
+      if (data.error) {
+        notification.error({ message: data.error })
+      } else {
+        updateDispatch('account', data.user)
+        toast.success(t('toastSuccess.address.update'))
+        queryClient.invalidateQueries({ queryKey: ['user'] })
+      }
+    },
+    onError: () => {
+      notification.error({ message: 'Server error' })
+    }
+  })
 
   useEffect(() => {
     setAddress({
-      street: oldAddress.split(', ')[0],
-      ward: oldAddress.split(', ')[1],
-      district: oldAddress.split(', ')[2],
-      province: oldAddress.split(', ')[3],
+      street: oldAddress.split(', ')[0] || '',
+      ward: oldAddress.split(', ')[1] || '',
+      district: oldAddress.split(', ')[2] || '',
+      province: oldAddress.split(', ')[3] || '',
       isValidStreet: true,
       isValidWard: true,
       isValidDistrict: true,
@@ -38,7 +78,11 @@ const UserEditAddressForm = ({ oldAddress = '', index = null }) => {
     })
   }, [oldAddress, index])
 
-  const handleChange = (name, isValidName, value) => {
+  const handleChange = (
+    name: keyof Address,
+    isValidName: keyof Address,
+    value: string
+  ) => {
     setAddress({
       ...address,
       [name]: value,
@@ -46,16 +90,17 @@ const UserEditAddressForm = ({ oldAddress = '', index = null }) => {
     })
   }
 
-  const handleValidate = (isValidName, flag) => {
+  const handleValidate = (isValidName: keyof Address, flag: boolean) => {
     setAddress({
       ...address,
       [isValidName]: flag
     })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (
+    e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>
+  ) => {
     e.preventDefault()
-
     const { street, ward, district, province } = address
     if (!street || !ward || !district || !province) {
       setAddress({
@@ -67,44 +112,21 @@ const UserEditAddressForm = ({ oldAddress = '', index = null }) => {
       })
       return
     }
-
     const { isValidStreet, isValidWard, isValidDistrict, isValidProvince } =
       address
     if (!isValidStreet || !isValidWard || !isValidDistrict || !isValidProvince)
       return
-
     setIsConfirming(true)
   }
 
   const onSubmit = () => {
     const addressString = `${address.street}, ${address.ward}, ${address.district}, ${address.province}`
-
-    setError('')
-    setIsLoading(true)
-    updateAddress(_id, index, { address: addressString })
-      .then((data) => {
-        if (data.error) setError(data.error)
-        else {
-          updateDispatch('account', data.user)
-          toast.success(t('toastSuccess.address.update'))
-        }
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
-      .catch(() => {
-        setError('Sever error')
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
+    updateAddressMutation.mutate(addressString)
   }
 
   return (
     <div className='position-relative'>
-      {isLoading && <Loading />}
+      {updateAddressMutation.isPending && <Loading />}
 
       {isConfirming && (
         <ConfirmDialog
@@ -173,17 +195,12 @@ const UserEditAddressForm = ({ oldAddress = '', index = null }) => {
           />
         </div>
 
-        {error && (
-          <div className='col-12'>
-            <Error msg={error} />
-          </div>
-        )}
-
         <div className='col-12 d-grid mt-4'>
           <button
             type='submit'
             className='btn btn-primary ripple rounded-1'
             onClick={handleSubmit}
+            disabled={updateAddressMutation.isPending}
           >
             {t('button.save')}
           </button>

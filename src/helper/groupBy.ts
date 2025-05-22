@@ -15,13 +15,13 @@ export const groupByDate = (items: any[], by: string, role: string) => {
 		?.map((item) => {
 			if (role === 'admin') {
 				return {
-					amount: parseFloat(item.amountToBuynow.$numberDecimal),
+					amount: parseFloat(item?.amountToPlatform?.$numberDecimal ?? 0),
 					createdAt: formatFunc(item.createdAt)
 				}
 			} else {
 				return {
-					amountToStore: parseFloat(item.amountToStore.$numberDecimal),
-					amountToBuynow: parseFloat(item.amountToBuynow.$numberDecimal),
+					amountToStore: parseFloat(item?.amountToStore?.$numberDecimal ?? 0),
+					amountToPlatform: parseFloat(item?.amountToPlatform?.$numberDecimal ?? 0),
 					createdAt: formatFunc(item.createdAt)
 				}
 			}
@@ -36,7 +36,7 @@ export const groupByDate = (items: any[], by: string, role: string) => {
 						acc[i][1] += value.amount
 					} else {
 						acc[i][1] += value.amountToStore
-						acc[i][2] += value.amountToBuynow
+						acc[i][2] += value.amountToPlatform
 					}
 					flag = true
 					i = acc.length
@@ -47,7 +47,7 @@ export const groupByDate = (items: any[], by: string, role: string) => {
 				if (role === 'admin') {
 					acc.push([value.createdAt, value.amount])
 				} else {
-					acc.push([value.createdAt, value.amountToStore, value.amountToBuynow])
+					acc.push([value.createdAt, value.amountToStore, value.amountToPlatform])
 				}
 			}
 			return acc

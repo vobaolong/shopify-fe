@@ -2,7 +2,13 @@ import { useTranslation } from 'react-i18next'
 import Modal from '../ui/Modal'
 import AdminCreateCommissionForm from './form/AdminCreateCommissionForm'
 
-const AdminCreateCommissionItem = ({ onRun = () => {} }) => {
+interface AdminCreateCommissionItemProps {
+  onRun?: () => void
+}
+
+const AdminCreateCommissionItem = ({
+  onRun = () => {}
+}: AdminCreateCommissionItemProps) => {
   const { t } = useTranslation()
   return (
     <div className='admin-create-commission-item d-inline-block'>

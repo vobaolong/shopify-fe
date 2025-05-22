@@ -41,7 +41,7 @@ interface OrderType {
   storeId: any
   amountFromUser?: { $numberDecimal: number }
   amountToStore?: { $numberDecimal: number }
-  amountToBuynow?: { $numberDecimal: number }
+  amountToPlatform?: { $numberDecimal: number }
   shippingFee?: { $numberDecimal: number }
   isPaidBefore?: boolean
   status?: string
@@ -77,7 +77,7 @@ const AdminOrdersTable = ({
   const init = () => {
     setError('')
     setIsLoading(true)
-    listOrdersForAdmin(_id, filter)
+    listOrdersForAdmin(filter)
       .then((res) => {
         const data = res.data
         if (data.error) setError(data.error)
@@ -240,7 +240,7 @@ const AdminOrdersTable = ({
                       currentOrder={filter.order}
                       currentSortBy={filter.sortBy}
                       title={t('orderDetail.commission')}
-                      sortBy='amountToBuynow'
+                      sortBy='amountToPlatform'
                       onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
                     />
                   </th>
@@ -319,8 +319,8 @@ const AdminOrdersTable = ({
                     </td>
                     <td className='text-end'>
                       <small className='text-nowrap'>
-                        {order.amountToBuynow &&
-                          formatPrice(order.amountToBuynow.$numberDecimal)}
+                        {order.amountToPlatform &&
+                          formatPrice(order.amountToPlatform.$numberDecimal)}
                         <sup>₫</sup>
                       </small>
                     </td>

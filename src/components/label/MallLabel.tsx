@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
-const MallLabel = ({ className = '' }) => {
+const MallLabel = () => {
   const { t } = useTranslation()
   return (
     <span
@@ -8,7 +8,7 @@ const MallLabel = ({ className = '' }) => {
         backgroundColor: '#F3F7FF',
         maxWidth: 'max-content'
       }}
-      className={`badge rounded-2 text-primary ${className}`}
+      className={`badge rounded-2 text-primary`}
     >
       <i className='fa-regular fa-circle-check me-1'></i>
       <span

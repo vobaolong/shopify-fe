@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
-const VerifyLabel = ({ verify }) => {
+const VerifyLabel = ({ verify }: { verify: boolean }) => {
   const { t } = useTranslation()
   return (
     <span>

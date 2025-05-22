@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation } from '@tanstack/react-query'
 import {
 	favoriteProduct,
 	unFavoriteProduct,
@@ -6,21 +6,22 @@ import {
 	checkFavoriteProduct,
 	listFavoriteProducts
 } from '../apis/favoriteProduct'
-import { createMutationHook } from './useMutationFactory'
+import useInvalidate from './useInvalidate'
+
 
 // Query keys
 export const favoriteKeys = {
 	all: ['favorites'],
 	product: {
 		all: () => [...favoriteKeys.all, 'product'],
-		count: (productId) => [...favoriteKeys.product.all(), 'count', productId],
-		isFavorite: (userId, productId) => [
+		count: (productId: string) => [...favoriteKeys.product.all(), 'count', productId],
+		isFavorite: (userId: string, productId: string) => [
 			...favoriteKeys.product.all(),
 			'isFavorite',
 			userId,
 			productId
 		],
-		favoriteProducts: (userId, filters) => [
+		favoriteProducts: (userId: string, filters: any) => [
 			...favoriteKeys.product.all(),
 			'favoriteProducts',
 			userId,
@@ -29,8 +30,8 @@ export const favoriteKeys = {
 	},
 	store: {
 		all: () => [...favoriteKeys.all, 'store'],
-		count: (storeId) => [...favoriteKeys.store.all(), 'count', storeId],
-		isFavorite: (userId, storeId) => [
+		count: (storeId: string) => [...favoriteKeys.store.all(), 'count', storeId],
+		isFavorite: (userId: string, storeId: string) => [
 			...favoriteKeys.store.all(),
 			'isFavorite',
 			userId,
@@ -40,26 +41,26 @@ export const favoriteKeys = {
 }
 
 // Product favorite queries
-export const useProductFavoriteCount = (productId) => {
+export const useProductFavoriteCount = (productId: string) => {
 	return useQuery({
 		queryKey: favoriteKeys.product.count(productId),
 		queryFn: () => getFavoriteCount(productId),
-		select: (data) => data?.count || 0,
+		select: (data: any) => data?.count || 0,
 		enabled: !!productId
 	})
 }
 
-export const useIsFavoriteProduct = (userId, productId) => {
+export const useIsFavoriteProduct = (userId: string, productId: string) => {
 	return useQuery({
 		queryKey: favoriteKeys.product.isFavorite(userId, productId),
 		queryFn: () => checkFavoriteProduct(userId, productId),
-		select: (data) => !!data?.success,
+		select: (data: any) => !!data?.success,
 		enabled: !!userId && !!productId
 	})
 }
 
 // Add new query hook for listing favorite products
-export const useFavoriteProducts = (userId, filters) => {
+export const useFavoriteProducts = (userId: string, filters: any) => {
 	return useQuery({
 		queryKey: favoriteKeys.product.favoriteProducts(userId, filters),
 		queryFn: () => listFavoriteProducts(userId, filters),
@@ -68,31 +69,39 @@ export const useFavoriteProducts = (userId, filters) => {
 }
 
 // Product favorite mutations
-export const useFavoriteProduct = createMutationHook(
-	({ userId, productId }) => favoriteProduct(userId, productId),
-	(data, variables) => [
-		{ queryKey: favoriteKeys.product.count(variables.productId) },
-		{
-			queryKey: favoriteKeys.product.isFavorite(
-				variables.userId,
-				variables.productId
-			)
+export const useFavoriteProduct = () => {
+	const invalidate = useInvalidate()
+	return useMutation({
+		mutationFn: ({ userId, productId }: { userId: string; productId: string }) =>
+			favoriteProduct(userId, productId),
+		onSuccess: (_, variables) => {
+			// Invalidate relevant queries
+			invalidate({
+				queryKey: favoriteKeys.product.count(variables.productId)
+			})
+			invalidate({
+				queryKey: favoriteKeys.product.isFavorite(variables.userId, variables.productId)
+			})
 		}
-	]
-)
+	})
+}
 
-export const useUnfavoriteProduct = createMutationHook(
-	({ userId, productId }) => unFavoriteProduct(userId, productId),
-	(data, variables) => [
-		{ queryKey: favoriteKeys.product.count(variables.productId) },
-		{
-			queryKey: favoriteKeys.product.isFavorite(
-				variables.userId,
-				variables.productId
-			)
+export const useUnfavoriteProduct = () => {
+	const invalidate = useInvalidate()
+	return useMutation({
+		mutationFn: ({ userId, productId }: { userId: string; productId: string }) =>
+			unFavoriteProduct(userId, productId),
+		onSuccess: (_, variables) => {
+			// Invalidate relevant queries
+			invalidate({
+				queryKey: favoriteKeys.product.count(variables.productId)
+			})
+			invalidate({
+				queryKey: favoriteKeys.product.isFavorite(variables.userId, variables.productId)
+			})
 		}
-	]
-)
+	})
+}
 
 // Combined hook for toggling product favorite status
 export const useToggleProductFavorite = () => {
@@ -101,7 +110,11 @@ export const useToggleProductFavorite = () => {
 
 	const isPending = favoriteMutation.isPending || unfavoriteMutation.isPending
 
-	const toggleFavorite = (userId, productId, isCurrentlyFavorite) => {
+	const toggleFavorite = (
+		userId: string,
+		productId: string,
+		isCurrentlyFavorite: boolean
+	) => {
 		if (isCurrentlyFavorite) {
 			return unfavoriteMutation.mutate({ userId, productId })
 		} else {

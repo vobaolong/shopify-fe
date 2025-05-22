@@ -1,186 +1,140 @@
-import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { connect } from 'react-redux'
+import { useQuery, useMutation } from '@tanstack/react-query'
 import { getToken, signout } from '../../apis/auth'
 import { getUserProfile } from '../../apis/user'
 import { getUserLevel } from '../../apis/level'
 import { getCartCount } from '../../apis/cart'
 import { countOrder } from '../../apis/order'
-import { addAccount } from '../../actions/account'
-import Error from '../ui/Error'
-import ConfirmDialog from '../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
-import Loading from '../ui/Loading'
+import { Avatar, Dropdown, Menu, Modal, Spin } from 'antd'
+import {
+  UserOutlined,
+  ShopOutlined,
+  ShoppingOutlined,
+  LogoutOutlined
+} from '@ant-design/icons'
 import defaultImage from '../../assets/default.webp'
-import { UserType } from '../../@types/entity.types'
 import { OrderStatus } from '../../enums/OrderStatus.enum'
+import { useMemo } from 'react'
 
-interface AccountInitProps {
-  user: UserType
-  actions: (user: UserType) => void
-}
-
-const AccountInit = ({ user, actions }: AccountInitProps) => {
-  const [isLoading, setIsLoading] = useState(false)
-  const [isConfirming, setIsConfirming] = useState(false)
-  const [error, setError] = useState('')
-  const { email, firstName, lastName, avatar } = user || {}
+const AccountInit = () => {
   const navigate = useNavigate()
-  const { _id, refreshToken, role } = getToken()
+  const { t } = useTranslation()
+  const token = getToken()
+  const _id = token._id
+  const refreshToken = token.refreshToken
+  const role = token.role
 
-  useEffect(() => {
-    let isMounted = true
-    const init = () => {
-      setIsLoading(true)
-      getUserProfile(_id)
-        .then(async (res) => {
-          if (!isMounted) return
-          const data = res.data
-          if (data.error) {
-            setError(data.error)
-            setIsLoading(false)
-          } else {
-            const newUser = data.user
-            try {
-              const res = await getUserLevel(_id)
-              newUser.level = res.data.level
-            } catch {
-              newUser.level = {}
-            }
-            try {
-              const res = await getCartCount(_id)
-              newUser.cartCount = res.data.count
-            } catch {
-              newUser.cartCount = 0
-            }
-            try {
-              const res1 = await countOrder(OrderStatus.DELIVERED, _id, '')
-              const res2 = await countOrder(OrderStatus.CANCELLED, _id, '')
-              newUser.numberOfSuccessfulOrders = res1.data.count
-              newUser.numberOfFailedOrders = res2.data.count
-            } catch {
-              newUser.numberOfSuccessfulOrders = 0
-              newUser.numberOfFailedOrders = 0
-            }
-            actions(newUser)
-            setIsLoading(false)
-          }
-        })
-        .catch(() => {
-          if (!isMounted) return
-          setError('Server Error')
-          setIsLoading(false)
-        })
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['userProfile', _id],
+    queryFn: async () => {
+      const res = await getUserProfile(_id)
+      const newUser = res.data
+      // try {
+      //   const levelRes = await getUserLevel(_id)
+      //   newUser.level = levelRes.data.level
+      // } catch {
+      //   newUser.level = {}
+      // }
+      try {
+        const cartRes = await getCartCount(_id)
+        newUser.cartCount = cartRes.data.count
+      } catch {
+        newUser.cartCount = 0
+      }
+      try {
+        const [deliveredRes, cancelledRes] = await Promise.all([
+          countOrder(OrderStatus.DELIVERED, _id, ''),
+          countOrder(OrderStatus.CANCELLED, _id, '')
+        ])
+        newUser.numberOfSuccessfulOrders = deliveredRes.data.count
+        newUser.numberOfFailedOrders = cancelledRes.data.count
+      } catch {
+        newUser.numberOfSuccessfulOrders = 0
+        newUser.numberOfFailedOrders = 0
+      }
+
+      return newUser
+    },
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false
+  })
+
+  const signoutMutation = useMutation({
+    mutationFn: () =>
+      signout(refreshToken, () => {
+        navigate(0)
+      }),
+    onSuccess: () => {
+      navigate(0)
     }
-    if (!email && !firstName && !lastName && !avatar) init()
-    return () => {
-      isMounted = false
-    }
-  }, [])
+  })
 
   const handleSignout = () => {
-    setIsConfirming(true)
-  }
-
-  const onSignoutSubmit = () => {
-    setIsLoading(true)
-    signout(refreshToken, () => {
-      navigate(0)
+    Modal.confirm({
+      title: t('button.logout'),
+      content: t('confirmDialog'),
+      okText: t('button.confirm'),
+      cancelText: t('button.cancel'),
+      onOk: () => signoutMutation.mutate()
     })
   }
-  const { t } = useTranslation()
 
-  return isLoading ? (
-    <div className='cus-position-relative-loading'>
-      <Loading size='small' />
-    </div>
-  ) : (
-    <div className='your-account-wrap'>
-      {isConfirming && (
-        <ConfirmDialog
-          title={t('button.logout')}
-          color='danger'
-          onSubmit={onSignoutSubmit}
-          message={t('confirmDialog')}
-          onClose={() => setIsConfirming(false)}
-        />
-      )}
-      <div className='your-account'>
-        <div className={`your-account-card btn lang ripple rounded-1 inherit`}>
-          <img
-            loading='lazy'
-            src={avatar || defaultImage}
-            className='your-account-img'
-            alt='avatar'
-          />
-          <span className='your-account-name unselect res-hide-xl'>
-            {t('userDetail.account')}
-            {error && <Error msg={error} />}
-          </span>
-        </div>
+  const menuItems = [
+    {
+      key: 'profile',
+      icon: <UserOutlined />,
+      label: <Link to='/account/profile'>{t('userDetail.myAccount')}</Link>
+    },
+    ...(role === 'user'
+      ? [
+          {
+            key: 'store',
+            icon: <ShopOutlined />,
+            label: <Link to='/account/store'>{t('myStore')}</Link>
+          },
+          {
+            key: 'purchase',
+            icon: <ShoppingOutlined />,
+            label: (
+              <Link to='/account/purchase'>{t('userDetail.myPurchase')}</Link>
+            )
+          }
+        ]
+      : []),
+    {
+      key: 'logout',
+      icon: <LogoutOutlined />,
+      label: (
+        <span onClick={handleSignout} style={{ color: 'red' }}>
+          {t('button.logout')}
+        </span>
+      )
+    }
+  ]
 
-        <ul className='list-group your-account-options p-3 bg-white'>
-          <div className='d-flex align-items-start default'>
-            <img
-              loading='lazy'
-              src={avatar || defaultImage}
-              className='your-account-img'
-              style={{ width: '35px', height: '35px' }}
-              alt='avatar'
-            />
-            <span className='ms-2 d-flex flex-column'>
-              <span className='text-primary fw-bold'>
-                {firstName} {lastName}
-              </span>
-              <small className='text-secondary'>{email}</small>
-            </span>
-          </div>
-          <hr className='my-2' />
-          <Link
-            className='list-group-item rounded-1 bg-value border-0 your-account-options-item ripple mt-2'
-            to='/account/profile'
-          >
-            <i className='fa-light fw-normal fa-user text-primary fs-9'></i>
-            {t('userDetail.myAccount')}
-          </Link>
-          {role === 'user' && (
-            <Link
-              className='list-group-item rounded-1 bg-value border-0 mt-2 your-account-options-item ripple'
-              to='/account/store'
-            >
-              <i className='fa-light fw-normal fa-store text-primary fs-9'></i>
-              {t('myStore')}
-            </Link>
-          )}
-          {role === 'user' && (
-            <Link
-              className='list-group-item rounded-1 bg-value border-0 mt-2 your-account-options-item ripple '
-              to='/account/purchase'
-            >
-              <i className='fa-light fw-normal fa-receipt text-primary fs-9'></i>
-              {t('userDetail.myPurchase')}
-            </Link>
-          )}
-          <hr className='my-2' />
-          <li
-            className='list-group-item rounded-1 bg-value border-0 mt-2 your-account-options-item ripple '
-            onClick={handleSignout}
-          >
-            <i className='fa-light fw-normal fa-arrow-right-from-bracket text-primary fs-9'></i>
-            <span className='text-danger'>{t('button.logout')}</span>
-          </li>
-        </ul>
+  if (isLoading) {
+    return <Spin size='small' />
+  }
+
+  if (error) {
+    return <div>Error: {error.message}</div>
+  }
+
+  return (
+    <Dropdown
+      menu={{ items: menuItems }}
+      trigger={['click']}
+      placement='bottomRight'
+    >
+      <div style={{ cursor: 'pointer' }}>
+        <Avatar src={data?.avatar || defaultImage} size={32} />
+        <span className='ml-0 d-none d-sm-inline' style={{ marginLeft: 8 }}>
+          {t('userDetail.account')}
+        </span>
       </div>
-    </div>
+    </Dropdown>
   )
 }
 
-function mapStateToProps(state: any) {
-  return { user: state.account.user }
-}
-
-function mapDispatchToProps(dispatch: any) {
-  return { actions: (user: UserType) => dispatch(addAccount(user)) }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(AccountInit)
+export default AccountInit

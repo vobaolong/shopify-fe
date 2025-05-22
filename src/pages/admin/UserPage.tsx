@@ -8,7 +8,7 @@ const UserPage = () => {
   const { t } = useTranslation()
   const paths = [
     { name: t('breadcrumbs.home'), url: '/admin/dashboard' },
-    { name: t('breadcrumbs.user'), url: '/admin/user' }
+    { name: t('breadcrumbs.user'), url: '/admin/users' }
   ]
   return (
     <AdminLayout user={user} paths={paths}>

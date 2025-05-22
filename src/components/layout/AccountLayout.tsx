@@ -1,8 +1,14 @@
-import Breadcrumb from '../ui/Breadcrumb'
+import Breadcrumb, { BreadcrumbPath } from '../ui/Breadcrumb'
 import MainLayout from './MainLayout'
 import AccountSideBar from './menu/AccountSideBar'
+import { UserType } from '../../@types/entity.types'
 
-const AccountLayout = ({ user = {}, children = null, paths = {} }) => {
+interface AccountLayoutProps {
+  user: UserType
+  children: React.ReactNode
+  paths: BreadcrumbPath[]
+}
+const AccountLayout = ({ user, children, paths }: AccountLayoutProps) => {
   return (
     <MainLayout>
       <div className='container-fluid p-0'>

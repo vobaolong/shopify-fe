@@ -1,20 +1,16 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from 'react'
 import { listSellingProductsByStore } from '../../apis/product'
 import Loading from '../ui/Loading'
 import ProductCard from '../card/ProductCard'
 import Slider from 'react-slick'
 import Error from '../ui/Error'
+import { useQuery } from '@tanstack/react-query'
+import { notification } from 'antd'
 
 const ListProductsByStore = ({
   heading = '',
   storeId = '',
   sortBy = 'sold'
 }) => {
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [products, setProducts] = useState([])
-
   const settings = {
     className: 'center',
     infinite: false,
@@ -55,48 +51,40 @@ const ListProductsByStore = ({
       }
     ]
   }
-
-  const init = () => {
-    setError('')
-    setIsLoading(true)
-    listSellingProductsByStore(
-      {
-        search: '',
-        rating: '',
-        categoryId: '',
-        minPrice: '',
-        maxPrice: '',
-        sortBy,
-        order: 'desc',
-        limit: 10,
-        page: 1
-      },
-      storeId
-    )
-      .then((data) => {
-        if (data.error) setError(data.error)
-        else setProducts(data.products)
-        setIsLoading(false)
-      })
-      .catch(() => {
-        setError('Server Error')
-        setIsLoading(false)
-      })
-  }
-
-  useEffect(() => {
-    init()
-  }, [storeId, sortBy])
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ['productsByStore', storeId, sortBy],
+    queryFn: async () =>
+      listSellingProductsByStore(
+        {
+          search: '',
+          rating: '',
+          categoryId: '',
+          minPrice: '',
+          maxPrice: '',
+          sortBy,
+          order: 'desc',
+          limit: 10,
+          page: 1
+        },
+        storeId
+      )
+        .then((res) => res.data)
+        .catch((err) => {
+          notification.error({ message: err?.message || 'Server Error' })
+          return {}
+        })
+  })
+  const products: any[] = data?.products || []
 
   return (
     <div className='position-relative bg-body box-shadow rounded-2 p-3'>
       {heading && <h5 style={{ color: 'var(--muted-color)' }}>{heading}</h5>}
       {isLoading && <Loading />}
-      {error && <Error msg={error} />}
+      {isError && <Error msg={error?.message || 'Server Error'} />}
 
       <div className='slider-container'>
         <Slider {...settings}>
-          {products?.map((product, index) => (
+          {products?.map((product: any, index: number) => (
             <div className='my-2' key={index}>
               <ProductCard product={product} />
             </div>

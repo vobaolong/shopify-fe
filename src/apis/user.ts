@@ -33,26 +33,10 @@ export const getListUsers = async (filter: any) => {
 	}
 }
 
-export const listUserForAdmin = async (userId: string, filter: any) => {
-	const { search, sortBy, order, limit, page, role } = filter
-
-	try {
-		const res = await axiosClient.get(`/users/for/admin/${userId}`, {
-			params: {
-				search,
-				role,
-				sortBy,
-				order,
-				limit,
-				page
-			}
-		})
-		return res
-	} catch (error) {
-		console.log(error)
-		throw error
-	}
-}
+type UsersResponse = { size: number, users: any[], filter: any }
+export const listUserForAdmin = async (params: any): Promise<UsersResponse> => {
+	return axiosClient.get('/admin/users', { params });
+};
 
 export const getUserByToken = async () => {
 	try {

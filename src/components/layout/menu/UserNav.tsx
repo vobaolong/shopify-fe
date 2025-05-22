@@ -1,8 +1,9 @@
 import { Link, useLocation } from 'react-router-dom'
 import UserInit from '../../init/UserInit'
 import UserSmallCard from '../../card/UserSmallCard'
+import { UserType } from '../../../@types/entity.types'
 
-const UserNav = ({ user = {} }) => {
+const UserNav = ({ user }: { user: UserType }) => {
   const path = useLocation().pathname.split('/')[2]
 
   return (
@@ -40,7 +41,7 @@ const UserNav = ({ user = {} }) => {
 
         <div
           className='offcanvas offcanvas-end d-none res-dis-md'
-          tabIndex='-1'
+          tabIndex={-1}
           id='offcanvasNavbarUserNav'
           aria-labelledby='offcanvasNavbarUserNavLabel'
           style={{

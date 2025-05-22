@@ -65,25 +65,10 @@ export const getStoresByUser = async (userId: string, filter: any) => {
 	}
 }
 
-export const getStoresForAdmin = async (userId: string, filter: any) => {
-	const { search, sortBy, sortMoreBy, order, isActive, limit, page } = filter
-	try {
-		return await axiosClient.get(`/stores/for/admin/${userId}`, {
-			params: {
-				search,
-				sortBy,
-				sortMoreBy,
-				isActive,
-				order,
-				limit,
-				page
-			}
-		})
-	} catch (error) {
-		console.log(error)
-		throw error
-	}
-}
+type StoresResponse = { size: number, stores: any[], filter: any }
+export const getStoresForAdmin = async (params: any): Promise<StoresResponse> => {
+	return axiosClient.get('/admin/stores', { params });
+};
 
 export const createStore = async (userId: string, store: any) => {
 	try {

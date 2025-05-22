@@ -23,10 +23,10 @@ const OrderStatusLabel = ({ status = '', detail = true }) => {
   return (
     <span className='d-inline-block position-relative'>
       <span
-        className={`badge border rounded-1 text-white bg-${bgColors[status]}`}
+        className={`badge border rounded-1 text-white bg-${bgColors[status as keyof typeof bgColors]}`}
       >
         {detail && (
-          <span className={`text-${colors[status]}`}>
+          <span className={`text-${colors[status as keyof typeof colors]}`}>
             {t(`orderStatus.${status}`)}
           </span>
         )}

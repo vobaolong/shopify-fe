@@ -2,12 +2,19 @@ import { useTranslation } from 'react-i18next'
 import Modal from '../ui/Modal'
 import SellerAddProductImageForm from './form/SellerAddProductImageForm'
 
+interface SellerAddProductImagesItemProps {
+  count?: number
+  productId?: string
+  storeId?: string
+  onRun?: () => void
+}
+
 const SellerAddProductImagesItem = ({
   count = 8,
   productId = '',
   storeId = '',
-  onRun
-}) => {
+  onRun = () => {}
+}: SellerAddProductImagesItemProps) => {
   const { t } = useTranslation()
 
   return (

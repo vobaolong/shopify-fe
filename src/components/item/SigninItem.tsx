@@ -4,7 +4,12 @@ import SigninForm from './form/SigninForm'
 import useToggle from '../../hooks/useToggle'
 import { useTranslation } from 'react-i18next'
 
-const SigninButton = ({ className = '', title = '' }) => {
+interface SigninButtonProps {
+  className?: string
+  title?: string
+}
+
+const SigninButton = ({ className = '', title = '' }: SigninButtonProps) => {
   const { t } = useTranslation()
   const [signinFlag, toggleSigninFlag] = useToggle(true)
 

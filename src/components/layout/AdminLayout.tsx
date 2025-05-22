@@ -1,9 +1,16 @@
 import { useState } from 'react'
 import MainLayout from './MainLayout'
 import AdminSideBar from './menu/AdminSideBar'
-import Breadcrumb from '../ui/Breadcrumb'
+import Breadcrumb, { BreadcrumbPath } from '../ui/Breadcrumb'
+import { UserType } from '../../@types/entity.types'
 
-const AdminLayout = ({ user = {}, children = null, paths = {} }) => {
+interface AdminLayoutProps {
+  user: UserType
+  children: React.ReactNode
+  paths: BreadcrumbPath[]
+}
+
+const AdminLayout = ({ children, paths }: AdminLayoutProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed)
@@ -13,11 +20,7 @@ const AdminLayout = ({ user = {}, children = null, paths = {} }) => {
     <MainLayout container='container-xxl' navFor='admin'>
       <div className='row'>
         <div className={`col-${isCollapsed ? '1' : '2'} res-sticky-top-md p-0`}>
-          <AdminSideBar
-            user={user}
-            isCollapsed={isCollapsed}
-            onToggle={toggleSidebar}
-          />
+          <AdminSideBar />
         </div>
         <div className={`mt-4 col-${isCollapsed ? '11' : '10'}`}>
           <Breadcrumb paths={paths} />

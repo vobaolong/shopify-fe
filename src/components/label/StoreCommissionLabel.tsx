@@ -1,6 +1,11 @@
 import { useTranslation } from 'react-i18next'
+import { CommissionType } from '../../@types/entity.types'
 
-const StoreCommissionLabel = ({ commission = {} }) => {
+const StoreCommissionLabel = ({
+  commission
+}: {
+  commission: CommissionType
+}) => {
   const { t } = useTranslation()
   return (
     <span className='position-relative d-inline-block default'>

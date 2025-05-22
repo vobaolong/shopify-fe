@@ -9,6 +9,18 @@ import { humanReadableDate } from '../../helper/humanReadable'
 import { calcTime } from '../../helper/calcTime'
 import { useTranslation } from 'react-i18next'
 
+interface ReviewItemProps {
+  orderId?: string
+  storeId?: string
+  productId?: string
+  productName?: string
+  productImage?: string[]
+  productVariant?: string
+  productVariantValue?: string
+  detail?: boolean
+  date?: string
+}
+
 const ReviewItem = ({
   orderId = '',
   storeId = '',
@@ -19,11 +31,13 @@ const ReviewItem = ({
   productVariantValue = '',
   detail = true,
   date = ''
-}) => {
+}: ReviewItemProps) => {
   const { t } = useTranslation()
   const [isLoading, setIsLoading] = useState(false)
   const [isReviewed, setIsReviewed] = useState(false)
-  const [deliveredDate, setDeliveredDate] = useState(date)
+  const [deliveredDate, setDeliveredDate] = useState<Date>(
+    date ? new Date(date) : new Date()
+  )
 
   useEffect(() => {
     const newDate = new Date(date)
@@ -35,8 +49,8 @@ const ReviewItem = ({
     const { _id } = getToken()
     setIsLoading(true)
     checkReview(_id, { orderId, productId })
-      .then((data) => {
-        if (data.success) setIsReviewed(true)
+      .then((res) => {
+        if (res.data.success) setIsReviewed(true)
         else setIsReviewed(false)
         setIsLoading(false)
       })

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import Modal from '../ui/Modal'
 import UserAddAddressForm from './form/UserAddAddressForm'
+import { Button } from 'antd'
 
 const UserAddAddressItem = ({ heading = false, count = 0, detail = true }) => {
   const { t } = useTranslation()
@@ -11,8 +12,8 @@ const UserAddAddressItem = ({ heading = false, count = 0, detail = true }) => {
         <h5 className='text-start mb-0'>{t('userDetail.address')}</h5>
       )}
       <div className='cus-tooltip'>
-        <button
-          type='button'
+        <Button
+          type='primary'
           disabled={count >= 10 ? true : false}
           className='btn btn-primary ripple text-nowrap rounded-1'
           data-bs-toggle='modal'
@@ -22,7 +23,7 @@ const UserAddAddressItem = ({ heading = false, count = 0, detail = true }) => {
           {detail && (
             <span className='ms-2 res-hide'>{t('userDetail.addAddress')}</span>
           )}
-        </button>
+        </Button>
 
         {count < 10 && (
           <Modal

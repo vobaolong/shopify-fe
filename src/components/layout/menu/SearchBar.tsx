@@ -31,11 +31,11 @@ const SearchBar = () => {
     else return 'products'
   })
 
-  const handleChange = (e) => {
+  const handleChange = (e: any) => {
     setQuery(e.target.value)
   }
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = (e: any) => {
     e.preventDefault()
     navigate(`/${option}/search?keyword=${query}`)
   }

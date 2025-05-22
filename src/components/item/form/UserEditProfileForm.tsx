@@ -7,7 +7,30 @@ import Loading from '../../ui/Loading'
 import ConfirmDialog from '../../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
-import Error from '../../ui/Error'
+import { useMutation } from '@tanstack/react-query'
+import { notification } from 'antd'
+
+interface Profile {
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  id_card: string
+  isValidFirstName: boolean
+  isValidLastName: boolean
+  isValidEmail: boolean
+  isValidPhone: boolean
+  isValidIdCard: boolean
+}
+
+interface UserEditProfileFormProps {
+  firstName?: string
+  lastName?: string
+  email?: string
+  phone?: string
+  id_card?: string
+  googleId?: boolean
+}
 
 const UserEditProfileForm = ({
   firstName = '',
@@ -16,14 +39,39 @@ const UserEditProfileForm = ({
   phone = '',
   id_card = '',
   googleId = false
-}) => {
+}: UserEditProfileFormProps) => {
   const { t } = useTranslation()
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
   const [isConfirming, setIsConfirming] = useState(false)
-  const [profile, setProfile] = useState({})
+  const [profile, setProfile] = useState<Profile>({
+    firstName: firstName,
+    lastName: lastName,
+    email: email || '',
+    phone: phone || '',
+    id_card: id_card || '',
+    isValidFirstName: true,
+    isValidLastName: true,
+    isValidEmail: true,
+    isValidPhone: true,
+    isValidIdCard: true
+  })
   const [updateDispatch] = useUpdateDispatch()
   const { _id } = getToken()
+
+  const updateProfileMutation = useMutation({
+    mutationFn: (user: any) => updateProfile(_id, user),
+    onSuccess: (res) => {
+      const data = res.data
+      if (data.error) {
+        notification.error({ message: data.error })
+      } else {
+        updateDispatch('account', data.user)
+        toast.success(t('toastSuccess.userDetail.updateProfile'))
+      }
+    },
+    onError: () => {
+      notification.error({ message: 'Server error' })
+    }
+  })
 
   useEffect(() => {
     setProfile({
@@ -40,7 +88,11 @@ const UserEditProfileForm = ({
     })
   }, [firstName, lastName, email, phone, id_card])
 
-  const handleChange = (name, isValidName, value) => {
+  const handleChange = (
+    name: keyof Profile,
+    isValidName: keyof Profile,
+    value: string
+  ) => {
     setProfile({
       ...profile,
       [name]: value,
@@ -48,7 +100,7 @@ const UserEditProfileForm = ({
     })
   }
 
-  const handleValidate = (isValidName, flag) => {
+  const handleValidate = (isValidName: keyof Profile, flag: boolean) => {
     switch (isValidName) {
       case 'isValidEmail': {
         setProfile({
@@ -82,7 +134,9 @@ const UserEditProfileForm = ({
     }
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (
+    e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>
+  ) => {
     e.preventDefault()
 
     if (
@@ -98,37 +152,16 @@ const UserEditProfileForm = ({
   }
 
   const onSubmit = () => {
-    let user = { firstName: profile.firstName, lastName: profile.lastName }
+    let user: any = { firstName: profile.firstName, lastName: profile.lastName }
     if (!googleId && profile.email) user.email = profile.email
     if (profile.phone) user.phone = profile.phone
     if (profile.id_card) user.id_card = profile.id_card
-
-    setError('')
-    setIsLoading(true)
-    updateProfile(_id, user)
-      .then((data) => {
-        if (data.error) setError(data.error)
-        else {
-          updateDispatch('account', data.user)
-          toast.success(t('toastSuccess.userDetail.updateProfile'))
-        }
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
-      .catch(() => {
-        setIsLoading(false)
-        setError('Server error')
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
+    updateProfileMutation.mutate(user)
   }
 
   return (
     <div className='position-relative'>
-      {isLoading && <Loading />}
+      {updateProfileMutation.isPending && <Loading />}
       {isConfirming && (
         <ConfirmDialog
           title={t('userDetail.editProfile')}
@@ -215,12 +248,6 @@ const UserEditProfileForm = ({
             onValidate={(flag) => handleValidate('isValidIdCard', flag)}
           />
         </div>
-
-        {error && (
-          <div className='col-12 mt-3'>
-            <Error msg={error} />
-          </div>
-        )}
 
         <div className='col-12 d-grid mt-4'>
           <button

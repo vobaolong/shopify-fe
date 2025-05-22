@@ -1,7 +1,13 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { StoreType, UserType } from '../../../@types/entity.types'
 
-const SellerSideBar = ({ user = {}, store = {} }) => {
+interface SellerSideBarProps {
+  user: UserType
+  store: StoreType
+}
+
+const SellerSideBar = ({ user, store }: SellerSideBarProps) => {
   const { t } = useTranslation()
   const path = useLocation().pathname.split('/')[2]
 

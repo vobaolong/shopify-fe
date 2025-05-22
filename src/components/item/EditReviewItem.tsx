@@ -2,7 +2,21 @@ import Modal from '../ui/Modal'
 import { useTranslation } from 'react-i18next'
 import EditReviewForm from './form/EditReviewForm'
 
-const EditReviewItem = ({ oldReview = {}, onRun }) => {
+interface ReviewType {
+  rating: number
+  content: string
+  _id: string
+}
+
+interface EditReviewItemProps {
+  oldReview?: ReviewType
+  onRun?: () => void
+}
+
+const EditReviewItem = ({
+  oldReview = { rating: 1, content: '', _id: '' },
+  onRun
+}: EditReviewItemProps) => {
   const { t } = useTranslation()
   return (
     <div className='d-inline-block '>

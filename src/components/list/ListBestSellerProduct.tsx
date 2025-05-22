@@ -1,11 +1,10 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect, memo, useRef } from 'react'
+import { memo } from 'react'
 import { listActiveProducts } from '../../apis/product'
 import Loading from '../ui/Loading'
 import ProductCard from '../card/ProductCard'
 import Slider from 'react-slick'
-import { shallowEqual } from 'react-redux'
-import Error from '../ui/Error'
+import { useQuery } from '@tanstack/react-query'
+import { notification } from 'antd'
 
 const ProductCardMemo = memo(ProductCard)
 const settings = {
@@ -51,58 +50,40 @@ const ListBestSellerProduct = ({
   sortBy = '',
   heading = '',
   categoryId = ''
+}: {
+  sortBy?: string
+  heading?: string
+  categoryId?: string
 }) => {
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [products, setProducts] = useState([])
-  const isMounted = useRef(true)
-
-  const init = () => {
-    setIsLoading(true)
-    listActiveProducts({
-      search: '',
-      rating: '',
-      categoryId,
-      minPrice: '',
-      maxPrice: '',
-      sortBy: sortBy,
-      order: 'desc',
-      limit: 20,
-      page: 1
-    })
-      .then((data) => {
-        console.log(data)
-        if (isMounted.current) {
-          if (data.error) setError(data.error)
-          else setProducts(data.products)
-          setIsLoading(false)
-        }
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ['bestSellerProducts', categoryId, sortBy],
+    queryFn: async () =>
+      listActiveProducts({
+        search: '',
+        rating: '',
+        categoryId,
+        minPrice: '',
+        maxPrice: '',
+        sortBy: sortBy,
+        order: 'desc',
+        limit: 20,
+        page: 1
       })
-      .catch((error) => {
-        if (isMounted.current) {
-          setError('Server Error')
-          setIsLoading(false)
-        }
-      })
-  }
-
-  useEffect(() => {
-    isMounted.current = true
-    init()
-    return () => {
-      isMounted.current = false
-    }
-  }, [categoryId, shallowEqual(products)])
+        .then((res) => res.data)
+        .catch((err) => {
+          notification.error({ message: err?.message || 'Server Error' })
+          return {}
+        })
+  })
+  const products: any[] = data?.products || []
 
   return (
     <div className='position-relative bg-body box-shadow rounded-2 p-3'>
       {heading && <h5 className='text-dark-emphasis'>{heading}</h5>}
       {isLoading && <Loading />}
-      {error && <Error msg={error} />}
-
       <div className='slider-container'>
         <Slider {...settings}>
-          {products?.map((product, index) => (
+          {products?.map((product: any, index: number) => (
             <div className='my-2' key={index}>
               <ProductCardMemo product={product} />
             </div>

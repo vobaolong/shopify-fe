@@ -92,6 +92,7 @@ export interface CartType {
 	items: OrderItemType[]
 	createdAt?: string
 	updatedAt?: string
+	store?: StoreType | string
 }
 
 export interface AddressType {
@@ -108,6 +109,7 @@ export interface CommissionType {
 	_id: string
 	name: string
 	value: number
+	fee: { $numberDecimal: number }
 	description?: string
 	createdAt?: string
 	updatedAt?: string
@@ -117,6 +119,8 @@ export interface LevelType {
 	_id: string
 	name: string
 	discount: { $numberDecimal: number }
+	color: string
+	minPoint: number
 	description?: string
 	createdAt?: string
 	updatedAt?: string

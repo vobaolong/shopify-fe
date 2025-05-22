@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { getToken } from '../../apis/auth'
 import {
@@ -12,6 +10,7 @@ import Loading from '../ui/Loading'
 import Error from '../ui/Error'
 import ReviewItem from '../item/ReviewItem'
 import { useTranslation } from 'react-i18next'
+import { useQuery } from '@tanstack/react-query'
 
 const ListOrderItems = ({
   orderId = '',
@@ -20,60 +19,33 @@ const ListOrderItems = ({
   by = 'user'
 }) => {
   const { t } = useTranslation()
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [items, setItems] = useState([])
-
-  const init = () => {
-    const { _id } = getToken()
-    setIsLoading(true)
-    if (by === 'store')
-      listItemsByOrderByStore(_id, orderId, storeId)
-        .then((data) => {
-          if (data.error) setError(data.error)
-          else setItems(data.items)
-          setIsLoading(false)
-        })
-        .catch(() => {
-          setError('Server Error')
-          setIsLoading(false)
-        })
-    else if (by === 'admin')
-      listItemsByOrderForAdmin(_id, orderId)
-        .then((data) => {
-          if (data.error) setError(data.error)
-          else setItems(data.items)
-          setIsLoading(false)
-        })
-        .catch(() => {
-          setError('Server Error')
-          setIsLoading(false)
-        })
-    else
-      listItemsByOrder(_id, orderId)
-        .then((data) => {
-          if (data.error) setError(data.error)
-          else setItems(data.items)
-          setIsLoading(false)
-        })
-        .catch(() => {
-          setError('Server Error')
-          setIsLoading(false)
-        })
-  }
-  useEffect(() => {
-    if (orderId) init()
-  }, [orderId, storeId, by])
+  const { _id } = getToken()
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ['orderItems', _id, orderId, storeId, by],
+    queryFn: async () => {
+      if (by === 'store') {
+        return listItemsByOrderByStore(_id, orderId, storeId).then(
+          (res) => res.data
+        )
+      } else if (by === 'admin') {
+        return listItemsByOrderForAdmin(orderId).then((res) => res.data)
+      } else {
+        return listItemsByOrder(_id, orderId).then((res) => res.data)
+      }
+    },
+    enabled: !!orderId
+  })
+  const items: any[] = data?.items || []
 
   return (
     <div className='list-order-items position-relative py-1'>
       {isLoading && <Loading />}
-      {error && <Error msg={error} />}
+      {isError && <Error msg={error?.message || 'Server Error'} />}
       <small className='text-muted d-inline-block'>
         {t('orderDetail.note')}
       </small>
       <div className='flex-column d-flex  justify-content-between'>
-        {items.map((item, index) => (
+        {items.map((item: any, index: number) => (
           <div key={index} className='list-item-container'>
             <div className='d-flex align-items-center'>
               <div
@@ -121,7 +93,7 @@ const ListOrderItems = ({
                 )}
 
                 <div className='mt-1'>
-                  {item.variantValueIds?.map((value, index) => (
+                  {item.variantValueIds?.map((value: any, index: number) => (
                     <p
                       className='text-muted'
                       style={{ fontSize: '0.9rem' }}
@@ -176,10 +148,10 @@ const ListOrderItems = ({
                     productName={item?.productId?.name}
                     productImage={item.productId?.listImages[0]}
                     productVariant={item.variantValueIds?.map(
-                      (value, index) => value.variantId?.name
+                      (value: any, index: number) => value.variantId?.name
                     )}
                     productVariantValue={item.variantValueIds?.map(
-                      (value, index) => value.name
+                      (value: any, index: number) => value.name
                     )}
                     date={item?.updatedAt}
                   />

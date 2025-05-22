@@ -329,7 +329,7 @@ const UserCreateStoreForm = () => {
             </Link>
             <small className='text-center d-block mx-2'>
               <span className='text-muted'>{t('storeDetail.getPaid')}</span>{' '}
-              <Link to='/legal/sellOnBuynow' target='_blank'>
+              <Link to='/legal/sell-on-buynow' target='_blank'>
                 {t('storeDetail.sellOn')}
               </Link>
               <br className='res-hide' />

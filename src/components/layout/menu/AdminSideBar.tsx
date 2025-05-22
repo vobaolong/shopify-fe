@@ -1,7 +1,8 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { UserType } from '../../../@types/entity.types'
 
-const AdminSideBar = ({ user = {} }) => {
+const AdminSideBar = () => {
   const { t } = useTranslation()
   const path = useLocation().pathname.split('/')[2]
 
@@ -30,7 +31,7 @@ const AdminSideBar = ({ user = {} }) => {
         </li>
         <li className='nav-item'>
           <Link
-            to={`/admin/user`}
+            to={`/admin/users`}
             className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
               path === 'user' ? 'active' : ''
             }`}

@@ -2,12 +2,19 @@ import { useTranslation } from 'react-i18next'
 import Modal from '../ui/Modal'
 import AddVariantValueForm from './form/AddVariantValueForm'
 
+interface AddVariantValueItemProps {
+  variantId?: string
+  variantName?: string
+  onRun?: () => void
+  isFullWidth?: boolean
+}
+
 const AddVariantValueItem = ({
   variantId = '',
   variantName = '',
   onRun,
   isFullWidth = false
-}) => {
+}: AddVariantValueItemProps) => {
   const { t } = useTranslation()
   return (
     <div

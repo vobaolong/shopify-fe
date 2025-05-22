@@ -22,9 +22,9 @@ const Footer = () => {
       page: 1
     })
       .then((data) => {
-        if (data.error) return
+        if (data.data?.error) return
         else {
-          setCategories(data.categories)
+          setCategories(data.data?.categories)
         }
       })
       .catch((error) => {

@@ -8,17 +8,12 @@ import ReviewInfo from '../info/ReviewInfo'
 import StarRating from '../label/StarRating'
 import { useTranslation } from 'react-i18next'
 import boxImg from '../../assets/box.svg'
+import { useQuery } from '@tanstack/react-query'
+import { notification } from 'antd'
 
 const ListReviews = ({ productId = '', storeId = '', userId = '' }) => {
   const { t } = useTranslation()
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
   const [run, setRun] = useState(true)
-  const [reviews, setReviews] = useState([])
-  const [pagination, setPagination] = useState({
-    size: 0
-  })
-
   const [filter, setFilter] = useState({
     productId,
     storeId,
@@ -29,44 +24,22 @@ const ListReviews = ({ productId = '', storeId = '', userId = '' }) => {
     limit: 10,
     page: 1
   })
-
-  const init = () => {
-    setError('')
-    setIsLoading(true)
-    listReviews(filter)
-      .then((data) => {
-        if (data.error) setError(data.error)
-        else {
-          setReviews(data.reviews)
-          setPagination({
-            size: data.size,
-            pageCurrent: data.filter.pageCurrent,
-            pageCount: data.filter.pageCount
-          })
-        }
-        setIsLoading(false)
-      })
-      .catch((error) => {
-        setError(error)
-        setIsLoading(false)
-      })
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ['reviews', filter, run],
+    queryFn: () => listReviews(filter).then((res) => res.data),
+    enabled: !!filter.productId || !!filter.storeId
+  })
+  if (error) {
+    notification.error({ message: error?.message || 'Server Error' })
+  }
+  const reviews: any[] = data?.reviews || []
+  const pagination = data?.pagination || {
+    size: 0,
+    pageCurrent: 1,
+    pageCount: 1
   }
 
-  useEffect(() => {
-    if (!filter.productId && !filter.storeId) return
-    init()
-  }, [filter, run])
-
-  useEffect(() => {
-    setFilter({
-      ...filter,
-      productId,
-      storeId,
-      userId
-    })
-  }, [productId, storeId, userId])
-
-  const handleChangePage = (newPage) => {
+  const handleChangePage = (newPage: number) => {
     setFilter({
       ...filter,
       page: newPage
@@ -87,7 +60,7 @@ const ListReviews = ({ productId = '', storeId = '', userId = '' }) => {
             name='rating'
             id={`rating${i}`}
             defaultChecked={
-              i !== 0 ? filter.rating === i : filter.rating === ''
+              i !== 0 ? filter.rating === String(i) : filter.rating === ''
             }
             onClick={() => {
               if (i === 0)
@@ -98,7 +71,7 @@ const ListReviews = ({ productId = '', storeId = '', userId = '' }) => {
               else
                 setFilter({
                   ...filter,
-                  rating: i
+                  rating: String(i)
                 })
             }}
           />
@@ -127,7 +100,7 @@ const ListReviews = ({ productId = '', storeId = '', userId = '' }) => {
   return (
     <div className='position-relative'>
       {isLoading && <Loading />}
-      {error && <Error msg={error} />}
+      {isError && <Error msg={error?.message || 'Server Error'} />}
       <div className='bg-body rounded border p-3'>
         <span>Lọc theo</span>
         <div className='d-flex justify-content-between align-items-end p-2 rounded-1 border-bottom'>
@@ -138,7 +111,7 @@ const ListReviews = ({ productId = '', storeId = '', userId = '' }) => {
         {reviews.length > 0 ? (
           <>
             <div className='p-2'>
-              {reviews?.map((review, index) => (
+              {reviews?.map((review: any, index: number) => (
                 <div className='col-12' key={index}>
                   <ReviewInfo
                     review={review}

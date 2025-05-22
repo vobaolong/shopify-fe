@@ -1,8 +1,13 @@
+import { Button } from 'antd'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useLocation } from 'react-router-dom'
 
-const StoreSearchBar = ({ storeId = '' }) => {
+interface StoreSearchBarProps {
+  storeId?: string
+}
+
+const StoreSearchBar = ({ storeId = '' }: StoreSearchBarProps) => {
   const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
@@ -11,11 +16,11 @@ const StoreSearchBar = ({ storeId = '' }) => {
     () => new URLSearchParams(location.search).get('keyword') || ''
   )
 
-  const handleChange = (e) => {
+  const handleChange = (e: any) => {
     setQuery(e.target.value)
   }
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = (e: any) => {
     e.preventDefault()
     navigate(`/store/collection/${storeId}?keyword=${query}`)
   }
@@ -33,13 +38,13 @@ const StoreSearchBar = ({ storeId = '' }) => {
         value={query}
         onChange={handleChange}
       />
-      <button
+      <Button
         className='btn btn-outline-light border border-primary cus-outline text-white ripple rounded-end-1'
-        type='submit'
+        type='dashed'
         onClick={handleFormSubmit}
       >
         <i className='fa-solid fa-search'></i>
-      </button>
+      </Button>
     </form>
   )
 }

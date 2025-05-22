@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-interface BreadcrumbPath {
+export interface BreadcrumbPath {
   name: string
   url: string
 }

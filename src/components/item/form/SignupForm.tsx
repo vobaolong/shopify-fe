@@ -4,13 +4,12 @@ import { signup } from '../../../apis/auth'
 import { regexTest } from '../../../helper/test'
 import Input from '../../ui/Input'
 import Loading from '../../ui/Loading'
-import Error from '../../ui/Error'
 import ConfirmDialog from '../../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
 // import SocialForm from './SocialForm'
-import { toast } from 'react-toastify'
-import { AxiosResponse } from 'axios'
 import { notification } from 'antd'
+import { useMutation } from '@tanstack/react-query'
+
 interface SignupFormProps {
   onSwap?: () => void
 }
@@ -28,7 +27,6 @@ interface AccountState {
 
 const SignupForm = ({ onSwap = () => {} }: SignupFormProps) => {
   const { t } = useTranslation()
-  const [isLoading, setIsLoading] = useState(false)
   const [isConfirming, setIsConfirming] = useState(false)
   const [passwordConfirmation, setPasswordConfirmation] = useState('')
   const [isValidPasswordConfirmation, setIsValidPasswordConfirmation] =
@@ -42,6 +40,30 @@ const SignupForm = ({ onSwap = () => {} }: SignupFormProps) => {
     isValidLastName: true,
     isValidUsername: true,
     isValidPassword: true
+  })
+
+  const signupMutation = useMutation({
+    mutationFn: (user: Record<string, string>) => signup(user),
+    onSuccess: (res: any) => {
+      const data = res.data || res
+      if (data.error) {
+        notification.error({ message: data.error })
+      } else {
+        setAccount({
+          ...account,
+          firstName: '',
+          lastName: '',
+          username: '',
+          password: ''
+        })
+        notification.success({ message: t('toastSuccess.signUp') })
+        setIsConfirming(false)
+      }
+    },
+    onError: () => {
+      notification.error({ message: 'Server Error' })
+      setIsConfirming(false)
+    }
   })
 
   const handleChange = (
@@ -111,34 +133,12 @@ const SignupForm = ({ onSwap = () => {} }: SignupFormProps) => {
     const user: Record<string, string> = { firstName, lastName, password }
     if (regexTest('email', username)) user.email = username
     if (regexTest('phone', username)) user.phone = username
-
-    setIsLoading(true)
-    signup(user)
-      .then((res: AxiosResponse<any> | { error: any }) => {
-        const data = (res as AxiosResponse<any>).data || res
-        if (data.error) {
-          notification.error({ message: data.error })
-        } else {
-          setAccount({
-            ...account,
-            firstName: '',
-            lastName: '',
-            username: '',
-            password: ''
-          })
-          toast.success(t('toastSuccess.signUp'))
-        }
-        setIsLoading(false)
-      })
-      .catch(() => {
-        notification.error({ message: 'Server Error' })
-        setIsLoading(false)
-      })
+    signupMutation.mutate(user)
   }
 
   return (
     <div className='sign-up-form-wrap position-relative'>
-      {isLoading && <Loading />}
+      {signupMutation.isPending && <Loading />}
       {isConfirming && (
         <ConfirmDialog
           title={t('dialog.signUp')}

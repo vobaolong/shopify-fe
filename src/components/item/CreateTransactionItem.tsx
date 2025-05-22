@@ -3,12 +3,21 @@ import CreateDepositTransactionForm from './form/CreateDepositTransactionForm'
 import CreateWithDrawTransactionForm from './form/CreateWithDrawTransactionForm'
 import { useTranslation } from 'react-i18next'
 
-const CreateTransactionItem = ({ eWallet = 0, storeId = '', onRun }) => {
+interface CreateTransactionItemProps {
+  eWallet?: number
+  storeId?: string
+  onRun?: () => void
+}
+
+const CreateTransactionItem = ({
+  eWallet = 0,
+  storeId = '',
+  onRun
+}: CreateTransactionItemProps) => {
   const { t } = useTranslation()
 
   return (
     <div className='d-flex gap-3'>
-      {/*  */}
       <div className='position-relative d-inline-block'>
         <div className='cus-tooltip'>
           <button

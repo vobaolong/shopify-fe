@@ -1,6 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from 'react'
-import { getToken } from '../../apis/auth'
+import { useQuery } from '@tanstack/react-query'
 import { listUserForAdmin } from '../../apis/user'
 import { humanReadableDate } from '../../helper/humanReadable'
 import Pagination from '../ui/Pagination'
@@ -12,16 +10,44 @@ import { useTranslation } from 'react-i18next'
 import VerifyLabel from '../label/VerifyLabel'
 import ShowResult from '../ui/ShowResult'
 import Error from '../ui/Error'
+import { useState } from 'react'
+import { notification, Table } from 'antd'
+
+interface User {
+  _id: string
+  firstName: string
+  lastName: string
+  email: string
+  isEmailActive: boolean
+  isPhoneActive: boolean
+  role: string
+  addresses: string[]
+  avatar: string
+  cover: string
+  e_wallet: {
+    $numberDecimal: string
+  }
+  point: number
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+  slug: string
+  id_card?: string
+  phone?: string
+}
+
+interface Filter {
+  search: string
+  sortBy: string
+  role: string
+  order: string
+  limit: number
+  page: number
+}
 
 const AdminUsersTable = ({ heading = false }) => {
   const { t } = useTranslation()
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [users, setUsers] = useState([])
-  const [pagination, setPagination] = useState({
-    size: 0
-  })
-  const [filter, setFilter] = useState({
+  const [filter, setFilter] = useState<Filter>({
     search: '',
     sortBy: 'createdAt',
     role: 'customer',
@@ -30,37 +56,14 @@ const AdminUsersTable = ({ heading = false }) => {
     page: 1
   })
 
-  const { _id } = getToken()
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['users', filter],
+    queryFn: async () => {
+      return await listUserForAdmin(filter)
+    }
+  })
 
-  const init = () => {
-    setError('')
-    setIsLoading(true)
-    listUserForAdmin(_id, filter)
-      .then((data) => {
-        if (data.error) {
-          setError(data.error)
-          setIsLoading(false)
-        } else {
-          setUsers(data.users)
-          setPagination({
-            size: data.size,
-            pageCurrent: data.filter.pageCurrent,
-            pageCount: data.filter.pageCount
-          })
-          setIsLoading(false)
-        }
-      })
-      .catch(() => {
-        setError('Server Error')
-        setIsLoading(false)
-      })
-  }
-
-  useEffect(() => {
-    init()
-  }, [filter])
-
-  const handleChangeKeyword = (keyword) => {
+  const handleChangeKeyword = (keyword: string) => {
     setFilter({
       ...filter,
       search: keyword,
@@ -68,129 +71,86 @@ const AdminUsersTable = ({ heading = false }) => {
     })
   }
 
-  const handleChangePage = (newPage) => {
+  const handleChangePage = (page: number, pageSize?: number) => {
     setFilter({
       ...filter,
-      page: newPage
+      page,
+      limit: pageSize || filter.limit
     })
   }
 
-  const handleSetSortBy = (order, sortBy) => {
-    setFilter({
-      ...filter,
-      sortBy,
-      order
-    })
-  }
+  // Định nghĩa columns cho antd Table
+  const columns = [
+    {
+      title: t('userDetail.name'),
+      dataIndex: 'fullName',
+      key: 'fullName',
+      render: (_: any, user: User) => <UserSmallCard user={user} />
+    },
+    {
+      title: t('point'),
+      dataIndex: 'point',
+      key: 'point'
+    },
+    {
+      title: 'ID Card',
+      dataIndex: 'id_card',
+      key: 'id_card',
+      render: (id_card: string) => id_card || '-'
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email'
+    },
+    {
+      title: t('userDetail.KYC'),
+      dataIndex: 'isEmailActive',
+      key: 'isEmailActive',
+      render: (isEmailActive: boolean) => <VerifyLabel verify={isEmailActive} />
+    },
+    {
+      title: t('userDetail.phone'),
+      dataIndex: 'phone',
+      key: 'phone',
+      render: (phone: string) => phone || '-'
+    },
+    {
+      title: t('joined'),
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      render: (createdAt: string) => humanReadableDate(createdAt)
+    }
+  ]
 
   return (
     <div className='position-relative'>
       {isLoading && <Loading />}
       {heading && <h5 className='text-start'>{t('title.userInSystem')}</h5>}
-      {error && <Error msg={error} />}
+      {error && <Error msg={error.message} />}
 
       <div className='p-3 box-shadow bg-body rounded-2'>
         <div className='mb-3'>
           <SearchInput onChange={handleChangeKeyword} />
         </div>
-        <div className='table-scroll my-2'>
-          <table className='table align-middle table-hover table-sm text-start'>
-            <thead>
-              <tr>
-                <th scope='col' className='text-center'></th>
-                <th scope='col'>
-                  <span style={{ fontWeight: '400' }}>
-                    {t('userDetail.name')}
-                  </span>
-                </th>
-                <th scope='col'>
-                  <SortByButton
-                    currentOrder={filter.order}
-                    currentSortBy={filter.sortBy}
-                    title={t('point')}
-                    sortBy='point'
-                    onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
-                  />
-                </th>
-                <th scope='col'>
-                  <SortByButton
-                    currentOrder={filter.order}
-                    currentSortBy={filter.sortBy}
-                    title='ID Card'
-                    sortBy='id_card'
-                    onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
-                  />
-                </th>
-                <th scope='col'>
-                  <SortByButton
-                    currentOrder={filter.order}
-                    currentSortBy={filter.sortBy}
-                    title='Email'
-                    sortBy='email'
-                    onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
-                  />
-                </th>
-                <th scope='col'>
-                  <SortByButton
-                    currentOrder={filter.order}
-                    currentSortBy={filter.sortBy}
-                    title={t('userDetail.KYC')}
-                    sortBy='email'
-                    onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
-                  />
-                </th>
-
-                <th scope='col' className='text-secondary'>
-                  <span style={{ fontWeight: '400', fontSize: '.875rem' }}>
-                    {t('userDetail.phone')}
-                  </span>
-                </th>
-
-                <th scope='col'>
-                  <SortByButton
-                    currentOrder={filter.order}
-                    currentSortBy={filter.sortBy}
-                    title={t('joined')}
-                    sortBy='createdAt'
-                    onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
-                  />
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user, index) => (
-                <tr key={index}>
-                  <th scope='row'>
-                    {index + 1 + (filter.page - 1) * filter.limit}
-                  </th>
-                  <td className='text-start'>
-                    <UserSmallCard user={user} />
-                  </td>
-                  <td>{user.point}</td>
-                  <td>{user.id_card || '-'}</td>
-                  <td>{user.email || '-'}</td>
-                  <td>
-                    <VerifyLabel verify={user.isEmailActive} />
-                  </td>
-                  <td>{user.phone || '-'}</td>
-                  <td>{humanReadableDate(user.createdAt)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Table
+          columns={columns}
+          dataSource={data?.users || []}
+          rowKey='_id'
+          loading={isLoading}
+          pagination={{
+            current: data?.filter?.pageCurrent || 1,
+            pageSize: filter.limit,
+            total: data?.size || 0,
+            onChange: handleChangePage
+          }}
+        />
         <div className='d-flex justify-content-between align-items-center px-4'>
           <ShowResult
             limit={filter.limit}
-            size={pagination.size}
-            pageCurrent={pagination.pageCurrent}
+            size={data?.size || 0}
+            pageCurrent={data?.filter?.pageCurrent || 1}
           />
-          {pagination.size !== 0 && (
-            <Pagination
-              pagination={pagination}
-              onChangePage={handleChangePage}
-            />
-          )}
         </div>
       </div>
     </div>

@@ -8,14 +8,21 @@ import Error from '../../ui/Error'
 import ConfirmDialog from '../../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
+import { useMutation } from '@tanstack/react-query'
+import { notification } from 'antd'
+
+interface Account {
+  currentPassword: string
+  newPassword: string
+  isValidCurrentPassword: boolean
+  isValidNewPassword: boolean
+}
 
 const UserEditPasswordForm = () => {
   const { t } = useTranslation()
-  const [isLoading, setIsLoading] = useState(false)
   const [isConfirming, setIsConfirming] = useState(false)
-  const [error, setError] = useState('')
 
-  const [account, setAccount] = useState({
+  const [account, setAccount] = useState<Account>({
     currentPassword: '',
     newPassword: '',
     isValidCurrentPassword: true,
@@ -24,7 +31,33 @@ const UserEditPasswordForm = () => {
 
   const { _id } = getToken()
 
-  const handleChange = (name, isValidName, value) => {
+  const updatePasswordMutation = useMutation({
+    mutationFn: (user: { currentPassword: string; newPassword: string }) =>
+      updatePassword(_id, user),
+    onSuccess: (res) => {
+      const data = res.data
+      if (data.error) {
+        notification.error({ message: data.error })
+      } else {
+        setAccount({
+          currentPassword: '',
+          newPassword: '',
+          isValidCurrentPassword: true,
+          isValidNewPassword: true
+        })
+        toast.success(t('toastSuccess.userDetail.updatePassword'))
+      }
+    },
+    onError: () => {
+      notification.error({ message: 'Server error' })
+    }
+  })
+
+  const handleChange = (
+    name: keyof Account,
+    isValidName: keyof Account,
+    value: string
+  ) => {
     setAccount({
       ...account,
       [name]: value,
@@ -32,14 +65,16 @@ const UserEditPasswordForm = () => {
     })
   }
 
-  const handleValidate = (isValidName, flag) => {
+  const handleValidate = (isValidName: keyof Account, flag: boolean) => {
     setAccount({
       ...account,
       [isValidName]: flag
     })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (
+    e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>
+  ) => {
     e.preventDefault()
 
     if (!account.currentPassword || !account.newPassword) {
@@ -51,8 +86,7 @@ const UserEditPasswordForm = () => {
       return
     }
 
-    if (!account.isValidCurrentPassword || !account.isValidCurrentPassword)
-      return
+    if (!account.isValidCurrentPassword || !account.isValidNewPassword) return
 
     setIsConfirming(true)
   }
@@ -62,38 +96,12 @@ const UserEditPasswordForm = () => {
       currentPassword: account.currentPassword,
       newPassword: account.newPassword
     }
-
-    setError('')
-    setIsLoading(true)
-    updatePassword(_id, user)
-      .then((data) => {
-        if (data.error) setError(data.error)
-        else {
-          setAccount({
-            currentPassword: '',
-            newPassword: '',
-            isValidCurrentPassword: true,
-            isValidNewPassword: true
-          })
-          toast.success(t('toastSuccess.userDetail.updatePassword'))
-        }
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
-      .catch((error) => {
-        setError(error)
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
+    updatePasswordMutation.mutate(user)
   }
 
   return (
     <div className='position-relative'>
-      {isLoading && <Loading />}
+      {updatePasswordMutation.isPending && <Loading />}
 
       {isConfirming && (
         <ConfirmDialog
@@ -135,17 +143,12 @@ const UserEditPasswordForm = () => {
           />
         </div>
 
-        {error && (
-          <div className='col-12'>
-            <Error msg={error} />
-          </div>
-        )}
-
         <div className='col-12 d-grid mt-4'>
           <button
             type='submit'
             className='btn btn-primary ripple rounded-1'
             onClick={handleSubmit}
+            disabled={updatePasswordMutation.isPending}
           >
             {t('button.save')}
           </button>

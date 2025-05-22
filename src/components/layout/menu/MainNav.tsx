@@ -15,11 +15,15 @@ import { useTranslation } from 'react-i18next'
 import BellButton from './BellButton'
 import clsx from 'clsx'
 
-const MainNav = ({ navFor = 'user' }) => {
+interface MainNavProps {
+  navFor?: string
+}
+
+const MainNav = ({ navFor = 'user' }: MainNavProps) => {
   const { t } = useTranslation()
-  const { cartCount } = useSelector((state) => state.account.user)
-  const user = useSelector((state) => state.account.user)
-  const store = useSelector((state) => state.seller.store)
+  const { cartCount } = useSelector((state: any) => state.account.user)
+  const user = useSelector((state: any) => state.account.user)
+  const store = useSelector((state: any) => state.seller.store)
   const [isConfirming, setIsConfirming] = useState(false)
   const { refreshToken } = getToken()
   const navigate = useNavigate()
@@ -108,7 +112,11 @@ const MainNav = ({ navFor = 'user' }) => {
                         style={{ top: '20%', left: '80%' }}
                         className='position-absolute translate-middle badge rounded-pill bg-danger'
                       >
-                        {cartCount < 100 ? cartCount : '99+'}
+                        {cartCount && cartCount > 0
+                          ? cartCount < 100
+                            ? String(cartCount)
+                            : '99+'
+                          : '0'}
                       </span>
                     )}
                     <small className='cus-tooltip-msg'>{t('cart')}</small>
@@ -145,7 +153,7 @@ const MainNav = ({ navFor = 'user' }) => {
 
             <div
               className='offcanvas offcanvas-end d-none res-dis-md'
-              tabIndex='-1'
+              tabIndex={-1}
               id='offcanvasNavbarMainNav'
               aria-labelledby='offcanvasNavbarMainNavLabel'
               style={{ flexGrow: 'unset', width: 'unset' }}

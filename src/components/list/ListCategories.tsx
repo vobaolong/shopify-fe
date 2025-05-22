@@ -3,6 +3,7 @@ import Loading from '../ui/Loading'
 import Error from '../ui/Error'
 import CategoryCard from '../card/CategoryCard'
 import Slider from 'react-slick'
+import { notification } from 'antd'
 
 const ListCategories = ({ heading = '', categoryId = null }) => {
   // Use the custom hook instead of direct API call
@@ -15,7 +16,18 @@ const ListCategories = ({ heading = '', categoryId = null }) => {
     page: 1
   })
 
-  const categories = data?.categories || []
+  if (error) {
+    notification.error({ message: error?.message || 'Server Error' })
+  }
+
+  let categories: any[] = []
+  if (data) {
+    if ('data' in data && data.data) {
+      categories = data.data.categories || []
+    } else {
+      categories = (data as any).categories || []
+    }
+  }
 
   const settings = {
     className: 'center',
@@ -58,7 +70,7 @@ const ListCategories = ({ heading = '', categoryId = null }) => {
           {error && <Error msg={error?.message || 'Server Error'} />}
           <div className='slider-container'>
             <Slider {...settings}>
-              {categories?.map((category, index) => (
+              {categories?.map((category: any, index: number) => (
                 <div key={index}>
                   <CategoryCard category={category} />
                 </div>
