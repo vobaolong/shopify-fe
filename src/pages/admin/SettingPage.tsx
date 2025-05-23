@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 
 const SettingPage = () => {
   const { t } = useTranslation()
-  const user = useSelector((state) => state.account.user)
+  const user = useSelector((state: any) => state.account.user)
   return (
     <AdminLayout user={user}>
       <AdminSetting heading={t('admin.setting')} />

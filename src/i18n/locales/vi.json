@@ -214,7 +214,8 @@
     "shippedOrders": "Đơn hàng chờ giao",
     "deliveredOrders": "Đơn hàng hoàn thành",
     "cancelledOrders": "Đơn hàng đã huỷ",
-    "userInSystem": "Người dùng trong hệ thống"
+    "userInSystem": "Người dùng trong hệ thống",
+    "listStores": "Danh sách gian hàng"
   },
   "dialog": {
     "deleteReview": "Xóa đánh giá",
@@ -242,11 +243,11 @@
     "createUserLevel": "Thêm hạng mức người dùng",
     "createStoreLevel": "Thêm hạng mức shop",
     "createCommission": "Thêm chiết khấu",
-    "banStore": "Khoá shop",
+    "banStore": "Bạn có chắc chắn muốn khóa shop này?",
     "createStore": "Mở 1 shop mới",
-    "activeStore": "Kích hoạt shop",
-    "activeProduct": "Kích hoạt sản phẩm",
-    "banProduct": "Khoá sản phẩm",
+    "activeStore": "Bạn có chắc chắn muốn kích hoạt shop này?",
+    "activeProduct": "Bạn có chắc chắn muốn kích hoạt sản phẩm này?",
+    "banProduct": "Bạn có chắc chắn muốn khóa sản phẩm này?",
     "removeProductFromCart": "Xoá sản phẩm khỏi giỏ hàng",
     "updateOrder": "Cập nhật trạng thái đơn hàng",
     "updateCategory": "Cập nhật ngành hàng",

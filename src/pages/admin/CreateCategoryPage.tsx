@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 
 const CreateCategoryPage = () => {
   const { t } = useTranslation()
-  const user = useSelector((state) => state.account.user)
+  const user = useSelector((state: any) => state.account.user)
   const paths = [
     { name: t('breadcrumbs.home'), url: '/admin/dashboard' },
     { name: t('breadcrumbs.category'), url: '/admin/category' },

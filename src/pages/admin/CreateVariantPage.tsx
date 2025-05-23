@@ -4,7 +4,7 @@ import AdminCreateVariantForm from '../../components/item/form/AdminCreateVarian
 import { useTranslation } from 'react-i18next'
 
 const CreateVariantPage = () => {
-  const user = useSelector((state) => state.account.user)
+  const user = useSelector((state: any) => state.account.user)
   const { t } = useTranslation()
   const paths = [
     { name: t('breadcrumbs.home'), url: '/admin/dashboard' },

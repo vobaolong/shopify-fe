@@ -1,4 +1,4 @@
-import axiosClient from './axiosClient'
+import axiosClient from './client'
 
 export const getOrderByUser = async (userId: string, orderId: string) => {
 	try {

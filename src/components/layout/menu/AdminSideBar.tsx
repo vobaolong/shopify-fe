@@ -33,7 +33,7 @@ const AdminSideBar = () => {
           <Link
             to={`/admin/users`}
             className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'user' ? 'active' : ''
+              path === 'users' ? 'active' : ''
             }`}
           >
             <i

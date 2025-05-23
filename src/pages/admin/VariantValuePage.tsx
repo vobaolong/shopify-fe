@@ -5,7 +5,7 @@ import VariantValuesTable from '../../components/table/VariantValuesTable'
 import { useTranslation } from 'react-i18next'
 
 const VariantValuesPage = () => {
-  const user = useSelector((state) => state.account.user)
+  const user = useSelector((state: any) => state.account.user)
   const { variantId } = useParams()
   const { t } = useTranslation()
   const paths = [

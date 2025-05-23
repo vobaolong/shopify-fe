@@ -1,4 +1,4 @@
-import axiosClient from './axiosClient'
+import axiosClient from './client'
 
 //user follow product
 export const listFavoriteProducts = async (userId: string, filter: any) => {

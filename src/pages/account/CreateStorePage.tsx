@@ -4,7 +4,7 @@ import UserCreateStoreForm from '../../components/item/form/UserCreateStoreForm'
 import { useTranslation } from 'react-i18next'
 
 const CreateStorePage = () => {
-  const user = useSelector((state) => state.account.user)
+  const user = useSelector((state: any) => state.account.user)
   const { t } = useTranslation()
   const paths = [
     { name: t('breadcrumbs.home'), url: '/' },

@@ -187,7 +187,8 @@
     "shippedOrders": "Shipped Orders",
     "deliveredOrders": "Delivered Orders",
     "cancelledOrders": "Cancelled Orders",
-    "userInSystem": "Users in the system"
+    "userInSystem": "Users in the system",
+    "listStores": "List of Stores"
   },
   "dialog": {
     "report": "Report",
@@ -212,10 +213,10 @@
     "createUserLevel": "Create User Level",
     "createStoreLevel": "Create User Store",
     "createCommission": "Create commission",
-    "banStore": "Ban store",
-    "activeStore": "Active store",
-    "activeProduct": "Active product",
-    "banProduct": "Ban product",
+    "banStore": "Do you want to ban this store?",
+    "activeStore": "Do you want to active this store?",
+    "activeProduct": "Do you want to active this product?",
+    "banProduct": "Do you want to ban this product?",
     "removeProductFromCart": "Remove product from cart",
     "updateOrder": "Update order status",
     "updateCategory": "Update category",

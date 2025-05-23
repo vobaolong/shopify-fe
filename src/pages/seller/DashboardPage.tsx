@@ -3,8 +3,8 @@ import SellerLayout from '../../components/layout/SellerLayout'
 import ListStatisticsItems from '../../components/chart/ListStatisticsItems'
 
 const DashboardPage = () => {
-  const user = useSelector((state) => state.account.user)
-  const store = useSelector((state) => state.seller.store)
+  const user = useSelector((state: any) => state.account.user)
+  const store = useSelector((state: any) => state.seller.store)
 
   return (
     <SellerLayout user={user} store={store}>

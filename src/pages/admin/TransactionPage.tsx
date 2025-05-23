@@ -9,7 +9,7 @@ const TransactionPage = () => {
     { name: t('breadcrumbs.home'), url: '/admin/dashboard' },
     { name: t('breadcrumbs.transactions'), url: '/admin/transaction' }
   ]
-  const user = useSelector((state) => state.account.user)
+  const user = useSelector((state: any) => state.account.user)
   return (
     <AdminLayout user={user} paths={paths}>
       <TransactionsTable />

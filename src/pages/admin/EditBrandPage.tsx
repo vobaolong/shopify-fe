@@ -5,7 +5,7 @@ import AdminEditBrandForm from '../../components/item/form/AdminEditBrandForm'
 import { useTranslation } from 'react-i18next'
 
 const EditBrandPage = () => {
-  const user = useSelector((state) => state.account.user)
+  const user = useSelector((state: any) => state.account.user)
   const { brandId } = useParams()
   const { t } = useTranslation()
   const paths = [

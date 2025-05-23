@@ -5,8 +5,8 @@ import { useState } from 'react'
 import SellerReturnTable from '../../components/table/SellerReturnTable'
 
 const ReturnPage = () => {
-  const user = useSelector((state) => state.account.user)
-  const store = useSelector((state) => state.seller.store)
+  const user = useSelector((state: any) => state.account.user)
+  const store = useSelector((state: any) => state.seller.store)
   const { t } = useTranslation()
   const [selectedStatus, setSelectedStatus] = useState('Pending')
 

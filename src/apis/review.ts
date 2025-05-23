@@ -1,4 +1,4 @@
-import axiosClient from './axiosClient'
+import axiosClient from './client'
 
 export const listReviews = async (filter: any) => {
 	const { productId, storeId, userId, rating, sortBy, order, limit, page } =

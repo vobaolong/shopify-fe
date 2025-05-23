@@ -1,4 +1,4 @@
-import axiosClient from './axiosClient'
+import axiosClient from './client'
 
 //user follow store
 export const listFollowingStores = async (userId: string, filter: any) => {

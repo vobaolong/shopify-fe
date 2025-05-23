@@ -1,7 +1,7 @@
 import { useState, useEffect, Fragment } from 'react'
 import { Link, useParams, Navigate } from 'react-router-dom'
 import { connect } from 'react-redux'
-import { addSeller } from '../../actions/seller'
+import { addSeller } from '../../store/actions/seller'
 import { getToken } from '../../apis/auth'
 import { getStoreProfile } from '../../apis/store'
 import { getStoreLevel } from '../../apis/level'

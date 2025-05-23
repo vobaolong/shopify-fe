@@ -1,4 +1,4 @@
-import axiosClient from './axiosClient'
+import axiosClient from './client'
 
 //user level
 export const getUserLevel = async (userId: string) => {

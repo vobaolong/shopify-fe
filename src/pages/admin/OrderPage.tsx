@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
 
 const OrderPage = () => {
-  const user = useSelector((state) => state.account.user)
+  const user = useSelector((state: any) => state.account.user)
   const { t } = useTranslation()
   const [selectedStatus, setSelectedStatus] = useState(
     'Not processed|Processing|Shipped|Delivered|Cancelled|Returned'

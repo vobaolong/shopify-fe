@@ -5,8 +5,8 @@ import SellerLayout from '../../components/layout/SellerLayout'
 import { useTranslation } from 'react-i18next'
 
 const OrderDetailPage = () => {
-  const user = useSelector((state) => state.account.user)
-  const store = useSelector((state) => state.seller.store)
+  const user = useSelector((state: any) => state.account.user)
+  const store = useSelector((state: any) => state.seller.store)
   const { orderId, storeId } = useParams()
   const { t } = useTranslation()
   const paths = [

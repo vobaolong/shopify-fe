@@ -5,7 +5,7 @@ import MetaData from '../../components/layout/meta/MetaData'
 import { useTranslation } from 'react-i18next'
 
 const StoreManagerPage = () => {
-  const user = useSelector((state) => state.account.user)
+  const user = useSelector((state: any) => state.account.user)
   const { t } = useTranslation()
   const paths = [
     { name: t('breadcrumbs.home'), url: '/' },

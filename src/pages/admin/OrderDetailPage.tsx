@@ -5,7 +5,7 @@ import AdminLayout from '../../components/layout/AdminLayout'
 import { useTranslation } from 'react-i18next'
 
 const OrderDetailPage = () => {
-  const user = useSelector((state) => state.account.user)
+  const user = useSelector((state: any) => state.account.user)
   const { orderId } = useParams()
   const { t } = useTranslation()
   const paths = [

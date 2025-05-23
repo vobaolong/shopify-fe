@@ -1,4 +1,4 @@
-import axiosClient from './axiosClient'
+import axiosClient from './client'
 import axios from 'axios'
 // Giao Hàng Nhanh (GHN) API config
 export const getProvinceGHN = import.meta.env.VITE_GHN_API_PROVINCE

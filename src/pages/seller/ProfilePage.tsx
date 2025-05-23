@@ -15,8 +15,8 @@ import StoreActiveLabel from '../../components/label/StoreActiveLabel'
 
 const ProfilePage = () => {
   const { t } = useTranslation()
-  const user = useSelector((state) => state.account.user)
-  const store = useSelector((state) => state.seller.store)
+  const user = useSelector((state: any) => state.account.user)
+  const store = useSelector((state: any) => state.seller.store)
   const [updateDispatch] = useUpdateDispatch()
   const onHandleRun = (newStore) => {
     updateDispatch('seller', newStore)

@@ -4,7 +4,7 @@ import AdminCommissionTable from '../../components/table/AdminCommissionTable'
 import { useTranslation } from 'react-i18next'
 
 const CommissionPage = () => {
-  const user = useSelector((state) => state.account.user)
+  const user = useSelector((state: any) => state.account.user)
   const { t } = useTranslation()
 
   const paths = [

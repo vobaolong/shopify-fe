@@ -5,7 +5,7 @@ import OrderDetailInfo from '../../components/info/OrderDetailInfo'
 import { useTranslation } from 'react-i18next'
 
 const OrderDetailPage = () => {
-  const user = useSelector((state) => state.account.user)
+  const user = useSelector((state: any) => state.account.user)
   const { t } = useTranslation()
   const { orderId } = useParams()
   const paths = [
@@ -15,7 +15,7 @@ const OrderDetailPage = () => {
   return (
     <AccountLayout user={user} paths={paths}>
       <div className='res-mx--12-md bg-white rounded-1 box-shadow p-4'>
-        <OrderDetailInfo orderId={orderId} />
+        <OrderDetailInfo orderId={orderId as string} />
         <div>
           <Link
             to='/account/purchase'

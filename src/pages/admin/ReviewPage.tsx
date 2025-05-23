@@ -5,7 +5,7 @@ import { useState } from 'react'
 import AdminLayout from '../../components/layout/AdminLayout'
 
 const ReviewPage = () => {
-  const user = useSelector((state) => state.account.user)
+  const user = useSelector((state: any) => state.account.user)
   const { t } = useTranslation()
   const [selectedRating, setSelectedRating] = useState(0)
 

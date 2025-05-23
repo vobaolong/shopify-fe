@@ -1,4 +1,4 @@
-import axiosClient from './axiosClient'
+import axiosClient from './client'
 
 export const getVariantById = async (userId: string, variantId: string) => {
 	try {

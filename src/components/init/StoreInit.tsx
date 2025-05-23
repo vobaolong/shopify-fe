@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { connect } from 'react-redux'
-import { addStore } from '../../actions/store'
+import { addStore } from '../../store/actions/store'
 import { getToken } from '../../apis/auth'
 import { getStore } from '../../apis/store'
 import { getStoreLevel } from '../../apis/level'

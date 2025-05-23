@@ -1,11 +1,10 @@
 import { useSelector } from 'react-redux'
 import AdminLayout from '../../components/layout/AdminLayout'
-
 import { useTranslation } from 'react-i18next'
 import AdminBrandsTable from '../../components/table/AdminBrandsTable'
 
 const BrandPage = () => {
-  const user = useSelector((state) => state.account.user)
+  const user = useSelector((state: any) => state.account.user)
   const { t } = useTranslation()
   const paths = [
     { name: t('breadcrumbs.home'), url: '/admin/dashboard' },

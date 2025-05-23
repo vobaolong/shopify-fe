@@ -1,48 +1,32 @@
 import { useQuery } from '@tanstack/react-query'
 import { listUserForAdmin } from '../../apis/user'
 import { humanReadableDate } from '../../helper/humanReadable'
-import Pagination from '../ui/Pagination'
 import SearchInput from '../ui/SearchInput'
-import SortByButton from './sub/SortByButton'
 import UserSmallCard from '../card/UserSmallCard'
-import Loading from '../ui/Loading'
 import { useTranslation } from 'react-i18next'
 import VerifyLabel from '../label/VerifyLabel'
-import ShowResult from '../ui/ShowResult'
-import Error from '../ui/Error'
 import { useState } from 'react'
-import { notification, Table } from 'antd'
+import { Table, DatePicker, Button, Alert, Select, Typography } from 'antd'
+import type { RangePickerProps } from 'antd/es/date-picker'
+import { SyncOutlined } from '@ant-design/icons'
+import { UserType } from '../../@types/entity.types'
+import { ColumnsType } from 'antd/es/table'
+import { PaginationType } from './TransactionsTable'
 
-interface User {
-  _id: string
-  firstName: string
-  lastName: string
-  email: string
-  isEmailActive: boolean
-  isPhoneActive: boolean
-  role: string
-  addresses: string[]
-  avatar: string
-  cover: string
-  e_wallet: {
-    $numberDecimal: string
-  }
-  point: number
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
-  slug: string
-  id_card?: string
-  phone?: string
-}
-
-interface Filter {
-  search: string
+export interface Filter {
+  search?: string
   sortBy: string
-  role: string
+  role?: string
   order: string
   limit: number
   page: number
+  createdAtFrom?: string
+  createdAtTo?: string
+  isEmailActive?: boolean
+  searchField?: string
+  isActive?: boolean
+  commissionId?: string
+  rating?: string
 }
 
 const AdminUsersTable = ({ heading = false }) => {
@@ -52,23 +36,49 @@ const AdminUsersTable = ({ heading = false }) => {
     sortBy: 'createdAt',
     role: 'customer',
     order: 'asc',
-    limit: 8,
+    limit: 10,
     page: 1
   })
+  const [pendingFilter, setPendingFilter] = useState<Filter>(filter)
+  const [dateRange, setDateRange] = useState<any>(null)
+  const [searchField, setSearchField] = useState<string>('name')
+  const [kycFilter, setKycFilter] = useState<string>('all')
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['users', filter],
-    queryFn: async () => {
-      return await listUserForAdmin(filter)
-    }
+    queryFn: () => listUserForAdmin(filter)
   })
 
+  const users: UserType[] = data?.users || []
+  const pagination: PaginationType = {
+    size: data?.size || 0,
+    pageCurrent: data?.filter?.pageCurrent || filter.page,
+    pageCount: data?.filter?.pageCount || 1
+  }
+
   const handleChangeKeyword = (keyword: string) => {
-    setFilter({
-      ...filter,
+    setPendingFilter({
+      ...pendingFilter,
       search: keyword,
       page: 1
     })
+  }
+
+  const handleDateRangeChange: RangePickerProps['onChange'] = (
+    dates,
+    dateStrings
+  ) => {
+    setDateRange(dates)
+    setPendingFilter({
+      ...pendingFilter,
+      createdAtFrom: dateStrings[0] || undefined,
+      createdAtTo: dateStrings[1] || undefined,
+      page: 1
+    })
+  }
+
+  const handleSearch = () => {
+    setFilter({ ...pendingFilter, searchField })
   }
 
   const handleChangePage = (page: number, pageSize?: number) => {
@@ -79,29 +89,54 @@ const AdminUsersTable = ({ heading = false }) => {
     })
   }
 
-  // Định nghĩa columns cho antd Table
-  const columns = [
+  const handleSearchFieldChange = (field: string) => {
+    setSearchField(field)
+  }
+
+  const handleKycChange = (value: string) => {
+    setKycFilter(value)
+    setPendingFilter({
+      ...pendingFilter,
+      isEmailActive:
+        value === 'all' ? undefined : value === 'isEmailActive' ? true : false
+    })
+  }
+
+  const columns: ColumnsType<UserType> = [
+    {
+      title: '#',
+      dataIndex: 'index',
+      key: 'index',
+      align: 'center',
+      render: (_: any, __: any, idx: number) =>
+        (pagination.pageCurrent - 1) * filter.limit + idx + 1,
+      width: 60
+    },
     {
       title: t('userDetail.name'),
       dataIndex: 'fullName',
       key: 'fullName',
-      render: (_: any, user: User) => <UserSmallCard user={user} />
+      render: (_: any, user: UserType) => <UserSmallCard user={user} />
     },
     {
+      align: 'center',
       title: t('point'),
       dataIndex: 'point',
-      key: 'point'
+      key: 'point',
+      sorter: (a: UserType, b: UserType) =>
+        Number(a.point || 0) - Number(b.point || 0)
     },
     {
-      title: 'ID Card',
+      title: t('userDetail.idCard'),
       dataIndex: 'id_card',
       key: 'id_card',
       render: (id_card: string) => id_card || '-'
     },
     {
-      title: 'Email',
+      title: t('userDetail.email'),
       dataIndex: 'email',
-      key: 'email'
+      key: 'email',
+      render: (email: string) => email || '-'
     },
     {
       title: t('userDetail.KYC'),
@@ -119,39 +154,80 @@ const AdminUsersTable = ({ heading = false }) => {
       title: t('joined'),
       dataIndex: 'createdAt',
       key: 'createdAt',
-      render: (createdAt: string) => humanReadableDate(createdAt)
+      sorter: true,
+      render: (createdAt: string) => (
+        <span className='text-nowrap'>{humanReadableDate(createdAt)}</span>
+      )
     }
   ]
 
   return (
-    <div className='position-relative'>
-      {isLoading && <Loading />}
-      {heading && <h5 className='text-start'>{t('title.userInSystem')}</h5>}
-      {error && <Error msg={error.message} />}
+    <div className='w-full'>
+      {heading && (
+        <Typography.Title level={5}>{t('title.userInSystem')}</Typography.Title>
+      )}
+      {error && <Alert message={error.message} type='error' />}
+      <div className='p-3 bg-white rounded-md'>
+        <div className='mb-3 d-flex gap-4 items-center flex-wrap'>
+          <SearchInput
+            value={pendingFilter.search || ''}
+            onChange={handleChangeKeyword}
+            onSearch={handleSearch}
+            loading={isLoading}
+            searchField={searchField}
+            onFieldChange={handleSearchFieldChange}
+            fieldOptions={[
+              { label: t('userDetail.name'), value: 'name' },
+              { label: t('userDetail.email'), value: 'email' },
+              { label: t('userDetail.phone'), value: 'phone' }
+            ]}
+          />
+          <DatePicker.RangePicker
+            className='!h-10'
+            value={dateRange}
+            onChange={handleDateRangeChange}
+            format='YYYY-MM-DD'
+            allowClear
+          />
+          <Select
+            className='!h-10'
+            style={{ minWidth: 120 }}
+            value={kycFilter}
+            onChange={handleKycChange}
+            options={[
+              { label: t('filters.all'), value: 'all' },
+              { label: t('status.verified'), value: 'isEmailActive' },
+              { label: t('status.notVerified'), value: '!isEmailActive' }
+            ]}
+            dropdownStyle={{ minWidth: 150 }}
+          />
 
-      <div className='p-3 box-shadow bg-body rounded-2'>
-        <div className='mb-3'>
-          <SearchInput onChange={handleChangeKeyword} />
+          <Button type='primary' onClick={handleSearch} className='!h-10'>
+            {t('search')}
+          </Button>
+          <Button
+            onClick={() => refetch()}
+            className='!h-10 !w-10 flex items-center justify-center'
+            type='default'
+            loading={isLoading}
+            icon={<SyncOutlined spin={isLoading} />}
+          />
         </div>
         <Table
           columns={columns}
-          dataSource={data?.users || []}
+          dataSource={users}
           rowKey='_id'
           loading={isLoading}
           pagination={{
             current: data?.filter?.pageCurrent || 1,
             pageSize: filter.limit,
             total: data?.size || 0,
-            onChange: handleChangePage
+            onChange: handleChangePage,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} ${t('of')} ${total} ${t('result')}`
           }}
+          scroll={{ x: 900 }}
         />
-        <div className='d-flex justify-content-between align-items-center px-4'>
-          <ShowResult
-            limit={filter.limit}
-            size={data?.size || 0}
-            pageCurrent={data?.filter?.pageCurrent || 1}
-          />
-        </div>
       </div>
     </div>
   )

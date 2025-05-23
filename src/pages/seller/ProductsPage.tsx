@@ -7,8 +7,8 @@ import { useState } from 'react'
 
 const ProductsPage = () => {
   const { t } = useTranslation()
-  const user = useSelector((state) => state.account.user)
-  const store = useSelector((state) => state.seller.store)
+  const user = useSelector((state: any) => state.account.user)
+  const store = useSelector((state: any) => state.seller.store)
   const paths = [
     { name: t('breadcrumbs.home'), url: `/seller/${store._id}` },
     {

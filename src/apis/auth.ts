@@ -1,4 +1,4 @@
-import axiosClient from './axiosClient'
+import axiosClient from './client'
 
 export const setToken = (data: any, next: () => void) => {
 	if (typeof window !== 'undefined') {

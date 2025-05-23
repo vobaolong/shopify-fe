@@ -6,8 +6,8 @@ import StoreStaffTable from '../../components/table/StoreStaffTable'
 import { useTranslation } from 'react-i18next'
 
 const StaffPage = () => {
-  const user = useSelector((state) => state.account.user)
-  const store = useSelector((state) => state.seller.store)
+  const user = useSelector((state: any) => state.account.user)
+  const store = useSelector((state: any) => state.seller.store)
   const [flag, toggleFlag] = useToggle(true)
   const { t } = useTranslation()
   const paths = [

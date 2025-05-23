@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom'
 const ReportPage = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const user = useSelector((state) => state.account.user)
+  const user = useSelector((state: any) => state.account.user)
 
   const [activeTab, setActiveTab] = useState('store')
 

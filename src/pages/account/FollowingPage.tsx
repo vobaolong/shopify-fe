@@ -8,7 +8,7 @@ import MetaData from '../../components/layout/meta/MetaData'
 
 const FollowingPage = () => {
   const { t } = useTranslation()
-  const user = useSelector((state) => state.account.user)
+  const user = useSelector((state: any) => state.account.user)
   const [flag, toggleFlag] = useToggle(true)
   const paths = [
     { name: t('breadcrumbs.home'), url: '/' },

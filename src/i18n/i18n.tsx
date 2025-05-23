@@ -1,7 +1,7 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
-import HOME_VI from '../locales/vi.json'
-import HOME_EN from '../locales/en.json'
+import HOME_VI from './locales/vi.json'
+import HOME_EN from './locales/en.json'
 export const locales = {
   en: 'English',
   vi: 'Tiếng Việt'

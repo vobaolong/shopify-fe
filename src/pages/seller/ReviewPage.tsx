@@ -5,8 +5,8 @@ import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
 
 const ReviewPage = () => {
-  const user = useSelector((state) => state.account.user)
-  const store = useSelector((state) => state.seller.store)
+  const user = useSelector((state: any) => state.account.user)
+  const store = useSelector((state: any) => state.seller.store)
   const { t } = useTranslation()
   const [selectedRating, setSelectedRating] = useState(0)
 

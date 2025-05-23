@@ -1,4 +1,4 @@
-import axiosClient from './axiosClient'
+import axiosClient from './client'
 
 export const listReportsForAdmin = async (filter: any) => {
 	const { search, sortBy, order, limit, page, isStore, isProduct, isReview } =

@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next'
 import UserRankInfo from '../../components/info/UserRankInfo'
 
 const ProfilePage = () => {
-  const user = useSelector((state) => state.account.user)
+  const user = useSelector((state: any) => state.account.user)
   const { t } = useTranslation()
   const paths = [
     { name: t('breadcrumbs.home'), url: '/' },
@@ -24,7 +24,7 @@ const ProfilePage = () => {
           <Cover
             cover={user.cover}
             alt={user.firstName + ' ' + user.lastName}
-            isEditable='user'
+            isEditStore={false}
           />
           <div className='avatar-absolute avatar-absolute--store'>
             <Avatar

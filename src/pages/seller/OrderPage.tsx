@@ -6,8 +6,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 const OrderPage = () => {
   const navigate = useNavigate()
-  const user = useSelector((state) => state.account.user)
-  const store = useSelector((state) => state.seller.store)
+  const user = useSelector((state: any) => state.account.user)
+  const store = useSelector((state: any) => state.seller.store)
   const { t } = useTranslation()
   const [selectedStatus, setSelectedStatus] = useState('Not processed')
 

@@ -4,7 +4,7 @@ import AdminUsersTable from '../../components/table/AdminUsersTable'
 import { useTranslation } from 'react-i18next'
 
 const UserPage = () => {
-  const user = useSelector((state) => state.account.user)
+  const user = useSelector((state: any) => state.account.user)
   const { t } = useTranslation()
   const paths = [
     { name: t('breadcrumbs.home'), url: '/admin/dashboard' },

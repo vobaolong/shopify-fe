@@ -1,4 +1,4 @@
-import axiosClient from './axiosClient'
+import axiosClient from './client'
 
 export const getBrandById = async (userId: string, brandId: string) => {
 	try {

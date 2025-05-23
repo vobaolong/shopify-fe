@@ -102,6 +102,11 @@ input:focus {
 	color: var(--primary-color);
 }
 
+.ant-input-affix-wrapper,
+.ant-input-search-button {
+	height: 40px !important;
+}
+
 .nav-tabs .nav-link {
 	border: none;
 	color: var(--black-color);

@@ -1,34 +1,48 @@
-import { Input } from 'antd'
-import { useState, useRef } from 'react'
+import { Input, Select } from 'antd'
 import { useTranslation } from 'react-i18next'
 
 interface SearchInputProps {
+  value: string
   onChange?: (keyword: string) => void
+  onSearch?: () => void
+  loading?: boolean
+  searchField?: string
+  onFieldChange?: (field: string) => void
+  fieldOptions?: { label: string; value: string }[]
 }
 
-const SearchInput: React.FC<SearchInputProps> = ({ onChange }) => {
-  const [keyword, setKeyword] = useState('')
+const SearchInput = ({
+  value,
+  onChange,
+  onSearch,
+  loading = false,
+  searchField,
+  onFieldChange,
+  fieldOptions
+}: SearchInputProps) => {
   const { t } = useTranslation()
-  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const handleChangeKeyword = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setKeyword(value)
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current)
-    }
-    typingTimeoutRef.current = setTimeout(() => {
-      onChange && onChange(value)
-    }, 600)
-  }
-
   return (
-    <Input
-      className='form-control rounded-md max-w-[300px]'
-      type='search'
-      placeholder={t('search')}
-      value={keyword}
-      onChange={handleChangeKeyword}
-    />
+    <div className='flex gap-2'>
+      {fieldOptions && (
+        <Select
+          value={searchField}
+          onChange={onFieldChange}
+          className='min-w-[150px] min-h-[40px]'
+          options={fieldOptions}
+          dropdownStyle={{ minWidth: 150 }}
+        />
+      )}
+      <Input.Search
+        type='search'
+        placeholder={t('search')}
+        value={value}
+        onChange={(e) => onChange && onChange(e.target.value)}
+        onSearch={onSearch}
+        enterButton={!!onSearch}
+        allowClear
+        loading={loading}
+      />
+    </div>
   )
 }
 

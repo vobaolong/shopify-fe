@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 
 const ProductPage = () => {
   const { t } = useTranslation()
-  const user = useSelector((state) => state.account.user)
+  const user = useSelector((state: any) => state.account.user)
   const [flag, toggleFlag] = useToggle(true)
   const paths = [
     { name: t('breadcrumbs.home'), url: '/admin/dashboard' },

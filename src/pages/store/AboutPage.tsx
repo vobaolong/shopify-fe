@@ -7,7 +7,7 @@ import Error from '../../components/ui/Error'
 import { useTranslation } from 'react-i18next'
 
 const AboutPage = () => {
-  const store = useSelector((state) => state.store.store)
+  const store = useSelector((state: any) => state.store.store)
   const { t } = useTranslation()
   const paths = [
     { name: t('breadcrumbs.home'), url: '/' },

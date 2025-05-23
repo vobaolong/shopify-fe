@@ -15,7 +15,6 @@ const ChangePasswordPage = () => {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [redirect, setRedirect] = useState('')
-
   const [confirmPassword, setConfirmPassword] = useState('')
   const [isValidConfirmPassword, setIsValidConfirmPassword] = useState(true)
 

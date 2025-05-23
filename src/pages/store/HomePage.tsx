@@ -9,7 +9,7 @@ import MetaData from '../../components/layout/meta/MetaData'
 
 const HomePage = () => {
   const { t } = useTranslation()
-  const store = useSelector((state) => state.store.store)
+  const store = useSelector((state: any) => state.store.store)
 
   return (
     <>

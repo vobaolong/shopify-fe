@@ -5,8 +5,8 @@ import SellerEditProductForm from '../../components/item/form/SellerEditProductF
 import { useTranslation } from 'react-i18next'
 
 const EditProductPage = () => {
-  const user = useSelector((state) => state.account.user)
-  const store = useSelector((state) => state.seller.store)
+  const user = useSelector((state: any) => state.account.user)
+  const store = useSelector((state: any) => state.seller.store)
   const { productId } = useParams()
   const { t } = useTranslation()
 

@@ -5,7 +5,7 @@ import AdminEditVariantForm from '../../components/item/form/AdminEditVariantFor
 import { useTranslation } from 'react-i18next'
 
 const EditVariantPage = () => {
-  const user = useSelector((state) => state.account.user)
+  const user = useSelector((state: any) => state.account.user)
   const { variantId } = useParams()
   const { t } = useTranslation()
   const paths = [

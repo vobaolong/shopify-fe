@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { connect } from 'react-redux'
-import { addUser } from '../../actions/user'
+import { addUser } from '../../store/actions/user'
 import Loading from '../ui/Loading'
 import Error from '../ui/Error'
 import { getUserLevel } from '../../apis/level'

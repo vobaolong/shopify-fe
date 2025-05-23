@@ -6,7 +6,7 @@ import MetaData from '../../components/layout/meta/MetaData'
 import { useEffect, useState } from 'react'
 
 const WalletPage = () => {
-  const user = useSelector((state) => state.account.user)
+  const user = useSelector((state: any) => state.account.user)
   const { t } = useTranslation()
   const [eWallet, setEWallet] = useState(
     user.e_wallet ? user.e_wallet.$numberDecimal : 0

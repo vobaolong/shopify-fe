@@ -1,4 +1,4 @@
-import axiosClient, { axiosClientImg } from './axiosClient'
+import axiosClient, { axiosClientImg } from './client'
 
 export const getProduct = async (productId: string) => {
 	try {
