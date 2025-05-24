@@ -9,7 +9,6 @@ import StoreSmallCard from '../card/StoreSmallCard'
 import StarRating from '../label/StarRating'
 import StoreCommissionLabel from '../label/StoreCommissionLabel'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'react-toastify'
 import StoreActiveLabel from '../label/StoreActiveLabel'
 import {
   sendActiveStoreEmail,
@@ -22,7 +21,8 @@ import {
   Select,
   Typography,
   Modal,
-  DatePicker
+  DatePicker,
+  notification
 } from 'antd'
 import { useState, useEffect } from 'react'
 import { Filter } from './AdminUsersTable'
@@ -31,9 +31,9 @@ import { listCommissions } from '../../apis/commission'
 import { CommissionType, StoreType } from '../../@types/entity.types'
 import { SyncOutlined } from '@ant-design/icons'
 import { ColumnsType } from 'antd/es/table'
-import { BanIcon, CheckCircle, X } from 'lucide-react'
+import { BanIcon, CheckCircle } from 'lucide-react'
 import { PaginationType } from './TransactionsTable'
-
+import { ColumnType } from 'antd/lib/table'
 const { RangePicker } = DatePicker
 
 const AdminStoresTable = ({ heading = false }) => {
@@ -66,13 +66,13 @@ const AdminStoresTable = ({ heading = false }) => {
         search: '',
         sortBy: 'createdAt',
         order: 'asc',
-        limit: 100,
+        limit: 10,
         page: 1
       })
   })
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['stores', filter, statusFilter],
+    queryKey: ['stores', filter],
     queryFn: async () => {
       return await getStoresForAdmin(filter)
     }
@@ -97,14 +97,15 @@ const AdminStoresTable = ({ heading = false }) => {
       const active = variables.value.isActive
         ? t('toastSuccess.store.active')
         : t('toastSuccess.store.ban')
-      toast.success(active)
+      notification.success({
+        message: active
+      })
 
       if (variables.value.isActive) {
         sendActiveStoreEmail(activeStore.ownerId?._id, activeStore._id)
       } else {
         sendBanStoreEmail(activeStore.ownerId?._id, activeStore._id)
       }
-
       queryClient.invalidateQueries({ queryKey: ['stores'] })
     },
     onError: () => {
@@ -204,7 +205,8 @@ const AdminStoresTable = ({ heading = false }) => {
         </div>
       )
     }
-  ]
+  ].filter(Boolean) as ColumnType<StoreType>[]
+
   const handleChangePage = (page: number, pageSize: number) => {
     setFilter((prev) => ({ ...prev, page, limit: pageSize }))
   }
@@ -237,7 +239,7 @@ const AdminStoresTable = ({ heading = false }) => {
   }
 
   const handleChangeKeyword = (keyword: string) => {
-    setFilter((prev) => ({ ...prev, search: keyword, page: 1 }))
+    setPendingFilter((prev) => ({ ...prev, search: keyword, page: 1 }))
   }
   const handleSearch = () => {
     setFilter({ ...pendingFilter })
@@ -303,9 +305,6 @@ const AdminStoresTable = ({ heading = false }) => {
 
   return (
     <div className='w-full'>
-      {heading && (
-        <Typography.Title level={5}>{t('title.listStores')}</Typography.Title>
-      )}
       {error && <Alert message={error} type='error' />}
       <Modal
         open={isConfirming}
@@ -344,6 +343,7 @@ const AdminStoresTable = ({ heading = false }) => {
               { label: t('status.active'), value: 'active' },
               { label: t('status.banned'), value: 'inactive' }
             ]}
+            placeholder={t('storeDetail.status')}
           />
           <Select
             className='!h-10'
@@ -353,12 +353,12 @@ const AdminStoresTable = ({ heading = false }) => {
             options={commissionOptions}
             placeholder={t('storeDetail.commissions')}
             allowClear
-            dropdownStyle={{ minWidth: 220 }}
+            styles={{ popup: { root: { width: 220 } } }}
           />
           <Select
             className='!h-10'
             style={{ minWidth: 120 }}
-            value={pendingFilter.rating || ''}
+            value={pendingFilter.rating}
             onChange={handleRatingChange}
             options={ratingOptions}
             placeholder={t('storeDetail.rating')}
@@ -375,6 +375,7 @@ const AdminStoresTable = ({ heading = false }) => {
             icon={<SyncOutlined spin={isLoading} />}
           />
         </div>
+
         <Table
           columns={columns}
           dataSource={stores}
@@ -390,7 +391,7 @@ const AdminStoresTable = ({ heading = false }) => {
               `${range[0]}-${range[1]} ${t('of')} ${total} ${t('result')}`
           }}
           onChange={handleTableChange}
-          scroll={{ x: 1200 }}
+          scroll={{ x: 'max-content' }}
         />
       </div>
     </div>

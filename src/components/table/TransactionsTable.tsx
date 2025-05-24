@@ -1,15 +1,6 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import {
-  Table,
-  Button,
-  Alert,
-  Select,
-  Typography,
-  Pagination,
-  Spin
-} from 'antd'
+import { Table, Button, Alert, Select } from 'antd'
 import { getToken } from '../../apis/auth'
 import {
   listTransactionsByUser,
@@ -18,7 +9,6 @@ import {
 } from '../../apis/transaction'
 import { humanReadableDate } from '../../helper/humanReadable'
 import { formatPrice } from '../../helper/formatPrice'
-import SortByButton from './sub/SortByButton'
 import TransactionStatusLabel from '../label/TransactionStatusLabel'
 import EWalletInfo from '../info/EWalletInfo'
 import CreateTransactionItem from '../item/CreateTransactionItem'
@@ -27,9 +17,11 @@ import StoreSmallCard from '../card/StoreSmallCard'
 import UserSmallCard from '../card/UserSmallCard'
 import { useTranslation } from 'react-i18next'
 import SuccessLabel from '../label/SuccessLabel'
-import boxImg from '../../assets/box.svg'
-import type { AxiosResponse } from 'axios'
 import { ColumnsType, ColumnType } from 'antd/es/table'
+import SearchInput from '../ui/SearchInput'
+import { DatePicker } from 'antd'
+import dayjs from 'dayjs'
+import { SyncOutlined } from '@ant-design/icons'
 
 interface TransactionType {
   _id: string
@@ -52,6 +44,20 @@ interface OwnerType {
   [key: string]: any
 }
 
+interface Filter {
+  sortBy: string
+  order: string
+  limit: number
+  page: number
+  search?: string
+  searchField?: string
+  type?: string
+  createdAtFrom?: string
+  createdAtTo?: string
+}
+
+const { RangePicker } = DatePicker
+
 const TransactionsTable = ({
   storeId = '',
   by = 'admin',
@@ -66,19 +72,68 @@ const TransactionsTable = ({
 }) => {
   const { t } = useTranslation()
   const { _id } = getToken()
-  const [filter, setFilter] = useState({
+  const [filter, setFilter] = useState<Filter>({
     sortBy: 'createdAt',
     order: 'desc',
     limit: 10,
     page: 1
   })
+  const [pendingFilter, setPendingFilter] = useState<Filter>(filter)
+
+  const handleChangeKeyword = (keyword: string) => {
+    setPendingFilter((prev) => ({ ...prev, search: keyword, page: 1 }))
+  }
+  const handleSearchFieldChange = (field: string) => {
+    setPendingFilter((prev) => ({ ...prev, searchField: field }))
+  }
+  const handleTypeChange = (value: string) => {
+    setPendingFilter((prev) => ({ ...prev, type: value }))
+  }
+  const handleDateRangeChange = (dates: any) => {
+    if (dates && dates[0] && dates[1]) {
+      setPendingFilter((prev) => ({
+        ...prev,
+        createdAtFrom: dates[0].startOf('day').toISOString(),
+        createdAtTo: dates[1].endOf('day').toISOString(),
+        page: 1
+      }))
+    } else {
+      setPendingFilter((prev) => ({
+        ...prev,
+        createdAtFrom: undefined,
+        createdAtTo: undefined,
+        page: 1
+      }))
+    }
+  }
+  const handleSearch = () => {
+    setFilter({ ...pendingFilter, searchField: 'transactionId' })
+  }
+  const handleChangePage = (page: number, pageSize: number) => {
+    setFilter((prev) => ({ ...prev, page, limit: pageSize }))
+  }
+  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
+    setFilter((prev) => ({
+      ...prev,
+      page: pagination.current,
+      limit: pagination.pageSize,
+      sortBy: sorter.field || prev.sortBy,
+      order:
+        sorter.order === 'ascend'
+          ? 'asc'
+          : sorter.order === 'descend'
+            ? 'desc'
+            : prev.order
+    }))
+  }
 
   const queryFn = async () => {
+    let params = { ...filter, searchField: 'transactionId' }
     let res: any
-    if (by === 'user') res = await listTransactionsByUser(_id, filter)
+    if (by === 'user') res = await listTransactionsByUser(_id, params)
     else if (by === 'store')
-      res = await listTransactionsByStore(_id, filter, storeId)
-    else res = await listTransactionsForAdmin(filter)
+      res = await listTransactionsByStore(_id, params, storeId)
+    else res = await listTransactionsForAdmin(params)
     if (res && res.data) return res.data
     return res
   }
@@ -145,12 +200,14 @@ const TransactionsTable = ({
       title: t('transactionDetail.type'),
       dataIndex: 'isUp',
       key: 'isUp',
+      align: 'center',
       render: (isUp: boolean) => <TransactionStatusLabel isUp={isUp} />,
       sorter: true
     },
     {
       title: t('status.status'),
       dataIndex: 'status',
+      align: 'center',
       key: 'status',
       render: () => <SuccessLabel />
     },
@@ -164,9 +221,7 @@ const TransactionsTable = ({
       sorter: true
     }
   ].filter(Boolean) as ColumnType<TransactionType>[]
-  const handleChangePage = (page: number, pageSize: number) => {
-    setFilter((prev) => ({ ...prev, page, limit: pageSize }))
-  }
+
   return (
     <div className='position-relative'>
       {error && <Alert message={error.message} type='error' />}
@@ -198,29 +253,71 @@ const TransactionsTable = ({
             </>
           )}
         </div>
-        {!isLoading && pagination.size === 0 ? (
-          <div className='m-4 text-center'>
-            <img className='mb-3' src={boxImg} alt='boxImg' width={'80px'} />
-            <h5>{t('transactionDetail.noTransaction')}</h5>
-          </div>
-        ) : (
-          <Table
-            columns={columns}
-            dataSource={transactions}
-            rowKey='_id'
+        <div className='mb-3 d-flex gap-3 items-center flex-wrap'>
+          <SearchInput
+            value={pendingFilter.search || ''}
+            onChange={handleChangeKeyword}
+            onSearch={handleSearch}
             loading={isLoading}
-            bordered
-            pagination={{
-              current: data?.filter?.pageCurrent || 1,
-              pageSize: filter.limit,
-              total: data?.size || 0,
-              onChange: handleChangePage,
-              showTotal: (total, range) =>
-                `${range[0]}-${range[1]} ${t('of')} ${total} ${t('result')}`
-            }}
-            scroll={{ x: 900 }}
           />
-        )}
+
+          <RangePicker
+            className='!h-10 max-w-[250px]'
+            value={
+              pendingFilter.createdAtFrom && pendingFilter.createdAtTo
+                ? [
+                    dayjs(pendingFilter.createdAtFrom),
+                    dayjs(pendingFilter.createdAtTo)
+                  ]
+                : null
+            }
+            onChange={handleDateRangeChange}
+            allowClear
+            format='DD-MM-YYYY'
+          />
+
+          <Select
+            className='!h-10'
+            style={{ minWidth: 140 }}
+            value={pendingFilter.type || 'all'}
+            onChange={handleTypeChange}
+            options={[
+              { label: t('filters.all'), value: 'all' },
+              { label: t('transactionDetail.deposit'), value: 'deposit' },
+              { label: t('transactionDetail.withdraw'), value: 'withdraw' }
+            ]}
+            allowClear
+          />
+
+          <Button type='primary' onClick={handleSearch} className='!h-10'>
+            {t('search')}
+          </Button>
+          <Button
+            onClick={() => refetch()}
+            className='!h-10 !w-10 flex items-center justify-center'
+            type='default'
+            loading={isLoading}
+            icon={<SyncOutlined spin={isLoading} />}
+          />
+        </div>
+
+        <Table
+          columns={columns}
+          dataSource={transactions}
+          rowKey='_id'
+          loading={isLoading}
+          bordered
+          pagination={{
+            current: data?.filter?.pageCurrent || 1,
+            pageSize: filter.limit,
+            total: data?.size || 0,
+            onChange: handleChangePage,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} ${t('of')} ${total} ${t('result')}`
+          }}
+          onChange={handleTableChange}
+          scroll={{ x: 900 }}
+        />
       </div>
     </div>
   )

@@ -1,359 +1,338 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from 'react'
-import { getToken } from '../../apis/auth'
+import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Table, Button, Select, Modal, Alert, notification } from 'antd'
+import { SyncOutlined } from '@ant-design/icons'
+import SearchInput from '../ui/SearchInput'
+import { DatePicker } from 'antd'
+import dayjs from 'dayjs'
+import { ProductType } from '../../@types/entity.types'
+import ProductSmallCard from '../card/ProductSmallCard'
+import StoreSmallCard from '../card/StoreSmallCard'
+import CategorySmallCard from '../card/CategorySmallCard'
+import ProductActiveLabel from '../label/ProductActiveLabel'
+import { humanReadableDate } from '../../helper/humanReadable'
+import { useTranslation } from 'react-i18next'
 import {
   listProductsForAdmin,
   activeProduct as activeOrInactive
 } from '../../apis/product'
-import { humanReadableDate } from '../../helper/humanReadable'
-import Pagination from '../ui/Pagination'
-import SearchInput from '../ui/SearchInput'
-import SortByButton from './sub/SortByButton'
-import ProductSmallCard from '../card/ProductSmallCard'
-import StoreSmallCard from '../card/StoreSmallCard'
-import Loading from '../ui/Loading'
-import ConfirmDialog from '../ui/ConfirmDialog'
-import { useTranslation } from 'react-i18next'
-import ShowResult from '../ui/ShowResult'
 import { toast } from 'react-toastify'
-import ProductActiveLabel from '../label/ProductActiveLabel'
-import CategorySmallCard from '../card/CategorySmallCard'
-import Error from '../ui/Error'
-import boxImg from '../../assets/box.svg'
 import {
   sendActiveProductEmail,
   sendBanProductEmail
 } from '../../apis/notification'
+import useInvalidate from '../../hooks/useInvalidate'
+import { ColumnsType } from 'antd/es/table'
+import { formatPrice } from '../../helper/formatPrice'
 
-const AdminProductsTable = ({ heading = false, isActive = true }) => {
+const { RangePicker } = DatePicker
+
+const AdminProductsTable = () => {
   const { t } = useTranslation()
-  const [isLoading, setIsLoading] = useState(false)
-  const [isConfirming, setIsConfirming] = useState(false)
-  const [run, setRun] = useState('')
-  const [error, setError] = useState('')
-  const [products, setProducts] = useState([])
-  const [pagination, setPagination] = useState({
-    size: 0
-  })
   const [filter, setFilter] = useState({
     search: '',
-    sortBy: 'sold',
-    isActive,
+    status: 'all',
+    sortBy: 'createdAt',
     order: 'desc',
-    limit: 7,
-    page: 1
+    limit: 10,
+    page: 1,
+    createdAtFrom: undefined,
+    createdAtTo: undefined
+  })
+  const [pendingFilter, setPendingFilter] = useState(filter)
+  const [activeProduct, setActiveProduct] = useState<ProductType | null>(null)
+  const [error, setError] = useState('')
+  const [isConfirming, setIsConfirming] = useState(false)
+  const invalidate = useInvalidate()
+  const mutation = useMutation({
+    mutationFn: ({
+      productId,
+      value
+    }: {
+      productId: string
+      value: { isActive: boolean }
+    }) => activeOrInactive(value, productId),
+    onSuccess: (data, variables) => {
+      const { value } = variables
+      const isActiveText = value.isActive
+        ? t('toastSuccess.product.active')
+        : t('toastSuccess.product.ban')
+      notification.success({
+        message: isActiveText
+      })
+      if (activeProduct && !activeProduct.isActive) {
+        sendActiveProductEmail((activeProduct.storeId as any)?.ownerId)
+      } else if (activeProduct) {
+        sendBanProductEmail((activeProduct.storeId as any)?.ownerId)
+      }
+      invalidate({ queryKey: ['products'] })
+    },
+    onError: () => {
+      setError('Server Error')
+    },
+    onSettled: () => {
+      setIsConfirming(false)
+    }
   })
 
-  const [activeProduct, setActiveProduct] = useState({})
-  const { _id } = getToken()
-
-  useEffect(() => {
-    let isMounted = true
-
-    const init = () => {
-      setIsLoading(true)
-      listProductsForAdmin(_id, filter)
-        .then((data) => {
-          if (data.error) setError(data.error)
-          else {
-            if (isMounted) {
-              setProducts(data.products)
-              setPagination({
-                size: data.size,
-                pageCurrent: data.filter.pageCurrent,
-                pageCount: data.filter.pageCount
-              })
-            }
-          }
-          if (isMounted) setIsLoading(false)
-        })
-        .catch(() => {
-          setError('Server Error')
-          if (isMounted) setIsLoading(false)
-        })
+  const handleChangeKeyword = (keyword: string) => {
+    setPendingFilter((prev) => ({ ...prev, search: keyword, page: 1 }))
+  }
+  const handleStatusChange = (value: string) => {
+    setPendingFilter((prev) => ({ ...prev, status: value, page: 1 }))
+  }
+  const handleDateRangeChange = (dates: any) => {
+    if (dates && dates[0] && dates[1]) {
+      setPendingFilter((prev) => ({
+        ...prev,
+        createdAtFrom: dates[0].startOf('day').toISOString(),
+        createdAtTo: dates[1].endOf('day').toISOString(),
+        page: 1
+      }))
+    } else {
+      setPendingFilter((prev) => ({
+        ...prev,
+        createdAtFrom: undefined,
+        createdAtTo: undefined,
+        page: 1
+      }))
     }
+  }
+  const handleSearch = () => {
+    setFilter({ ...pendingFilter })
+  }
+  const handleChangePage = (page: number, pageSize: number) => {
+    setFilter((prev) => ({ ...prev, page, limit: pageSize }))
+  }
+  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
+    setFilter((prev) => ({
+      ...prev,
+      page: pagination.current,
+      limit: pagination.pageSize,
+      sortBy: sorter.field || prev.sortBy,
+      order:
+        sorter.order === 'ascend'
+          ? 'asc'
+          : sorter.order === 'descend'
+            ? 'desc'
+            : prev.order
+    }))
+  }
 
-    init()
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['products', filter],
+    queryFn: () => listProductsForAdmin(filter)
+  })
+  const products: ProductType[] = data?.products || []
+  const pagination = {
+    size: data?.size || 0,
+    pageCurrent: data?.filter?.pageCurrent || filter.page,
+    pageCount: data?.filter?.pageCount || 1
+  }
 
-    return () => {
-      isMounted = false
+  const columns: ColumnsType<ProductType> = [
+    {
+      title: '#',
+      dataIndex: 'index',
+      key: 'index',
+      align: 'center',
+      render: (_: any, __: any, idx: number) =>
+        (pagination.pageCurrent - 1) * filter.limit + idx + 1,
+      width: 60,
+      fixed: 'left'
+    },
+    {
+      title: t('productDetail.name'),
+      dataIndex: 'name',
+      key: 'name',
+      render: (_: any, product: ProductType) => (
+        <ProductSmallCard product={product} />
+      ),
+      width: 300
+    },
+    // {
+    //   title: t('store'),
+    //   dataIndex: 'storeId',
+    //   key: 'storeId',
+    //   render: (store: any) => <StoreSmallCard store={store} />
+    // },
+    {
+      title: t('productDetail.category'),
+      dataIndex: 'categoryId',
+      key: 'categoryId',
+      render: (category: any) => (
+        <CategorySmallCard category={category} parent={false} />
+      )
+    },
+    {
+      title: t('productDetail.price'),
+      dataIndex: 'price',
+      key: 'price',
+      align: 'right',
+      render: (price: any) => (
+        <span>{formatPrice(price?.$numberDecimal)}₫</span>
+      ),
+      sorter: true
+    },
+    {
+      title: t('productDetail.salePrice'),
+      dataIndex: 'salePrice',
+      key: 'salePrice',
+      align: 'right',
+      render: (salePrice: any) => (
+        <span>{formatPrice(salePrice?.$numberDecimal)}₫</span>
+      ),
+      sorter: true
+    },
+    {
+      title: t('productDetail.stock'),
+      dataIndex: 'quantity',
+      key: 'quantity',
+      align: 'center',
+      sorter: true
+    },
+    {
+      title: t('productDetail.sold'),
+      dataIndex: 'sold',
+      key: 'sold',
+      align: 'center',
+      sorter: true
+    },
+    {
+      title: t('filters.rating'),
+      dataIndex: 'rating',
+      key: 'rating',
+      align: 'center',
+      sorter: true
+    },
+    {
+      title: t('status.status'),
+      dataIndex: 'isActive',
+      key: 'isActive',
+      align: 'center',
+      render: (isActive: boolean) => <ProductActiveLabel isActive={isActive} />,
+      sorter: true
+    },
+    {
+      title: t('productDetail.date'),
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      render: (createdAt: string) => (
+        <span>{humanReadableDate(createdAt)}</span>
+      ),
+      sorter: true
+    },
+    {
+      title: t('action'),
+      key: 'action',
+      align: 'center',
+      render: (_: any, product: ProductType) => (
+        <Button
+          type={product.isActive ? 'default' : 'primary'}
+          size='small'
+          danger={product.isActive}
+          onClick={() => handleActiveProduct(product)}
+        >
+          {product.isActive ? t('button.ban') : t('button.active')}
+        </Button>
+      )
     }
-  }, [filter, run])
+  ]
 
-  useEffect(() => {
-    setFilter({
-      ...filter,
-      isActive
-    })
-  }, [isActive])
-
-  const handleChangeKeyword = (keyword) => {
-    setFilter({
-      ...filter,
-      search: keyword,
-      page: 1
-    })
-  }
-
-  const handleChangePage = (newPage) => {
-    setFilter({
-      ...filter,
-      page: newPage
-    })
-  }
-
-  const handleSetSortBy = (order, sortBy) => {
-    setFilter({
-      ...filter,
-      sortBy,
-      order
-    })
-  }
-
-  const handleActiveProduct = (product) => {
+  const handleActiveProduct = (product: ProductType) => {
     setActiveProduct(product)
     setIsConfirming(true)
   }
 
   const onSubmit = () => {
+    if (!activeProduct) return
     setError('')
-    setIsLoading(true)
     const value = { isActive: !activeProduct.isActive }
-    const isActive = activeProduct.isActive
-      ? t('toastSuccess.product.ban')
-      : t('toastSuccess.product.active')
-
-    activeOrInactive(_id, value, activeProduct._id)
-      .then((data) => {
-        if (data.error) {
-          setError(data.error)
-        } else {
-          toast.success(isActive)
-          setRun(!run)
-          console.log('activeProduct:', activeProduct)
-          if (!activeProduct.isActive) {
-            sendActiveProductEmail(activeProduct.storeId?.ownerId)
-          } else {
-            sendBanProductEmail(activeProduct.storeId?.ownerId)
-          }
-        }
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-        setIsLoading(false)
-      })
-      .catch(() => {
-        setError('Server Error')
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
+    mutation.mutate({ productId: activeProduct._id, value })
   }
 
   return (
-    <div className='position-relative'>
-      {heading && (
-        <h5 className='text-start'>
-          {isActive
-            ? t('title.listActiveProducts')
-            : t('title.listBannedProducts')}
-        </h5>
-      )}
-
-      {isLoading && <Loading />}
-      {error && <Error msg={error} />}
-      {isConfirming && (
-        <ConfirmDialog
-          title={
-            !activeProduct.isActive
-              ? t('dialog.activeProduct')
-              : t('dialog.banProduct')
-          }
-          color={!activeProduct.isActive ? 'primary' : 'danger'}
-          onSubmit={onSubmit}
-          onClose={() => setIsConfirming(false)}
-          message={t('confirmDialog')}
-        />
-      )}
-
-      <div>
-        <div className='p-3 box-shadow bg-body rounded-2'>
-          <div className=' mb-3'>
-            <SearchInput onChange={handleChangeKeyword} />
-          </div>
-          {!isLoading && pagination.size === 0 ? (
-            <div className='my-4 text-center'>
-              <img className='mb-3' src={boxImg} alt='boxImg' width={'80px'} />
-              <h5>{t('productDetail.noProduct')}</h5>
-            </div>
-          ) : (
-            <div className='table-scroll my-2'>
-              <table className='table align-middle table-hover table-sm text-start'>
-                <thead>
-                  <tr>
-                    <th scope='col'></th>
-                    <th scope='col'>
-                      <SortByButton
-                        currentOrder={filter.order}
-                        currentSortBy={filter.sortBy}
-                        title={t('productDetail.name')}
-                        sortBy='name'
-                        onSet={(order, sortBy) =>
-                          handleSetSortBy(order, sortBy)
-                        }
-                      />
-                    </th>
-                    <th scope='col'>
-                      <SortByButton
-                        currentOrder={filter.order}
-                        currentSortBy={filter.sortBy}
-                        title={t('store')}
-                        sortBy='storeId'
-                        onSet={(order, sortBy) =>
-                          handleSetSortBy(order, sortBy)
-                        }
-                      />
-                    </th>
-                    <th scope='col'>
-                      <SortByButton
-                        currentOrder={filter.order}
-                        currentSortBy={filter.sortBy}
-                        title={t('productDetail.category')}
-                        sortBy='categoryId'
-                        onSet={(order, sortBy) =>
-                          handleSetSortBy(order, sortBy)
-                        }
-                      />
-                    </th>
-                    <th scope='col'>
-                      <SortByButton
-                        currentOrder={filter.order}
-                        currentSortBy={filter.sortBy}
-                        title={t('productDetail.rating')}
-                        sortBy='rating'
-                        onSet={(order, sortBy) =>
-                          handleSetSortBy(order, sortBy)
-                        }
-                      />
-                    </th>
-
-                    <th scope='col'>
-                      <SortByButton
-                        currentOrder={filter.order}
-                        currentSortBy={filter.sortBy}
-                        title={t('status.status')}
-                        sortBy='isSelling'
-                        onSet={(order, sortBy) =>
-                          handleSetSortBy(order, sortBy)
-                        }
-                      />
-                    </th>
-
-                    <th scope='col'>
-                      <SortByButton
-                        currentOrder={filter.order}
-                        currentSortBy={filter.sortBy}
-                        title={t('productDetail.date')}
-                        sortBy='createdAt'
-                        onSet={(order, sortBy) =>
-                          handleSetSortBy(order, sortBy)
-                        }
-                      />
-                    </th>
-
-                    <th scope='col'>
-                      <span>{t('action')}</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {products.map((product, index) => (
-                    <tr key={index}>
-                      <th scope='row'>
-                        {index + 1 + (filter.page - 1) * filter.limit}
-                      </th>
-                      <td
-                        className='py-1'
-                        style={{
-                          whiteSpace: 'normal',
-                          maxWidth: '400px'
-                        }}
-                      >
-                        <ProductSmallCard product={product} />
-                      </td>
-                      <td>
-                        <small>
-                          <StoreSmallCard store={product.storeId} />
-                        </small>
-                      </td>
-                      <td>
-                        <small className='badge border rounded-1 bg-value text-dark-emphasis'>
-                          <CategorySmallCard
-                            parent={false}
-                            category={product.categoryId}
-                          />
-                        </small>
-                      </td>
-                      <td>
-                        <small>
-                          <i className='fa-solid fa-star text-warning me-1'></i>
-                          {product.rating}
-                        </small>
-                      </td>
-
-                      <td>
-                        <ProductActiveLabel isActive={product.isActive} />
-                      </td>
-                      <td>
-                        <small>{humanReadableDate(product.createdAt)}</small>
-                      </td>
-                      <td>
-                        <div className='position-relative d-inline-block'>
-                          <button
-                            type='button'
-                            className={`btn btn-sm rounded-1 ripple cus-tooltip ${
-                              !product.isActive
-                                ? 'btn-outline-success'
-                                : 'btn-outline-danger'
-                            }`}
-                            onClick={() => handleActiveProduct(product)}
-                          >
-                            <i
-                              className={`${
-                                product.isActive
-                                  ? 'fa-solid fa-ban'
-                                  : 'fa-regular fa-circle-check'
-                              }`}
-                            ></i>
-                          </button>
-                          <span className='cus-tooltip-msg'>
-                            {!product.isActive
-                              ? t('button.active')
-                              : t('button.ban')}
-                          </span>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-          <div className='d-flex justify-content-between align-items-center px-4'>
-            <ShowResult
-              limit={filter.limit}
-              size={pagination.size}
-              pageCurrent={pagination.pageCurrent}
-            />
-            {pagination.size !== 0 && (
-              <Pagination
-                pagination={pagination}
-                onChangePage={handleChangePage}
-              />
-            )}
-          </div>
+    <div className='w-full'>
+      {error && <Alert message={error} type='error' />}
+      <Modal
+        open={isConfirming}
+        title={
+          !activeProduct?.isActive
+            ? t('dialog.activeStore')
+            : t('dialog.banStore')
+        }
+        onCancel={() => setIsConfirming(false)}
+        onOk={onSubmit}
+        okText={t('button.confirm')}
+        cancelText={t('button.cancel')}
+        confirmLoading={mutation.isPending}
+      />
+      <div className='p-3 bg-white rounded-md'>
+        <div className='mb-3 d-flex gap-3 items-center flex-wrap'>
+          <SearchInput
+            value={pendingFilter.search || ''}
+            onChange={handleChangeKeyword}
+            onSearch={handleSearch}
+            loading={isLoading}
+          />
+          <Select
+            className='!h-10'
+            style={{ minWidth: 140 }}
+            value={pendingFilter.status}
+            onChange={handleStatusChange}
+            options={[
+              { label: t('filters.all'), value: 'all' },
+              { label: t('productStatus.selling'), value: 'selling' },
+              { label: t('productStatus.unselling'), value: 'unselling' },
+              { label: t('productStatus.infringing'), value: 'infringing' },
+              { label: t('productStatus.outOfStock'), value: 'outOfStock' }
+            ]}
+            allowClear={false}
+          />
+          <RangePicker
+            className='!h-10'
+            value={
+              pendingFilter.createdAtFrom && pendingFilter.createdAtTo
+                ? [
+                    dayjs(pendingFilter.createdAtFrom),
+                    dayjs(pendingFilter.createdAtTo)
+                  ]
+                : null
+            }
+            onChange={handleDateRangeChange}
+            allowClear
+            format='DD-MM-YYYY'
+          />
+          <Button type='primary' onClick={handleSearch} className='!h-10'>
+            {t('search')}
+          </Button>
+          <Button
+            onClick={() => refetch()}
+            className='!h-10 !w-10 flex items-center justify-center'
+            type='default'
+            loading={isLoading}
+            icon={<SyncOutlined spin={isLoading} />}
+          />
         </div>
+        <Table
+          columns={columns}
+          dataSource={products}
+          rowKey='_id'
+          loading={isLoading}
+          bordered
+          pagination={{
+            current: pagination.pageCurrent,
+            pageSize: filter.limit,
+            total: pagination.size,
+            onChange: handleChangePage,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} ${t('of')} ${total} ${t('result')}`,
+            pageSizeOptions: [10, 20, 50, 100],
+            showSizeChanger: true
+          }}
+          onChange={handleTableChange}
+          scroll={{ x: 'max-content' }}
+        />
       </div>
     </div>
   )

@@ -511,8 +511,10 @@
     "idCardValid": "Vui lòng cung cấp số thẻ hợp lệ!"
   },
   "transactionDetail": {
+    "id": "Mã giao dịch",
+    "ownerName": "Người thực hiện",
     "noTransaction": "Không có giao dịch",
-    "draw": "Rút tiền",
+    "withdraw": "Rút tiền",
     "deposit": "Nạp tiền",
     "empty": "Không có số dư",
     "type": "Loại",

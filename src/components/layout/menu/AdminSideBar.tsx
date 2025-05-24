@@ -1,6 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { UserType } from '../../../@types/entity.types'
 
 const AdminSideBar = () => {
   const { t } = useTranslation()
