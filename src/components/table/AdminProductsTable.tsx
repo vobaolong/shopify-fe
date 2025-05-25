@@ -276,7 +276,6 @@ const AdminProductsTable = () => {
             loading={isLoading}
           />
           <Select
-            className='!h-10'
             style={{ minWidth: 140 }}
             value={pendingFilter.status}
             onChange={handleStatusChange}
@@ -290,7 +289,6 @@ const AdminProductsTable = () => {
             allowClear={false}
           />
           <RangePicker
-            className='!h-10'
             value={
               pendingFilter.createdAtFrom && pendingFilter.createdAtTo
                 ? [
@@ -303,7 +301,7 @@ const AdminProductsTable = () => {
             allowClear
             format='DD-MM-YYYY'
           />
-          <Button type='primary' onClick={handleSearch} className='!h-10'>
+          <Button type='primary' onClick={handleSearch}>
             {t('search')}
           </Button>
           <Button

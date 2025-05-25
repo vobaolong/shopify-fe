@@ -1,17 +1,22 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { getToken } from '../../../apis/auth'
-import { createBrand } from '../../../apis/brand'
+import { createBrand, checkBrandNameExist } from '../../../apis/brand'
 import Input from '../../ui/Input'
 import Loading from '../../ui/Loading'
 import ConfirmDialog from '../../ui/ConfirmDialog'
 import MultiCategorySelector from '../../selector/MultiCategorySelector'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Form, Button, notification } from 'antd'
+import { Form, Button, notification, Upload } from 'antd'
 import { CategoryType } from '../../../@types/entity.types'
+import { UploadOutlined } from '@ant-design/icons'
 
-const AdminCreateBrandForm = () => {
+const AdminCreateBrandForm = ({
+  onSuccessCreate
+}: {
+  onSuccessCreate?: () => void
+}) => {
   const { t } = useTranslation()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isConfirmingBack, setIsConfirmingBack] = useState(false)
@@ -39,8 +44,7 @@ const AdminCreateBrandForm = () => {
   const { _id } = getToken()
 
   const createBrandMutation = useMutation({
-    mutationFn: (values: { name: string; categoryIds: string[] }) =>
-      createBrand(_id, values),
+    mutationFn: (formData: FormData) => createBrand(formData),
     onSuccess: (res) => {
       const data = res.data
       if (data.error) {
@@ -51,6 +55,7 @@ const AdminCreateBrandForm = () => {
         setIsConfirming(false)
         form.resetFields()
         setCategoryIds([])
+        if (onSuccessCreate) onSuccessCreate()
       }
     },
     onError: () => {
@@ -64,10 +69,13 @@ const AdminCreateBrandForm = () => {
 
   const handleConfirmSubmit = () => {
     const values = form.getFieldsValue()
-    createBrandMutation.mutate({
-      name: values.name,
-      categoryIds: values.categoryIds
-    })
+    const formData = new FormData()
+    formData.append('name', values.name)
+    formData.append('categoryIds', JSON.stringify(values.categoryIds))
+    if (values.logo && values.logo[0]?.originFileObj) {
+      formData.append('logo', values.logo[0].originFileObj)
+    }
+    createBrandMutation.mutate(formData)
   }
 
   const handleBackClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -76,7 +84,7 @@ const AdminCreateBrandForm = () => {
   }
 
   const handleConfirmBack = () => {
-    navigate('/admin/brand')
+    navigate('/admin/brands')
     setIsConfirmingBack(false)
   }
 
@@ -135,9 +143,45 @@ const AdminCreateBrandForm = () => {
             <Form.Item
               name='name'
               label={t('brandDetail.name')}
-              rules={[{ required: true, message: t('brandDetail.validName') }]}
+              rules={[
+                { required: true, message: t('brandDetail.validName') },
+                {
+                  validator: async (_, value) => {
+                    if (!value) return Promise.resolve()
+                    const res = await checkBrandNameExist(value)
+                    if (res.data?.exists) {
+                      return Promise.reject(
+                        new Error(t('brandDetail.duplicateName'))
+                      )
+                    }
+                    return Promise.resolve()
+                  }
+                }
+              ]}
             >
               <Input placeholder={t('brandDetail.name')} />
+            </Form.Item>
+          </div>
+
+          <div className='col-12 px-4 my-3'>
+            <Form.Item
+              name='logo'
+              label={t('brandDetail.logo')}
+              valuePropName='fileList'
+              getValueFromEvent={(e) =>
+                Array.isArray(e) ? e : e && e.fileList
+              }
+            >
+              <Upload
+                name='logo'
+                listType='picture'
+                beforeUpload={() => false}
+                maxCount={1}
+              >
+                <Button icon={<UploadOutlined />}>
+                  {t('brandDetail.uploadLogo')}
+                </Button>
+              </Upload>
             </Form.Item>
           </div>
         </div>
@@ -148,9 +192,9 @@ const AdminCreateBrandForm = () => {
           } rounded-1 row px-4 my-3 p-3`}
           style={{ position: 'sticky', bottom: '0' }}
         >
-          <div className='d-flex justify-content-end align-items-center'>
+          <div className='flex justify-end items-center'>
             <Link
-              to='/admin/brand'
+              to='/admin/brands'
               className='btn btn-outline-primary ripple res-w-100-md rounded-1 me-3'
               style={{ width: '200px', maxWidth: '100%' }}
               onClick={handleBackClick}

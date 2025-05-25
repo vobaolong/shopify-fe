@@ -1,34 +1,35 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getToken } from '../../apis/auth'
 import { listBrands, removeBrand, restoreBrand } from '../../apis/brand'
 import Pagination from '../ui/Pagination'
 import SearchInput from '../ui/SearchInput'
-import SortByButton from './sub/SortByButton'
 import DeletedLabel from '../label/DeletedLabel'
-import Loading from '../ui/Loading'
 import ConfirmDialog from '../ui/ConfirmDialog'
 import CategorySmallCard from '../card/CategorySmallCard'
 import ActiveLabel from '../label/ActiveLabel'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
-import Error from '../ui/Error'
 import { humanReadableDate } from '../../helper/humanReadable'
-import { Table } from 'antd'
+import {
+  Table,
+  Drawer,
+  Button,
+  Select,
+  DatePicker,
+  Alert,
+  Space,
+  Tooltip,
+  Divider
+} from 'antd'
 import { useQuery } from '@tanstack/react-query'
-
-interface Brand {
-  _id: string
-  name: string
-  categoryIds: any[]
-  isDeleted: boolean
-  createdAt: string
-  // ...other fields
-}
+import AdminCreateBrandForm from '../item/form/AdminCreateBrandForm'
+import AdminEditBrandForm from '../item/form/AdminEditBrandForm'
+import dayjs from 'dayjs'
+import { BrandType } from '../../@types/entity.types'
+import { PaginationType } from '../../@types/pagination.type'
 
 interface BrandsResponse {
-  brands: Brand[]
+  brands: BrandType[]
   size: number
   filter: { pageCurrent: number; pageCount: number }
 }
@@ -43,36 +44,41 @@ const AdminBrandsTable = ({ heading = false }) => {
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
   const [isConfirmingRestore, setIsConfirmingRestore] = useState(false)
   const [run, setRun] = useState(false)
-  const [deletedBrand, setDeletedBrand] = useState<Brand | null>(null)
-  const [restoredBrand, setRestoredBrand] = useState<Brand | null>(null)
-  const { _id } = getToken()
+  const [deletedBrand, setDeletedBrand] = useState<BrandType | null>(null)
+  const [restoredBrand, setRestoredBrand] = useState<BrandType | null>(null)
   const [filter, setFilter] = useState({
     search: '',
     sortBy: 'name',
     categoryId: '',
     order: 'asc',
     limit: 8,
-    page: 1
+    page: 1,
+    createdAtFrom: undefined,
+    createdAtTo: undefined
   })
+  const [pendingFilter, setPendingFilter] = useState({
+    search: '',
+    sortBy: 'name',
+    categoryId: '',
+    order: 'asc',
+    limit: 8,
+    page: 1,
+    createdAtFrom: undefined,
+    createdAtTo: undefined
+  })
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [editingBrandId, setEditingBrandId] = useState<string | null>(null)
 
   const { data, isLoading, error, refetch } = useQuery<BrandsResponse, Error>({
-    queryKey: ['brands', _id, filter, run],
+    queryKey: ['brands', filter, run],
     queryFn: () => fetchBrands(filter)
   })
 
-  const brands: Brand[] = data?.brands || []
-  const pagination = data?.filter || { pageCurrent: 1, pageCount: 1 }
-  const dataSource = brands.map((brand: Brand, idx: number) => ({
-    ...brand,
-    key: brand._id || idx
-  }))
-
-  const handleChangeKeyword = (keyword: string) => {
-    setFilter({
-      ...filter,
-      search: keyword,
-      page: 1
-    })
+  const brands: BrandType[] = data?.brands || []
+  const pagination: PaginationType = {
+    size: data?.size || 0,
+    pageCurrent: data?.filter?.pageCurrent || filter.page,
+    pageCount: data?.filter?.pageCount || 1
   }
 
   const handleChangePage = (newPage: number) => {
@@ -82,19 +88,19 @@ const AdminBrandsTable = ({ heading = false }) => {
     })
   }
 
-  const handleDelete = (brand: Brand) => {
+  const handleDelete = (brand: BrandType) => {
     setDeletedBrand(brand)
     setIsConfirmingDelete(true)
   }
 
-  const handleRestore = (brand: Brand) => {
+  const handleRestore = (brand: BrandType) => {
     setRestoredBrand(brand)
     setIsConfirmingRestore(true)
   }
 
   const onSubmitDelete = () => {
     if (!deletedBrand) return
-    removeBrand(_id, deletedBrand._id)
+    removeBrand(deletedBrand._id)
       .then((res) => {
         const data = res.data || res
         if (data.error) toast.error(data.error)
@@ -112,7 +118,7 @@ const AdminBrandsTable = ({ heading = false }) => {
 
   const onSubmitRestore = () => {
     if (!restoredBrand) return
-    restoreBrand(_id, restoredBrand._id)
+    restoreBrand(restoredBrand._id)
       .then((res) => {
         const data = res.data || res
         if (data.error) toast.error(data.error)
@@ -126,6 +132,32 @@ const AdminBrandsTable = ({ heading = false }) => {
         toast.error('Server Error')
         setIsConfirmingRestore(false)
       })
+  }
+
+  const handleCategoryChange = (value: string) => {
+    setPendingFilter((prev) => ({ ...prev, categoryId: value, page: 1 }))
+  }
+
+  const handleDateRangeChange = (dates: any) => {
+    if (dates && dates[0] && dates[1]) {
+      setPendingFilter((prev) => ({
+        ...prev,
+        createdAtFrom: dates[0].startOf('day').toISOString(),
+        createdAtTo: dates[1].endOf('day').toISOString(),
+        page: 1
+      }))
+    } else {
+      setPendingFilter((prev) => ({
+        ...prev,
+        createdAtFrom: undefined,
+        createdAtTo: undefined,
+        page: 1
+      }))
+    }
+  }
+
+  const handleSearch = () => {
+    setFilter({ ...pendingFilter })
   }
 
   const columns = [
@@ -148,18 +180,14 @@ const AdminBrandsTable = ({ heading = false }) => {
       dataIndex: 'categoryIds',
       key: 'categoryIds',
       render: (categories: any[]) => (
-        <div
-          style={{ maxHeight: 200, overflow: 'auto' }}
-          className='d-flex flex-column gap-2 my-2'
-        >
-          {categories.map((category, idx) => (
-            <div
-              className='hidden-avatar fs-9 badge bg-value text-dark-emphasis border rounded-1 fw-normal text-start'
-              key={idx}
-            >
-              <CategorySmallCard category={category} />
-            </div>
-          ))}
+        <div style={{ maxHeight: 200, overflow: 'auto' }}>
+          <Space direction='vertical' size='small'>
+            {categories.map((category, idx) => (
+              <div key={idx}>
+                <CategorySmallCard category={category} />
+              </div>
+            ))}
+          </Space>
         </div>
       )
     },
@@ -179,59 +207,62 @@ const AdminBrandsTable = ({ heading = false }) => {
     {
       title: t('action'),
       key: 'action',
-      render: (_: any, brand: Brand) => (
-        <div className='text-nowrap my-1'>
-          <div className='position-relative d-inline-block'>
-            <Link
-              type='button'
-              className='btn btn-sm btn-outline-secondary ripple me-2 cus-tooltip'
-              to={`/admin/brand/values/${brand._id}`}
-            >
-              <i className='fa-solid fa-circle-info'></i>
+      render: (_: any, brand: BrandType) => (
+        <Space size='small'>
+          <Tooltip title={t('button.detail')}>
+            <Link to={`/admin/brand/values/${brand._id}`}>
+              <Button icon={<i className='fa-solid fa-circle-info' />} />
             </Link>
-            <span className='cus-tooltip-msg'>{t('button.detail')}</span>
-          </div>
-          <div className='position-relative d-inline-block'>
-            <Link
-              type='button'
-              className='btn btn-sm btn-outline-primary ripple me-2 rounded-1 cus-tooltip'
-              to={`/admin/brand/edit/${brand._id}`}
-            >
-              <i className='fa-duotone fa-pen-to-square'></i>
-            </Link>
-            <span className='cus-tooltip-msg'>{t('button.edit')}</span>
-          </div>
-          <div className='position-relative d-inline-block'>
-            {!brand.isDeleted ? (
-              <button
-                type='button'
-                className='btn btn-sm btn-outline-danger ripple rounded-1 cus-tooltip'
-                onClick={() => handleDelete(brand)}
-              >
-                <i className='fa-solid fa-trash-alt'></i>
-              </button>
-            ) : (
-              <button
-                type='button'
-                className='btn btn-sm btn-outline-success ripple rounded-1 cus-tooltip'
-                onClick={() => handleRestore(brand)}
-              >
-                <i className='fa-solid fa-trash-can-arrow-up'></i>
-              </button>
-            )}
-            <span className=' cus-tooltip-msg'>
-              {!brand.isDeleted ? t('button.delete') : t('button.restore')}
-            </span>
-          </div>
-        </div>
+          </Tooltip>
+          <Tooltip title={t('button.edit')}>
+            <Button
+              type='primary'
+              icon={<i className='fa-duotone fa-pen-to-square' />}
+              onClick={() => {
+                setEditingBrandId(brand._id)
+                setDrawerOpen(true)
+              }}
+            />
+          </Tooltip>
+          <Tooltip
+            title={!brand.isDeleted ? t('button.delete') : t('button.restore')}
+          >
+            <Button
+              type={!brand.isDeleted ? 'primary' : 'default'}
+              danger={!brand.isDeleted}
+              icon={
+                !brand.isDeleted ? (
+                  <i className='fa-solid fa-trash-alt' />
+                ) : (
+                  <i className='fa-solid fa-trash-can-arrow-up' />
+                )
+              }
+              onClick={() =>
+                !brand.isDeleted ? handleDelete(brand) : handleRestore(brand)
+              }
+            />
+          </Tooltip>
+        </Space>
       )
     }
   ]
 
+  const handleTableChange = (_pagination: any, _filters: any, sorter: any) => {
+    setFilter((prev) => ({
+      ...prev,
+      sortBy: sorter.field || prev.sortBy,
+      order:
+        sorter.order === 'ascend'
+          ? 'asc'
+          : sorter.order === 'descend'
+            ? 'desc'
+            : prev.order
+    }))
+  }
+
   return (
-    <div className='position-relative'>
-      {isLoading && <Loading />}
-      {error && <Error msg={error.message || 'Server Error'} />}
+    <div>
+      {error && <Alert message={error.message} type='error' showIcon />}
       {isConfirmingDelete && deletedBrand && (
         <ConfirmDialog
           title={t('brandDetail.del')}
@@ -248,37 +279,90 @@ const AdminBrandsTable = ({ heading = false }) => {
         />
       )}
 
-      {heading && <h5 className='text-start'>{t('title.productBrands')}</h5>}
       <div className='p-3 bg-white rounded-md'>
-        <div className='flex gap-3 items-center flex-wrap'>
-          <SearchInput onChange={handleChangeKeyword} />
-          <Link
-            type='button'
-            className='btn btn-primary ripple text-nowrap rounded-1'
-            to='/admin/brand/create'
+        <div className='flex justify-between items-center'>
+          <div className='flex gap-3 items-center flex-wrap'>
+            <SearchInput
+              value={pendingFilter.search}
+              onChange={(keyword) =>
+                setPendingFilter((prev) => ({
+                  ...prev,
+                  search: keyword,
+                  page: 1
+                }))
+              }
+            />
+            <DatePicker.RangePicker
+              value={
+                pendingFilter.createdAtFrom && pendingFilter.createdAtTo
+                  ? [
+                      dayjs(pendingFilter.createdAtFrom),
+                      dayjs(pendingFilter.createdAtTo)
+                    ]
+                  : null
+              }
+              onChange={handleDateRangeChange}
+              allowClear
+              format='DD-MM-YYYY'
+            />
+            <Button type='primary' onClick={handleSearch}>
+              {t('search')}
+            </Button>
+            <Tooltip title={t('button.refresh')}>
+              <Button
+                onClick={() => refetch()}
+                className='!w-10'
+                type='default'
+                loading={isLoading}
+                icon={<i className='fa fa-refresh' />}
+              />
+            </Tooltip>
+          </div>
+          <Button
+            type='primary'
+            onClick={() => {
+              setEditingBrandId(null)
+              setDrawerOpen(true)
+            }}
+            icon={<i className='fa-light fa-plus' />}
           >
-            <i className='fa-light fa-plus'></i>
-            <span className='ms-2 res-hide'>{t('brandDetail.add')}</span>
-          </Link>
+            <span className='res-hide'>{t('brandDetail.add')}</span>
+          </Button>
         </div>
 
-        <div className='table-scroll my-2'>
-          <Table
-            columns={columns}
-            dataSource={dataSource}
-            loading={isLoading}
-            pagination={false}
-          />
-        </div>
-        <div className='flex justify-between items-center px-4'>
-          {brands.length !== 0 && (
-            <Pagination
-              pagination={pagination}
-              onChangePage={handleChangePage}
-            />
-          )}
-        </div>
+        <Divider />
+        <Table
+          columns={columns}
+          dataSource={brands}
+          rowKey='_id'
+          loading={isLoading}
+          bordered
+          pagination={{
+            current: pagination.pageCurrent,
+            pageSize: filter.limit,
+            total: pagination.size,
+            onChange: handleChangePage,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} ${t('of')} ${total} ${t('result')}`
+          }}
+          onChange={handleTableChange}
+          scroll={{ x: 'max-content' }}
+        />
       </div>
+
+      <Drawer
+        title={editingBrandId ? t('brandDetail.edit') : t('brandDetail.add')}
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        width={900}
+        destroyOnClose
+      >
+        {editingBrandId ? (
+          <AdminEditBrandForm brandId={editingBrandId} />
+        ) : (
+          <AdminCreateBrandForm />
+        )}
+      </Drawer>
     </div>
   )
 }

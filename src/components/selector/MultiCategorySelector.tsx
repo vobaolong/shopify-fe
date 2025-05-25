@@ -1,21 +1,12 @@
 import { useState, useEffect } from 'react'
-import { getToken } from '../../apis/auth'
 import { listCategories, listActiveCategories } from '../../apis/category'
 import SearchInput from '../ui/SearchInput'
 import CategorySmallCard from '../card/CategorySmallCard'
 import Error from '../ui/Error'
-import Loading from '../ui/Loading'
 import { useTranslation } from 'react-i18next'
-import { CategoryType } from '../../@types/entity.types'
-
-interface CategoryFilter {
-  search: string
-  categoryId: string | null
-  sortBy: string
-  order: string
-  limit: number
-  page: number
-}
+import { CategoryFilter, CategoryType } from '../../@types/entity.types'
+import { useQuery } from '@tanstack/react-query'
+import { Spin } from 'antd'
 
 interface MultiCategorySelectorProps {
   defaultValue?: CategoryType[]
@@ -35,12 +26,6 @@ const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
   isSelected = true
 }) => {
   const { t } = useTranslation()
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-
-  const [lv1Categories, setLv1Categories] = useState<CategoryType[]>([])
-  const [lv2Categories, setLv2Categories] = useState<CategoryType[]>([])
-  const [lv3Categories, setLv3Categories] = useState<CategoryType[]>([])
   const [lv1Filter, setLv1Filter] = useState<CategoryFilter>({
     search: '',
     categoryId: null,
@@ -70,58 +55,54 @@ const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
     CategoryType[] | ''
   >(defaultValue)
 
-  const loadCategories = (
-    filter: CategoryFilter,
-    setCategories: React.Dispatch<React.SetStateAction<CategoryType[]>>
-  ) => {
-    setError('')
-    setIsLoading(true)
-    if (isActive) {
-      listActiveCategories(filter)
-        .then((res) => {
-          const data = res.data
-          if (data.error) {
-            setError(data.error)
-          } else {
-            setCategories(data.categories)
-          }
-          setIsLoading(false)
-        })
-        .catch((error) => {
-          setError(error.message || String(error))
-          setIsLoading(false)
-        })
-    } else {
-      listCategories(filter)
-        .then((res) => {
-          const data = res.data
-          if (data.error) {
-            setError(data.error)
-          } else {
-            setCategories(data.categories)
-          }
-          setIsLoading(false)
-        })
-        .catch((error) => {
-          setError(error.message || String(error))
-          setIsLoading(false)
-        })
+  const {
+    data: lv1Categories = [],
+    isLoading: lv1Loading,
+    error: lv1Error
+  } = useQuery({
+    queryKey: ['categories', 'lv1', lv1Filter, isActive],
+    queryFn: async () => {
+      if (isActive) {
+        return (await listActiveCategories(lv1Filter)).categories
+      } else {
+        return (await listCategories(lv1Filter)).categories
+      }
     }
-  }
+  })
 
-  useEffect(() => {
-    loadCategories(lv1Filter, setLv1Categories)
-  }, [lv1Filter])
+  const {
+    data: lv2Categories = [],
+    isLoading: lv2Loading,
+    error: lv2Error
+  } = useQuery({
+    queryKey: ['categories', 'lv2', lv2Filter, isActive],
+    queryFn: async () => {
+      if (!lv2Filter.categoryId) return []
+      if (isActive) {
+        return (await listActiveCategories(lv2Filter)).categories
+      } else {
+        return (await listCategories(lv2Filter)).categories
+      }
+    },
+    enabled: !!lv2Filter.categoryId
+  })
 
-  useEffect(() => {
-    if (lv2Filter.categoryId) loadCategories(lv2Filter, setLv2Categories)
-    else setLv2Categories([])
-  }, [lv2Filter])
-
-  useEffect(() => {
-    if (lv3Filter.categoryId) loadCategories(lv3Filter, setLv3Categories)
-    else setLv3Categories([])
-  }, [lv3Filter])
+  const {
+    data: lv3Categories = [],
+    isLoading: lv3Loading,
+    error: lv3Error
+  } = useQuery({
+    queryKey: ['categories', 'lv3', lv3Filter, isActive],
+    queryFn: async () => {
+      if (!lv3Filter.categoryId) return []
+      if (isActive) {
+        return (await listActiveCategories(lv3Filter)).categories
+      } else {
+        return (await listCategories(lv3Filter)).categories
+      }
+    },
+    enabled: !!lv3Filter.categoryId
+  })
 
   useEffect(() => {
     setSelectedCategories(defaultValue)
@@ -194,12 +175,14 @@ const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
   return (
     <div className='row'>
       <div className='col'>
-        <SearchInput onChange={handleChangeKeyword} />
+        <SearchInput value={lv1Filter.search} onChange={handleChangeKeyword} />
       </div>
 
       <div className='col-12 position-relative'>
-        {isLoading && <Loading />}
-        {error && <Error msg={error} />}
+        {(lv1Loading || lv2Loading || lv3Loading) && <Spin />}
+        {(lv1Error || lv2Error || lv3Error) && (
+          <Error msg={String(lv1Error || lv2Error || lv3Error)} />
+        )}
 
         <div className='d-flex border p-1 mt-2 rounded-2 bg-value'>
           <div

@@ -191,14 +191,12 @@ const AdminUsersTable = ({ heading = false }) => {
             ]}
           />
           <DatePicker.RangePicker
-            className='!h-10'
             value={dateRange}
             onChange={handleDateRangeChange}
             format='YYYY-MM-DD'
             allowClear
           />
           <Select
-            className='!h-10'
             style={{ minWidth: 120 }}
             value={kycFilter}
             onChange={handleKycChange}
@@ -210,7 +208,7 @@ const AdminUsersTable = ({ heading = false }) => {
             styles={{ popup: { root: { width: 150 } } }}
           />
 
-          <Button type='primary' onClick={handleSearch} className='!h-10'>
+          <Button type='primary' onClick={handleSearch}>
             {t('search')}
           </Button>
           <Button

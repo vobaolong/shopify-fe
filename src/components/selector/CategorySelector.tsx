@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { listCategories, listActiveCategories } from '../../apis/category'
-import { CategoryType } from '../../@types/entity.types'
+import { CategoryFilter, CategoryType } from '../../@types/entity.types'
 import {
   Input,
   List,
@@ -18,22 +18,13 @@ import CategorySmallCard from '../card/CategorySmallCard'
 import { useTranslation } from 'react-i18next'
 
 interface CategorySelectorProps {
-  defaultValue?: CategoryType | ''
+  value?: CategoryType | ''
   isActive?: boolean
   selected?: 'child' | 'parent'
   label?: string
-  onSet?: (category: CategoryType | '') => void
+  onChange?: (category: CategoryType | '') => void
   isSelected?: boolean
   isRequired?: boolean
-}
-
-type CategoryFilter = {
-  search: string
-  categoryId: string | null
-  sortBy: string
-  order: string
-  limit: number
-  page: number
 }
 
 const defaultLv1Filter: CategoryFilter = {
@@ -62,11 +53,11 @@ const defaultLv3Filter: CategoryFilter = {
 }
 
 const CategorySelector: React.FC<CategorySelectorProps> = ({
-  defaultValue = '',
+  value = '',
   isActive = false,
   selected = 'child',
   label = 'Chosen category',
-  onSet = () => {},
+  onChange = () => {},
   isSelected = true,
   isRequired = false
 }) => {
@@ -74,9 +65,6 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
   const [lv1Filter, setLv1Filter] = useState<CategoryFilter>(defaultLv1Filter)
   const [lv2Filter, setLv2Filter] = useState<CategoryFilter>(defaultLv2Filter)
   const [lv3Filter, setLv3Filter] = useState<CategoryFilter>(defaultLv3Filter)
-  const [selectedCategory, setSelectedCategory] = useState<CategoryType | ''>(
-    defaultValue
-  )
   const [search, setSearch] = useState('')
 
   const {
@@ -87,10 +75,13 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
     queryKey: ['categories', 'lv1', lv1Filter, isActive],
     queryFn: async () => {
       if (isActive) {
-        const res = await listActiveCategories(lv1Filter)
+        const res = await listActiveCategories({
+          ...lv1Filter,
+          categoryId: null
+        })
         return res.categories || []
       } else {
-        const res = await listCategories(lv1Filter)
+        const res = await listCategories({ ...lv1Filter, categoryId: null })
         return res.categories || []
       }
     }
@@ -134,16 +125,13 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
     enabled: !!lv3Filter.categoryId
   })
 
-  useEffect(() => {
-    setSelectedCategory(defaultValue)
-  }, [defaultValue])
-
   // Tìm kiếm lv1
   const handleChangeKeyword = (keyword: string) => {
     setSearch(keyword)
     setLv1Filter({
       ...lv1Filter,
-      search: keyword
+      search: keyword,
+      categoryId: null
     })
     setLv2Filter({ ...defaultLv2Filter })
     setLv3Filter({ ...defaultLv3Filter })
@@ -170,22 +158,19 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
         (selected === 'parent' && filter === lv3Filter) ||
         (selected === 'child' && filter === null)
       ) {
-        setSelectedCategory(category)
-        onSet && onSet(category)
+        onChange && onChange(category)
       }
     }
   }
 
   // Chọn category cấp 3
   const handleClickLv3 = (category: CategoryType) => {
-    setSelectedCategory(category)
-    onSet && onSet(category)
+    onChange && onChange(category)
   }
 
   // Xóa chọn
   const handleDelete = () => {
-    setSelectedCategory('')
-    onSet && onSet('')
+    onChange && onChange('')
   }
 
   return (
@@ -265,9 +250,9 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
               <List.Item>
                 <Button
                   type={
-                    selectedCategory &&
-                    typeof selectedCategory !== 'string' &&
-                    category._id === selectedCategory._id
+                    value &&
+                    typeof value !== 'string' &&
+                    category._id === value._id
                       ? 'primary'
                       : 'default'
                   }
@@ -289,9 +274,9 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
             {label}
           </Typography.Text>
           <Card style={{ minHeight: 60, marginTop: 8, background: '#fafafa' }}>
-            {selectedCategory && typeof selectedCategory !== 'string' ? (
+            {value && typeof value !== 'string' ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <CategorySmallCard category={selectedCategory} />
+                <CategorySmallCard category={value} />
                 <Button
                   type='text'
                   danger

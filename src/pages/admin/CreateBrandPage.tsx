@@ -8,7 +8,7 @@ const CreateBrandPage = () => {
   const { t } = useTranslation()
   const paths = [
     { name: t('breadcrumbs.home'), url: '/admin/dashboard' },
-    { name: t('breadcrumbs.brand'), url: '/admin/brand' },
+    { name: t('breadcrumbs.brand'), url: '/admin/brands' },
     { name: t('breadcrumbs.addBrand'), url: '/admin/brand/create' }
   ]
   return (

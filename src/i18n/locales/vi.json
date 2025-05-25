@@ -709,6 +709,7 @@
   "dragNDrop": "Kéo/Thả ảnh vào đây hoặc nhấn để chọn",
   "confirmDialog": "Bạn có chắc chắn về điều này không?",
   "button": {
+    "refresh": "Làm mới",
     "complaint": "Khiếu nại",
     "approve": "Phê duyệt",
     "reject": "Từ chối",

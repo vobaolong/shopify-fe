@@ -147,3 +147,20 @@ export interface ReportType {
   reason?: string
   createdAt: string
 }
+
+export interface BrandType {
+  _id: string
+  name: string
+  categoryIds: string[]
+  isDeleted: boolean
+  createdAt: string
+}
+
+export type CategoryFilter = {
+  search: string
+  categoryId: string | null
+  sortBy: string
+  order: string
+  limit: number
+  page: number
+}

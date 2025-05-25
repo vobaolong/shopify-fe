@@ -121,7 +121,7 @@ const AdminEditBrandForm = ({ brandId = '' }) => {
         </div>
         <div className='col-12 px-4 pb-3 d-flex justify-content-between align-items-center mt-4 res-flex-reverse-md'>
           <Link
-            to='/admin/brand'
+            to='/admin/brands'
             className='text-decoration-none cus-link-hover res-w-100-md my-2'
           >
             <i className='fa-solid fa-angle-left'></i> {t('button.back')}

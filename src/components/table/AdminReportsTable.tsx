@@ -22,6 +22,7 @@ import { PaginationType } from '../../@types/pagination.type'
 import { ReportType } from '../../@types/entity.types'
 import { Trash } from 'lucide-react'
 import dayjs, { Dayjs } from 'dayjs'
+import { ColumnType } from 'antd/es/table'
 
 const tabOptions = [
   { labelKey: 'title.listReportShop', value: 'stores' },
@@ -90,13 +91,13 @@ const AdminReportsTable = () => {
     pageCount: data?.filter?.pageCount || 1
   }
 
-  const columns = useMemo(
+  const columns: ColumnType<ReportType>[] = useMemo(
     () => [
       {
         title: '#',
         dataIndex: 'index',
         key: 'index',
-        align: 'center' as const,
+        align: 'center',
         render: (_: any, __: any, idx: number) =>
           (pagination.pageCurrent - 1) * filter.limit + idx + 1,
         width: 60

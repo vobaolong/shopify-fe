@@ -630,6 +630,7 @@
   "dragNDrop": "Drag your photo here or Browse from device",
   "confirmDialog": "Are you sure about that?",
   "button": {
+    "refresh": "Refresh",
     "detail": "Detail",
     "view": "View",
     "restore": "Restore",

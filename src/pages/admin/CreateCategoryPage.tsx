@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux'
 import AdminLayout from '../../components/layout/AdminLayout'
-import AdminCreateCategoryForm from '../../components/item/form/AdminCreateCategoryForm'
 import { useTranslation } from 'react-i18next'
+import AdminUpsertCategoryForm from '../../components/item/form/AdminUpsertCategoryForm'
 
 const CreateCategoryPage = () => {
   const { t } = useTranslation()
@@ -16,7 +16,7 @@ const CreateCategoryPage = () => {
   ]
   return (
     <AdminLayout user={user} paths={paths}>
-      <AdminCreateCategoryForm />
+      <AdminUpsertCategoryForm />
     </AdminLayout>
   )
 }

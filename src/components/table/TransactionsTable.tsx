@@ -272,7 +272,6 @@ const TransactionsTable = ({
           />
 
           <Select
-            className='!h-10'
             style={{ minWidth: 140 }}
             value={pendingFilter.type || 'all'}
             placeholder={t('transactionDetail.type') || ''}
@@ -285,7 +284,7 @@ const TransactionsTable = ({
             allowClear
           />
 
-          <Button type='primary' onClick={handleSearch} className='!h-10'>
+          <Button type='primary' onClick={handleSearch}>
             {t('search')}
           </Button>
           <Button

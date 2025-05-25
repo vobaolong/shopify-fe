@@ -1,8 +1,8 @@
 import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import AdminLayout from '../../components/layout/AdminLayout'
-import AdminEditCategoryForm from '../../components/item/form/AdminEditCategoryForm'
 import { useTranslation } from 'react-i18next'
+import AdminUpsertCategoryForm from '../../components/item/form/AdminUpsertCategoryForm'
 
 const EditCategoryPage = () => {
   const user = useSelector((state: any) => state.account.user)
@@ -20,7 +20,7 @@ const EditCategoryPage = () => {
 
   return (
     <AdminLayout user={user} paths={paths}>
-      <AdminEditCategoryForm categoryId={categoryId} />
+      <AdminUpsertCategoryForm categoryId={categoryId} />
     </AdminLayout>
   )
 }

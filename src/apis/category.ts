@@ -1,5 +1,5 @@
-import axiosClient from './client'
-import { CategoryType } from '../@types/entity.types'
+import axiosClient, { axiosClientImg } from './client'
+import { CategoryType, ApiResponse } from '../@types/entity.types'
 
 export type ListCategoriesResponse = {
   size: number
@@ -8,31 +8,35 @@ export type ListCategoriesResponse = {
 }
 export const getCategoryById = async (
   categoryId: string
-): Promise<CategoryType> => {
+): Promise<ApiResponse<{ category: CategoryType }>> => {
   return axiosClient.get(`/category/${categoryId}`)
 }
 
 export const listActiveCategories = async (
   params: any
 ): Promise<ListCategoriesResponse> => {
-  return axiosClient.get('/categories/active', { params })
+  const fixedParams = { ...params }
+  if (fixedParams.categoryId === null) fixedParams.categoryId = 'null'
+  return axiosClient.get('/categories/active', { params: fixedParams })
 }
 
 export const listCategories = async (
   params: any
 ): Promise<ListCategoriesResponse> => {
-  return axiosClient.get(`/admin/categories`, { params })
+  const fixedParams = { ...params }
+  if (fixedParams.categoryId === null) fixedParams.categoryId = 'null'
+  return axiosClient.get(`/admin/categories`, { params: fixedParams })
 }
 
 export const createCategory = async (category: any): Promise<CategoryType> => {
-  return axiosClient.post(`/category/create`, category)
+  return axiosClientImg.post(`/category/create`, category)
 }
 
 export const updateCategory = async (
   categoryId: string,
   category: any
 ): Promise<CategoryType> => {
-  return axiosClient.put(`/category/${categoryId}`, category)
+  return axiosClientImg.put(`/category/${categoryId}`, category)
 }
 
 export const removeCategory = async (categoryId: string): Promise<void> => {

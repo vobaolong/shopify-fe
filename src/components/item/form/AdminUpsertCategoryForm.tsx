@@ -1,7 +1,10 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { updateCategory, getCategoryById } from '../../../apis/category'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import {
+  createCategory,
+  updateCategory,
+  getCategoryById
+} from '../../../apis/category'
 import InputFile from '../../ui/InputFile'
 import Loading from '../../ui/Loading'
 import ConfirmDialog from '../../ui/ConfirmDialog'
@@ -10,43 +13,59 @@ import { useTranslation } from 'react-i18next'
 import { Form, Input, Button, notification } from 'antd'
 import { useMutation } from '@tanstack/react-query'
 
-const AdminEditCategoryForm = ({ categoryId = '' }) => {
+interface Props {
+  categoryId?: string
+  onSuccess?: () => void
+}
+
+const AdminUpsertCategoryForm = ({ categoryId, onSuccess }: Props) => {
   const { t } = useTranslation()
   const [isLoading, setIsLoading] = useState(false)
+  const [isConfirming, setIsConfirming] = useState(false)
   const [isConfirmingBack, setIsConfirmingBack] = useState(false)
-  const [isConfirmingUpdate, setIsConfirmingUpdate] = useState(false)
   const [form] = Form.useForm()
-  const [selectedParent, setSelectedParent] = useState<any>(null)
+  const navigate = useNavigate()
   const [file, setFile] = useState<File | null>(null)
   const [defaultSrc, setDefaultSrc] = useState('')
+  const isEdit = !!categoryId
 
-  const updateCategoryMutation = useMutation({
-    mutationFn: (formData: FormData) => updateCategory(categoryId, formData),
+  // Mutation
+  const mutation = useMutation({
+    mutationFn: (formData: FormData) =>
+      isEdit && categoryId
+        ? updateCategory(categoryId, formData)
+        : createCategory(formData),
     onSuccess: (res) => {
-      if (res.data.error) notification.error({ message: res.data.error })
-      else {
-        notification.success({ message: t('toastSuccess.category.update') })
-      }
+      notification.success({
+        message: t(
+          isEdit
+            ? 'toastSuccess.category.update'
+            : 'toastSuccess.category.create'
+        )
+      })
+      if (onSuccess) onSuccess()
+      else navigate('/admin/categories')
     },
     onError: () => {
       notification.error({ message: 'Server Error' })
     }
   })
 
+  // Fetch data for edit
   useEffect(() => {
+    if (!isEdit) return
     setIsLoading(true)
-    getCategoryById(categoryId)
+    getCategoryById(categoryId!)
       .then((res) => {
-        const data = res.data
-        if (data.error) notification.error({ message: data.error })
-        else {
+        const category = (res as any).category
+        if (category) {
           form.setFieldsValue({
-            name: data.category.name
+            name: category.name,
+            categoryId: category.categoryId || null,
+            image: category.image
           })
-          setSelectedParent(
-            data.category.categoryId ? data.category.categoryId : null
-          )
-          setDefaultSrc(data.category.image)
+          setDefaultSrc(category.image)
+          console.log('categoryId:', category.categoryId)
         }
         setIsLoading(false)
       })
@@ -54,46 +73,50 @@ const AdminEditCategoryForm = ({ categoryId = '' }) => {
         notification.error({ message: 'Server Error' })
         setIsLoading(false)
       })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categoryId])
+  }, [categoryId, form])
+
+  const handleBackClick = (e?: React.MouseEvent<HTMLAnchorElement>) => {
+    if (e) e.preventDefault()
+    setIsConfirmingBack(true)
+  }
 
   const handleConfirmBack = () => {
     setIsConfirmingBack(false)
-    window.history.back()
+    navigate('/admin/categories')
   }
 
-  const handleFinish = (values: any) => {
-    setIsConfirmingUpdate(true)
+  const handleFinish = () => {
+    setIsConfirming(true)
   }
 
   const handleConfirmSubmit = () => {
     const values = form.getFieldsValue()
     const formData = new FormData()
     formData.set('name', values.name)
-    if (selectedParent && selectedParent._id)
-      formData.set('categoryId', selectedParent._id)
+    if (values.categoryId && values.categoryId._id)
+      formData.set('categoryId', values.categoryId._id)
     if (file) formData.set('image', file)
-    updateCategoryMutation.mutate(formData)
-    setIsConfirmingUpdate(false)
+    mutation.mutate(formData)
+    setIsConfirming(false)
   }
 
   return (
     <div className='container-fluid position-relative'>
-      {isLoading && <Loading />}
-      {isConfirmingUpdate && (
+      {(isLoading || mutation.isPending) && <Loading />}
+      {isConfirming && (
         <ConfirmDialog
-          title={t('dialog.updateCategory')}
+          title={t(isEdit ? 'dialog.updateCategory' : 'categoryDetail.add')}
           onSubmit={handleConfirmSubmit}
-          message={t('message.edit')}
-          onClose={() => setIsConfirmingUpdate(false)}
+          onClose={() => setIsConfirming(false)}
+          message={t(isEdit ? 'message.edit' : 'confirmDialog')}
         />
       )}
       {isConfirmingBack && (
         <ConfirmDialog
-          title={t('dialog.cancelUpdate')}
+          title={t(isEdit ? 'dialog.cancelUpdate' : 'dialog.cancelCreate')}
           onSubmit={handleConfirmBack}
-          message={t('confirmDialog')}
           onClose={() => setIsConfirmingBack(false)}
+          message={t('confirmDialog')}
         />
       )}
       <Form
@@ -105,7 +128,7 @@ const AdminEditCategoryForm = ({ categoryId = '' }) => {
         <div className='row box-shadow bg-body rounded-1'>
           <div className='col-12 bg-primary p-3 rounded-top-2'>
             <span className='text-white fs-5 m-0'>
-              {t('categoryDetail.edit')}
+              {t(isEdit ? 'categoryDetail.edit' : 'categoryDetail.add')}
             </span>
           </div>
 
@@ -115,8 +138,6 @@ const AdminEditCategoryForm = ({ categoryId = '' }) => {
                 label={t('categoryDetail.chosenParentCategory')}
                 selected='parent'
                 isActive={false}
-                defaultValue={selectedParent}
-                onSet={(category) => setSelectedParent(category)}
               />
             </Form.Item>
           </div>
@@ -134,7 +155,7 @@ const AdminEditCategoryForm = ({ categoryId = '' }) => {
           </div>
 
           <span className='col-12 px-4 mt-4 fs-9'>
-            Ảnh bìa ngành hàng <sup className='text-danger'>*</sup>
+            {t('categoryDetail.img')} <sup className='text-danger'>*</sup>
           </span>
           <div className='col-12 px-4 mb-3'>
             <Form.Item name='image'>
@@ -159,6 +180,7 @@ const AdminEditCategoryForm = ({ categoryId = '' }) => {
             <Link
               to='/admin/categories'
               className='text-decoration-none cus-link-hover res-w-100-md my-2'
+              onClick={handleBackClick}
             >
               <i className='fa-solid fa-angle-left'></i> {t('button.back')}
             </Link>
@@ -177,4 +199,4 @@ const AdminEditCategoryForm = ({ categoryId = '' }) => {
   )
 }
 
-export default AdminEditCategoryForm
+export default AdminUpsertCategoryForm

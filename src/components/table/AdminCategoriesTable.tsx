@@ -28,8 +28,8 @@ import { useQuery } from '@tanstack/react-query'
 import { CategoryType } from '../../@types/entity.types'
 import CustomModal from '../ui/Modal'
 import { ColumnsType } from 'antd/es/table'
-import AdminCreateCategoryForm from '../item/form/AdminCreateCategoryForm'
 import { Pen, PencilLine, Plus } from 'lucide-react'
+import AdminUpsertCategoryForm from '../item/form/AdminUpsertCategoryForm'
 
 const AdminCategoriesTable = () => {
   const { t } = useTranslation()
@@ -188,7 +188,9 @@ const AdminCategoriesTable = () => {
       dataIndex: 'createdAt',
       key: 'createdAt',
       render: (date: string) => humanReadableDate(date),
-      sorter: true
+      sorter: true,
+      align: 'right',
+      width: 180
     },
     {
       title: t('action'),
@@ -308,7 +310,6 @@ const AdminCategoriesTable = () => {
               <CategorySelector isActive={true} isSelected={false} />
             </CustomModal>
             <Button
-              className='!h-10'
               type='primary'
               onClick={(e) => {
                 e.preventDefault()
@@ -353,7 +354,14 @@ const AdminCategoriesTable = () => {
         width={900}
         destroyOnClose
       >
-        <AdminCreateCategoryForm />
+        <AdminUpsertCategoryForm
+          categoryId={editingCategory ? editingCategory._id : undefined}
+          key={editingCategory ? editingCategory._id : 'create'}
+          onSuccess={() => {
+            setDrawerOpen(false)
+            setRun((r) => !r)
+          }}
+        />
       </Drawer>
     </div>
   )
