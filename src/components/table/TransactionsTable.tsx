@@ -22,6 +22,7 @@ import SearchInput from '../ui/SearchInput'
 import { DatePicker } from 'antd'
 import dayjs from 'dayjs'
 import { SyncOutlined } from '@ant-design/icons'
+import { PaginationType } from '../../@types/pagination.type'
 
 interface TransactionType {
   _id: string
@@ -31,12 +32,6 @@ interface TransactionType {
   isUp: boolean
   status?: string
   createdAt: string
-}
-
-export interface PaginationType {
-  size: number
-  pageCurrent: number
-  pageCount: number
 }
 
 interface OwnerType {
@@ -280,9 +275,10 @@ const TransactionsTable = ({
             className='!h-10'
             style={{ minWidth: 140 }}
             value={pendingFilter.type || 'all'}
+            placeholder={t('transactionDetail.type') || ''}
             onChange={handleTypeChange}
             options={[
-              { label: t('filters.all'), value: 'all' },
+              { label: t('transactionDetail.type'), value: 'all' },
               { label: t('transactionDetail.deposit'), value: 'deposit' },
               { label: t('transactionDetail.withdraw'), value: 'withdraw' }
             ]}

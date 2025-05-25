@@ -1,29 +1,64 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
-import { getToken } from '../../apis/auth'
-import { useActiveCategories, useCategories } from '../../hooks/useCategory'
-import SearchInput from '../ui/SearchInput'
+import { useQuery } from '@tanstack/react-query'
+import { listCategories, listActiveCategories } from '../../apis/category'
+import { CategoryType } from '../../@types/entity.types'
+import {
+  Input,
+  List,
+  Button,
+  Spin,
+  Alert,
+  Row,
+  Col,
+  Card,
+  Typography
+} from 'antd'
 import CategorySmallCard from '../card/CategorySmallCard'
-import Loading from '../ui/Loading'
 import { useTranslation } from 'react-i18next'
-import Error from '../ui/Error'
-
-interface CategoryType {
-  _id: string
-  name: string
-  slug: string
-  image: string
-  categoryId: string | CategoryType | null
-  isDeleted: boolean
-}
 
 interface CategorySelectorProps {
-  defaultValue?: string | CategoryType
+  defaultValue?: CategoryType | ''
   isActive?: boolean
-  selected?: 'parent' | 'child'
+  selected?: 'child' | 'parent'
   label?: string
-  onSet?: (category: CategoryType | string) => void
+  onSet?: (category: CategoryType | '') => void
   isSelected?: boolean
   isRequired?: boolean
+}
+
+type CategoryFilter = {
+  search: string
+  categoryId: string | null
+  sortBy: string
+  order: string
+  limit: number
+  page: number
+}
+
+const defaultLv1Filter: CategoryFilter = {
+  search: '',
+  categoryId: null,
+  sortBy: 'name',
+  order: 'asc',
+  limit: 100,
+  page: 1
+}
+const defaultLv2Filter: CategoryFilter = {
+  search: '',
+  categoryId: null,
+  sortBy: 'name',
+  order: 'asc',
+  limit: 100,
+  page: 1
+}
+const defaultLv3Filter: CategoryFilter = {
+  search: '',
+  categoryId: null,
+  sortBy: 'name',
+  order: 'asc',
+  limit: 100,
+  page: 1
 }
 
 const CategorySelector: React.FC<CategorySelectorProps> = ({
@@ -36,274 +71,246 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
   isRequired = false
 }) => {
   const { t } = useTranslation()
-  const { _id: userId } = getToken() || {}
-  const [selectedCategory, setSelectedCategory] = useState<
-    string | CategoryType
-  >(defaultValue)
+  const [lv1Filter, setLv1Filter] = useState<CategoryFilter>(defaultLv1Filter)
+  const [lv2Filter, setLv2Filter] = useState<CategoryFilter>(defaultLv2Filter)
+  const [lv3Filter, setLv3Filter] = useState<CategoryFilter>(defaultLv3Filter)
+  const [selectedCategory, setSelectedCategory] = useState<CategoryType | ''>(
+    defaultValue
+  )
+  const [search, setSearch] = useState('')
 
-  // Define filters
-  const [lv1Filter, setLv1Filter] = useState({
-    search: '',
-    categoryId: null,
-    sortBy: 'name',
-    order: 'asc',
-    limit: 100,
-    page: 1
-  })
-  const [lv2Filter, setLv2Filter] = useState({
-    search: '',
-    categoryId: '',
-    sortBy: 'name',
-    order: 'asc',
-    limit: 100,
-    page: 1
-  })
-  const [lv3Filter, setLv3Filter] = useState({
-    search: '',
-    categoryId: '',
-    sortBy: 'name',
-    order: 'asc',
-    limit: 100,
-    page: 1
+  const {
+    data: lv1Data,
+    isLoading: lv1Loading,
+    error: lv1Error
+  } = useQuery<CategoryType[]>({
+    queryKey: ['categories', 'lv1', lv1Filter, isActive],
+    queryFn: async () => {
+      if (isActive) {
+        const res = await listActiveCategories(lv1Filter)
+        return res.categories || []
+      } else {
+        const res = await listCategories(lv1Filter)
+        return res.categories || []
+      }
+    }
   })
 
-  // Call both hooks non-conditionally
-  // For active categories
   const {
-    data: activeLv1Data,
-    isLoading: isLoadingActiveLv1,
-    error: errorActiveLv1
-  } = useActiveCategories(lv1Filter)
-
-  const {
-    data: activeLv2Data,
-    isLoading: isLoadingActiveLv2,
-    error: errorActiveLv2
-  } = useActiveCategories(lv2Filter)
-
-  const {
-    data: activeLv3Data,
-    isLoading: isLoadingActiveLv3,
-    error: errorActiveLv3
-  } = useActiveCategories(lv3Filter)
-
-  // For regular categories (requiring userId)
-  const {
-    data: regularLv1Data,
-    isLoading: isLoadingRegularLv1,
-    error: errorRegularLv1
-  } = useCategories(userId, lv1Filter)
+    data: lv2Data,
+    isLoading: lv2Loading,
+    error: lv2Error
+  } = useQuery<CategoryType[]>({
+    queryKey: ['categories', 'lv2', lv2Filter, isActive],
+    queryFn: async () => {
+      if (!lv2Filter.categoryId) return []
+      if (isActive) {
+        const res = await listActiveCategories(lv2Filter)
+        return res.categories || []
+      } else {
+        const res = await listCategories(lv2Filter)
+        return res.categories || []
+      }
+    },
+    enabled: !!lv2Filter.categoryId
+  })
 
   const {
-    data: regularLv2Data,
-    isLoading: isLoadingRegularLv2,
-    error: errorRegularLv2
-  } = useCategories(userId, lv2Filter)
+    data: lv3Data,
+    isLoading: lv3Loading,
+    error: lv3Error
+  } = useQuery<CategoryType[]>({
+    queryKey: ['categories', 'lv3', lv3Filter, isActive],
+    queryFn: async () => {
+      if (!lv3Filter.categoryId) return []
+      if (isActive) {
+        const res = await listActiveCategories(lv3Filter)
+        return res.categories || []
+      } else {
+        const res = await listCategories(lv3Filter)
+        return res.categories || []
+      }
+    },
+    enabled: !!lv3Filter.categoryId
+  })
 
-  const {
-    data: regularLv3Data,
-    isLoading: isLoadingRegularLv3,
-    error: errorRegularLv3
-  } = useCategories(userId, lv3Filter)
+  useEffect(() => {
+    setSelectedCategory(defaultValue)
+  }, [defaultValue])
 
-  const lv1Data = isActive ? activeLv1Data : regularLv1Data
-  const lv2Data = isActive ? activeLv2Data : regularLv2Data
-  const lv3Data = isActive ? activeLv3Data : regularLv3Data
-
-  const isLoadingLv1 = isActive ? isLoadingActiveLv1 : isLoadingRegularLv1
-  const isLoadingLv2 = isActive ? isLoadingActiveLv2 : isLoadingRegularLv2
-  const isLoadingLv3 = isActive ? isLoadingActiveLv3 : isLoadingRegularLv3
-
-  const errorLv1 = isActive ? errorActiveLv1 : errorRegularLv1
-  const errorLv2 = isActive ? errorActiveLv2 : errorRegularLv2
-  const errorLv3 = isActive ? errorActiveLv3 : errorRegularLv3
-
-  const lv1Categories: CategoryType[] = lv1Data?.data?.categories || []
-  const lv2Categories: CategoryType[] = lv2Data?.data?.categories || []
-  const lv3Categories: CategoryType[] = lv3Data?.data?.categories || []
-
-  const isLoading = isLoadingLv1 || isLoadingLv2 || isLoadingLv3
-  const error =
-    errorLv1?.message || errorLv2?.message || errorLv3?.message || ''
-
+  // Tìm kiếm lv1
   const handleChangeKeyword = (keyword: string) => {
+    setSearch(keyword)
     setLv1Filter({
       ...lv1Filter,
       search: keyword
     })
-    setLv2Filter({
-      ...lv2Filter,
-      categoryId: ''
-    })
-    setLv3Filter({
-      ...lv3Filter,
-      categoryId: ''
-    })
+    setLv2Filter({ ...defaultLv2Filter })
+    setLv3Filter({ ...defaultLv3Filter })
   }
 
-  const handleClick = (filter: any, setFilter: any, category: CategoryType) => {
-    if (setFilter && filter)
+  // Chọn category cấp 1 hoặc 2
+  const handleClick = (
+    filter: CategoryFilter | null,
+    setFilter: React.Dispatch<React.SetStateAction<CategoryFilter>> | null,
+    category: CategoryType
+  ) => {
+    if (setFilter && filter) {
       setFilter({
         ...filter,
         categoryId: category._id
       })
-    if (filter === lv2Filter)
-      setLv3Filter({
-        ...lv3Filter,
-        categoryId: ''
-      })
-    if (isSelected)
+    }
+    if (filter === lv2Filter) {
+      setLv3Filter({ ...defaultLv3Filter })
+    }
+    if (isSelected) {
       if (
         (selected === 'parent' && filter === lv2Filter) ||
         (selected === 'parent' && filter === lv3Filter) ||
         (selected === 'child' && filter === null)
       ) {
         setSelectedCategory(category)
-        if (onSet) onSet(category)
+        onSet && onSet(category)
       }
+    }
   }
 
+  // Chọn category cấp 3
+  const handleClickLv3 = (category: CategoryType) => {
+    setSelectedCategory(category)
+    onSet && onSet(category)
+  }
+
+  // Xóa chọn
   const handleDelete = () => {
     setSelectedCategory('')
-    if (onSet) onSet('')
+    onSet && onSet('')
   }
 
-  useEffect(() => {
-    setSelectedCategory(defaultValue)
-  }, [defaultValue])
   return (
-    <div className='row'>
-      <div className='col'></div>
-      <div className='col-12 position-relative'>
-        <SearchInput
-          onChange={(keyword: string) => handleChangeKeyword(keyword)}
-        />
-        {isLoading && <Loading />}
-        {error && <Error msg={error} />}
-        <div className='d-flex border rounded-1 p-2 mt-2 bg-body'>
-          <div
-            className='list-group m-1'
-            style={{
-              width: '33.33333%',
-              overflowY: 'auto',
-              height: '250px'
-            }}
-          >
-            {lv1Categories?.map((category: CategoryType, index: number) => (
-              <div key={index}>
-                <button
-                  type='button'
-                  className={`list-group-item ripple list-group-item-action d-flex justify-content-between align-items-center  ${
-                    category._id === lv2Filter.categoryId ? 'active' : ''
-                  }`}
+    <Row gutter={16}>
+      <Input.Search
+        value={search}
+        onChange={(e) => handleChangeKeyword(e.target.value)}
+        placeholder={t('search')}
+        allowClear
+        className='px-2 pb-4'
+      />
+      <Col span={8}>
+        {lv1Loading ? (
+          <Spin />
+        ) : lv1Error ? (
+          <Alert type='error' message={String(lv1Error as any)} />
+        ) : (
+          <List
+            dataSource={lv1Data || []}
+            renderItem={(category) => (
+              <List.Item>
+                <Button
+                  type={
+                    category._id === lv2Filter.categoryId
+                      ? 'primary'
+                      : 'default'
+                  }
+                  block
                   onClick={() => handleClick(lv2Filter, setLv2Filter, category)}
+                  style={{ textAlign: 'left' }}
                 >
-                  <span className='res-smaller-md'>{category.name}</span>
-                  <i className='fa-solid fa-angle-right res-smaller-lg res-hide'></i>
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <div
-            className='list-group m-1'
-            style={{
-              width: '33.33333%',
-              overflowY: 'auto',
-              height: '250px'
-            }}
-          >
-            {lv2Categories?.map((category: CategoryType, index: number) => (
-              <div key={index}>
-                <button
-                  type='button'
-                  className={`list-group-item ripple list-group-item-action d-flex justify-content-between align-items-center  ${
-                    category._id === lv3Filter.categoryId && 'active'
-                  }`}
+                  {category.name}
+                </Button>
+              </List.Item>
+            )}
+            style={{ maxHeight: 250, overflowY: 'auto', background: '#fff' }}
+          />
+        )}
+      </Col>
+      <Col span={8}>
+        {lv2Loading ? (
+          <Spin />
+        ) : lv2Error ? (
+          <Alert type='error' message={String(lv2Error as any)} />
+        ) : (
+          <List
+            dataSource={lv2Data || []}
+            renderItem={(category) => (
+              <List.Item>
+                <Button
+                  type={
+                    category._id === lv3Filter.categoryId
+                      ? 'primary'
+                      : 'default'
+                  }
+                  block
                   onClick={() => handleClick(lv3Filter, setLv3Filter, category)}
+                  style={{ textAlign: 'left' }}
                 >
-                  <span className='res-smaller-md'>{category.name}</span>
-                  <i className='fa-solid fa-angle-right res-smaller-lg res-hide'></i>
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <div
-            className='list-group m-1'
-            style={{
-              width: '33.33333%',
-              overflowY: 'auto',
-              height: '250px'
-            }}
-          >
-            {lv3Categories?.map((category: CategoryType, index: number) => (
-              <div key={index}>
-                <button
-                  type='button'
-                  className={`list-group-item ripple list-group-item-action ${
-                    typeof selectedCategory === 'object' &&
-                    category._id === selectedCategory?._id
-                      ? 'active'
-                      : ''
-                  }`}
-                  onClick={() => handleClick(null, null, category)}
+                  {category.name}
+                </Button>
+              </List.Item>
+            )}
+            style={{ maxHeight: 250, overflowY: 'auto', background: '#fff' }}
+          />
+        )}
+      </Col>
+      <Col span={8}>
+        {lv3Loading ? (
+          <Spin />
+        ) : lv3Error ? (
+          <Alert type='error' message={String(lv3Error as any)} />
+        ) : (
+          <List
+            dataSource={lv3Data || []}
+            renderItem={(category) => (
+              <List.Item>
+                <Button
+                  type={
+                    selectedCategory &&
+                    typeof selectedCategory !== 'string' &&
+                    category._id === selectedCategory._id
+                      ? 'primary'
+                      : 'default'
+                  }
+                  block
+                  onClick={() => handleClickLv3(category)}
+                  style={{ textAlign: 'left' }}
                 >
-                  <span className='res-smaller-md'>{category.name}</span>
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
+                  {category.name}
+                </Button>
+              </List.Item>
+            )}
+            style={{ maxHeight: 250, overflowY: 'auto', background: '#fff' }}
+          />
+        )}
+      </Col>
       {isSelected && (
-        <div className='col mt-2'>
-          <div className='mt-4 position-relative'>
-            <label
-              className='position-absolute text-muted fs-9'
-              style={{
-                top: '-20px'
-              }}
-            >
-              {label}
-            </label>
-
-            <div
-              style={{ height: '100%', maxHeight: '300px', overflow: 'auto' }}
-              className='form-control border bg-light-subtle d-flex flex-column gap-3'
-            >
-              {selectedCategory ? (
-                <div className='position-relative'>
-                  <div className='me-5'>
-                    {typeof selectedCategory === 'object' ? (
-                      <CategorySmallCard category={selectedCategory} />
-                    ) : null}
-                  </div>
-
-                  <button
-                    type='button'
-                    className='btn btn-outline-danger btn-sm ripple position-absolute'
-                    style={{
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      right: '0'
-                    }}
-                    onClick={() => handleDelete()}
-                  >
-                    <i className='fa-solid fa-xmark text-danger'></i>
-                  </button>
-                </div>
-              ) : (
-                <span className={isRequired ? 'text-danger' : ''}>
-                  {t('variantDetail.required')}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
+        <Col span={24} style={{ marginTop: 16 }}>
+          <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+            {label}
+          </Typography.Text>
+          <Card style={{ minHeight: 60, marginTop: 8, background: '#fafafa' }}>
+            {selectedCategory && typeof selectedCategory !== 'string' ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <CategorySmallCard category={selectedCategory} />
+                <Button
+                  type='text'
+                  danger
+                  size='small'
+                  onClick={handleDelete}
+                  style={{ marginLeft: 'auto' }}
+                >
+                  {t('delete') || <span>X</span>}
+                </Button>
+              </div>
+            ) : (
+              <span className={isRequired ? 'text-danger' : ''}>
+                {t('variantDetail.required')}
+              </span>
+            )}
+          </Card>
+        </Col>
       )}
-    </div>
+    </Row>
   )
 }
 

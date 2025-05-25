@@ -70,6 +70,9 @@
     "product": "Sản Phẩm"
   },
   "toastSuccess": {
+    "report": {
+      "delete": "Xoá báo cáo thành công"
+    },
     "variant": {
       "create": "Thêm phân loại thành công",
       "update": "Chỉnh sửa phân loại thành công",
@@ -567,6 +570,7 @@
     "unActive": "Khoá",
     "active": "Hoạt động",
     "banned": "Tạm khoá",
+    "deleted": "Đã xoá",
     "showing": "Đang hoạt động",
     "hidden": "Đã ẩn",
     "cantCancelOrder": "Không thể huỷ đơn hàng",

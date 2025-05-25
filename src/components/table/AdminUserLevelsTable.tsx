@@ -193,8 +193,8 @@ const AdminUserLevelsTable = ({ heading = false }) => {
       {isLoading && <Loading />}
       {error && <Error msg={error} />}
 
-      <div className='p-3 box-shadow bg-body rounded-2'>
-        <div className=' d-flex align-items-center justify-content-between mb-3'>
+      <div className='p-3 bg-white rounded-md'>
+        <div className='flex gap-3 items-center flex-wrap'>
           <SearchInput onChange={handleChangeKeyword} />
           <AdminCreateUserLevelItem onRun={() => setRun(!run)} />
         </div>

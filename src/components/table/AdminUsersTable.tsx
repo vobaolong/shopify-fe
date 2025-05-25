@@ -6,12 +6,20 @@ import UserSmallCard from '../card/UserSmallCard'
 import { useTranslation } from 'react-i18next'
 import VerifyLabel from '../label/VerifyLabel'
 import { useState } from 'react'
-import { Table, DatePicker, Button, Alert, Select, Typography } from 'antd'
+import {
+  Table,
+  DatePicker,
+  Button,
+  Alert,
+  Select,
+  Typography,
+  Divider
+} from 'antd'
 import type { RangePickerProps } from 'antd/es/date-picker'
 import { SyncOutlined } from '@ant-design/icons'
 import { UserType } from '../../@types/entity.types'
 import { ColumnsType } from 'antd/es/table'
-import { PaginationType } from './TransactionsTable'
+import { PaginationType } from '../../@types/pagination.type'
 
 export interface Filter {
   search?: string
@@ -168,7 +176,7 @@ const AdminUsersTable = ({ heading = false }) => {
       )}
       {error && <Alert message={error.message} type='error' />}
       <div className='p-3 bg-white rounded-md'>
-        <div className='mb-3 d-flex gap-4 items-center flex-wrap'>
+        <div className='flex gap-4 items-center flex-wrap'>
           <SearchInput
             value={pendingFilter.search || ''}
             onChange={handleChangeKeyword}
@@ -199,7 +207,7 @@ const AdminUsersTable = ({ heading = false }) => {
               { label: t('status.verified'), value: 'isEmailActive' },
               { label: t('status.notVerified'), value: '!isEmailActive' }
             ]}
-            dropdownStyle={{ minWidth: 150 }}
+            styles={{ popup: { root: { width: 150 } } }}
           />
 
           <Button type='primary' onClick={handleSearch} className='!h-10'>
@@ -213,6 +221,7 @@ const AdminUsersTable = ({ heading = false }) => {
             icon={<SyncOutlined spin={isLoading} />}
           />
         </div>
+        <Divider />
         <Table
           columns={columns}
           dataSource={users}

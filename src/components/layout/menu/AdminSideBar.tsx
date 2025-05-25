@@ -37,7 +37,7 @@ const AdminSideBar = () => {
           >
             <i
               className={`${
-                path === 'user' ? 'fa-solid' : 'fa-light'
+                path === 'users' ? 'fa-solid' : 'fa-light'
               } w-10 text-center fa-user-group`}
             ></i>
             <span className='ms-3 res-hide-lg'>{t('admin.users')}</span>
@@ -45,14 +45,14 @@ const AdminSideBar = () => {
         </li>
         <li className='nav-item'>
           <Link
-            to={`/admin/store`}
+            to={`/admin/stores`}
             className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'store' ? 'active' : ''
+              path === 'stores' ? 'active' : ''
             }`}
           >
             <i
               className={`${
-                path === 'store' ? 'fa-solid' : 'fa-light'
+                path === 'stores' ? 'fa-solid' : 'fa-light'
               } w-10 text-center fa-store`}
             ></i>
 
@@ -61,14 +61,14 @@ const AdminSideBar = () => {
         </li>
         <li className='nav-item'>
           <Link
-            to='/admin/order'
+            to='/admin/orders'
             className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'order' ? 'active' : ''
+              path === 'orders' ? 'active' : ''
             }`}
           >
             <i
               className={`${
-                path === 'order' ? 'fa-solid' : 'fa-light'
+                path === 'orders' ? 'fa-solid' : 'fa-light'
               } w-10 text-center fa-receipt`}
             ></i>
             <span className='ms-3 res-hide-lg'>{t('admin.orders')}</span>
@@ -76,14 +76,14 @@ const AdminSideBar = () => {
         </li>
         <li className='nav-item'>
           <Link
-            to='/admin/transaction'
+            to='/admin/transactions'
             className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'transaction' ? 'active' : ''
+              path === 'transactions' ? 'active' : ''
             }`}
           >
             <i
               className={`${
-                path === 'transaction' ? 'fa-solid' : 'fa-light'
+                path === 'transactions' ? 'fa-solid' : 'fa-light'
               } w-10 text-center fa-money-bill-transfer`}
             ></i>
             <span className='ms-3 res-hide-lg'>{t('admin.transactions')}</span>
@@ -91,14 +91,14 @@ const AdminSideBar = () => {
         </li>
         <li className='nav-item'>
           <Link
-            to={`/admin/category`}
+            to={`/admin/categories`}
             className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'category' ? 'active' : ''
+              path === 'categories' ? 'active' : ''
             }`}
           >
             <i
               className={`${
-                path === 'category' ? 'fa-solid' : 'fa-light'
+                path === 'categories' ? 'fa-solid' : 'fa-light'
               } w-10 text-center fa-list`}
             ></i>
             <span className='ms-3 res-hide-lg'>{t('admin.categories')}</span>
@@ -106,14 +106,14 @@ const AdminSideBar = () => {
         </li>
         <li className='nav-item'>
           <Link
-            to={`/admin/variant`}
+            to={`/admin/variants`}
             className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'variant' ? 'active' : ''
+              path === 'variants' ? 'active' : ''
             }`}
           >
             <i
               className={`${
-                path === 'variant' ? 'fa-solid' : 'fa-light'
+                path === 'variants' ? 'fa-solid' : 'fa-light'
               } w-10 text-center fa-palette`}
             ></i>
             <span className='ms-3 res-hide-lg'>{t('admin.variants')}</span>
@@ -121,14 +121,14 @@ const AdminSideBar = () => {
         </li>
         <li className='nav-item'>
           <Link
-            to={`/admin/product`}
+            to={`/admin/products`}
             className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'product' ? 'active' : ''
+              path === 'products' ? 'active' : ''
             }`}
           >
             <i
               className={`${
-                path === 'product' ? 'fa-solid' : 'fa-light'
+                path === 'products' ? 'fa-solid' : 'fa-light'
               } w-10 text-center fa-box`}
             ></i>
             <span className='ms-3 res-hide-lg'>{t('admin.products')}</span>
@@ -136,14 +136,14 @@ const AdminSideBar = () => {
         </li>
         <li className='nav-item'>
           <Link
-            to={`/admin/level`}
+            to={`/admin/levels`}
             className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'level' ? 'active' : ''
+              path === 'levels' ? 'active' : ''
             }`}
           >
             <i
               className={`${
-                path === 'level' ? 'fa-solid' : 'fa-light'
+                path === 'levels' ? 'fa-solid' : 'fa-light'
               } w-10 text-center fa-shield-alt`}
             ></i>
             <span className='ms-3 res-hide-lg'>{t('admin.levels')}</span>
@@ -151,14 +151,14 @@ const AdminSideBar = () => {
         </li>
         <li className='nav-item'>
           <Link
-            to={`/admin/commission`}
+            to={`/admin/commissions`}
             className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'commission' ? 'active' : ''
+              path === 'commissions' ? 'active' : ''
             }`}
           >
             <i
               className={`${
-                path === 'commission' ? 'fa-solid' : 'fa-light'
+                path === 'commissions' ? 'fa-solid' : 'fa-light'
               } w-10 text-center fa-percent`}
             ></i>
             <span className='ms-3 res-hide-lg'>{t('admin.commissions')}</span>
@@ -166,14 +166,14 @@ const AdminSideBar = () => {
         </li>
         <li className='nav-item'>
           <Link
-            to={`/admin/report`}
+            to={`/admin/reports`}
             className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'report' ? 'active' : ''
+              path === 'reports' ? 'active' : ''
             }`}
           >
             <i
               className={`${
-                path === 'report' ? 'fa-solid' : 'fa-light'
+                path === 'reports' ? 'fa-solid' : 'fa-light'
               } w-10 text-center fa-triangle-exclamation`}
             ></i>
             <span className='ms-3 res-hide-lg'>{t('admin.reports')}</span>
@@ -182,14 +182,14 @@ const AdminSideBar = () => {
         {/*  */}
         <li className='nav-item'>
           <Link
-            to={`/admin/review`}
+            to={`/admin/reviews`}
             className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'review' ? 'active' : ''
+              path === 'reviews' ? 'active' : ''
             }`}
           >
             <i
               className={`${
-                path === 'review' ? 'fa-solid' : 'fa-light'
+                path === 'reviews' ? 'fa-solid' : 'fa-light'
               } w-10 text-center fa-comment`}
             ></i>
             <span className='ms-3 res-hide-lg'>{t('admin.reviews')}</span>
@@ -198,14 +198,14 @@ const AdminSideBar = () => {
         {/*  */}
         <li className='nav-item'>
           <Link
-            to={`/admin/brand`}
+            to={`/admin/brands`}
             className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'brand' ? 'active' : ''
+              path === 'brands' ? 'active' : ''
             }`}
           >
             <i
               className={`${
-                path === 'brand' ? 'fa-solid' : 'fa-light'
+                path === 'brands' ? 'fa-solid' : 'fa-light'
               } w-10 text-center fa-font-awesome`}
             ></i>
             <span className='ms-3 res-hide-lg'>{t('admin.brands')}</span>

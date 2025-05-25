@@ -5,49 +5,41 @@ import {
   removeCategory,
   restoreCategory
 } from '../../apis/category'
-import Pagination from '../ui/Pagination'
 import SearchInput from '../ui/SearchInput'
 import DeletedLabel from '../label/DeletedLabel'
 import CategorySmallCard from '../card/CategorySmallCard'
-import Loading from '../ui/Loading'
-import ConfirmDialog from '../ui/ConfirmDialog'
 import ActiveLabel from '../label/ActiveLabel'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import CategorySelector from '../selector/CategorySelector'
 import { humanReadableDate } from '../../helper/humanReadable'
-import Modal from '../ui/Modal'
 import Error from '../ui/Error'
-import { Table } from 'antd'
+import {
+  Table,
+  Button,
+  Alert,
+  Modal,
+  Avatar,
+  Tooltip,
+  Drawer,
+  Divider
+} from 'antd'
 import { useQuery } from '@tanstack/react-query'
+import { CategoryType } from '../../@types/entity.types'
+import CustomModal from '../ui/Modal'
+import { ColumnsType } from 'antd/es/table'
+import AdminCreateCategoryForm from '../item/form/AdminCreateCategoryForm'
+import { Pen, PencilLine, Plus } from 'lucide-react'
 
-interface Category {
-  _id: string
-  name: string
-  image?: string
-  categoryId?: any
-  isDeleted: boolean
-  createdAt: string
-}
-
-interface CategoriesResponse {
-  categories: Category[]
-  size: number
-  filter: { pageCurrent: number; pageCount: number }
-}
-
-const fetchCategories = async (filter: any): Promise<CategoriesResponse> => {
-  const res = await listCategories(filter)
-  return res.data || res
-}
-
-const AdminCategoriesTable = ({ heading = false }) => {
+const AdminCategoriesTable = () => {
   const { t } = useTranslation()
   const [isConfirming, setIsConfirming] = useState(false)
   const [isConfirmingRestore, setIsConfirmingRestore] = useState(false)
   const [run, setRun] = useState(false)
-  const [deletedCategory, setDeletedCategory] = useState<Category | null>(null)
-  const [restoredCategory, setRestoredCategory] = useState<Category | null>(
+  const [deletedCategory, setDeletedCategory] = useState<CategoryType | null>(
+    null
+  )
+  const [restoredCategory, setRestoredCategory] = useState<CategoryType | null>(
     null
   )
   const [filter, setFilter] = useState({
@@ -55,132 +47,121 @@ const AdminCategoriesTable = ({ heading = false }) => {
     categoryId: '',
     sortBy: 'categoryId',
     order: 'asc',
-    limit: 7,
+    limit: 10,
     page: 1
   })
+  const [pendingFilter, setPendingFilter] = useState(filter)
+  const [loadingDelete, setLoadingDelete] = useState(false)
+  const [loadingRestore, setLoadingRestore] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [editingCategory, setEditingCategory] = useState<CategoryType | null>(
+    null
+  )
 
-  const { data, isLoading, error } = useQuery<CategoriesResponse, Error>({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['categories', filter, run],
-    queryFn: () => fetchCategories(filter)
+    queryFn: async () => {
+      return await listCategories(filter)
+    }
   })
 
-  const categories: Category[] = data?.categories || []
+  const categories: CategoryType[] = data?.categories || []
   const pagination = data?.filter || { pageCurrent: 1, pageCount: 1 }
-  const dataSource = categories.map((category: Category, idx: number) => ({
-    ...category,
-    key: category._id || idx
-  }))
 
   const handleChangeKeyword = (keyword: string) => {
-    setFilter({
-      ...filter,
+    setPendingFilter({
+      ...pendingFilter,
       search: keyword,
       page: 1
     })
   }
 
-  const handleChangePage = (newPage: number) => {
-    setFilter({
-      ...filter,
-      page: newPage
-    })
+  const handleSearch = () => {
+    setFilter({ ...pendingFilter })
   }
 
-  const handleSetSortBy = (order: string, sortBy: string) => {
-    setFilter({
-      ...filter,
-      sortBy,
-      order
-    })
+  const handleTableChange = (pagination: any, _filters: any, sorter: any) => {
+    setFilter((prev) => ({
+      ...prev,
+      page: pagination.current,
+      limit: pagination.pageSize,
+      sortBy: sorter.field || prev.sortBy,
+      order:
+        sorter.order === 'ascend'
+          ? 'asc'
+          : sorter.order === 'descend'
+            ? 'desc'
+            : prev.order
+    }))
   }
 
-  const removeDeleteCategory = (category: Category) => {
+  const removeDeleteCategory = (category: CategoryType) => {
     setDeletedCategory(category)
     setIsConfirming(true)
   }
 
-  const handleRestoreCategory = (category: Category) => {
+  const handleRestoreCategory = (category: CategoryType) => {
     setRestoredCategory(category)
     setIsConfirmingRestore(true)
   }
 
-  const onSubmitDelete = () => {
+  const onSubmitDelete = async () => {
     if (!deletedCategory) return
-    removeCategory(deletedCategory._id)
-      .then((res) => {
-        const data = res.data || res
-        if (data.error) toast.error(data.error)
-        else {
-          toast.success(t('toastSuccess.category.delete'))
-          setRun((r) => !r)
-        }
-        setIsConfirming(false)
-      })
-      .catch(() => {
-        toast.error('Server Error')
-        setIsConfirming(false)
-      })
+    setLoadingDelete(true)
+    try {
+      await removeCategory(deletedCategory._id)
+      toast.success(t('toastSuccess.category.delete'))
+      setRun((r) => !r)
+    } catch (err: any) {
+      toast.error(err?.message || 'Server Error')
+    } finally {
+      setIsConfirming(false)
+      setLoadingDelete(false)
+    }
   }
 
-  const onSubmitRestore = () => {
+  const onSubmitRestore = async () => {
     if (!restoredCategory) return
-    restoreCategory(restoredCategory._id)
-      .then((res) => {
-        const data = res.data || res
-        if (data.error) toast.error(data.error)
-        else {
-          toast.success(t('toastSuccess.category.restore'))
-          setRun((r) => !r)
-        }
-        setIsConfirmingRestore(false)
-      })
-      .catch(() => {
-        toast.error('Server Error')
-        setIsConfirmingRestore(false)
-      })
+    setLoadingRestore(true)
+    try {
+      await restoreCategory(restoredCategory._id)
+      toast.success(t('toastSuccess.category.restore'))
+      setRun((r) => !r)
+    } catch (err: any) {
+      toast.error(err?.message || 'Server Error')
+    } finally {
+      setIsConfirmingRestore(false)
+      setLoadingRestore(false)
+    }
   }
 
-  const columns = [
+  const columns: ColumnsType<CategoryType> = [
     {
       title: '#',
       dataIndex: 'index',
       key: 'index',
-      render: (_: any, __: any, index: number) =>
-        index + 1 + (filter.page - 1) * filter.limit,
-      width: 50
+      align: 'center',
+      render: (_: any, __: any, idx: number) =>
+        (pagination.pageCurrent - 1) * filter.limit + idx + 1,
+      width: 60
     },
-    {
-      title: t('categoryDetail.name'),
-      dataIndex: 'name',
-      key: 'name'
-    },
+
     {
       title: t('categoryDetail.img'),
       dataIndex: 'image',
       key: 'image',
       render: (image: string, record: any) =>
         image ? (
-          <div className='relative w-[50px] h-[50px]'>
-            <img
-              loading='lazy'
-              src={image}
-              alt={record.name}
-              style={{
-                position: 'absolute',
-                width: '100%',
-                height: '100%',
-                top: '0',
-                left: '0',
-                objectFit: 'contain',
-                borderRadius: '0.25rem',
-                boxShadow:
-                  'rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px'
-              }}
-            />
-          </div>
+          <Avatar src={image} alt={record.name} shape='square' size={40} />
         ) : (
           '-'
-        )
+        ),
+      width: 60
+    },
+    {
+      title: t('categoryDetail.name'),
+      dataIndex: 'name',
+      key: 'name'
     },
     {
       title: t('categoryDetail.parent'),
@@ -206,81 +187,97 @@ const AdminCategoriesTable = ({ heading = false }) => {
       title: t('createdAt'),
       dataIndex: 'createdAt',
       key: 'createdAt',
-      render: (date: string) => humanReadableDate(date)
+      render: (date: string) => humanReadableDate(date),
+      sorter: true
     },
     {
       title: t('action'),
       key: 'action',
-      render: (_: any, category: Category) => (
-        <div className='text-nowrap'>
-          <div className='position-relative d-inline-block'>
-            <Link
-              type='button'
-              className='btn btn-sm btn-outline-primary ripple me-2 rounded-1 cus-tooltip'
-              to={`/admin/category/edit/${category._id}`}
-              title={t('button.edit')}
-            >
-              <i className='fa-duotone fa-pen-to-square'></i>
-            </Link>
-            <span className='cus-tooltip-msg'>{t('button.edit')}</span>
-          </div>
-          <div className='position-relative d-inline-block'>
+      render: (_: any, category: CategoryType) => (
+        <div className='text-nowrap d-flex align-items-center gap-2'>
+          <Tooltip placement='top' title={t('button.edit')}>
+            <Button
+              type='primary'
+              size='middle'
+              onClick={() => {
+                setEditingCategory(category)
+                setDrawerOpen(true)
+              }}
+              icon={<Pen size={16} />}
+            />
+          </Tooltip>
+          <Tooltip
+            placement='top'
+            title={
+              !category.isDeleted ? t('button.delete') : t('button.restore')
+            }
+          >
             {!category.isDeleted ? (
-              <button
-                type='button'
-                className='btn btn-sm btn-outline-danger rounded-1 ripple cus-tooltip'
+              <Button
+                type='default'
+                size='middle'
+                danger
                 onClick={() => removeDeleteCategory(category)}
-                title={t('button.delete')}
-              >
-                <i className='fa-solid fa-trash-alt'></i>
-              </button>
+                icon={<i className='fa-solid fa-trash-alt' />}
+              />
             ) : (
-              <button
-                type='button'
-                className='btn btn-sm btn-outline-success ripple cus-tooltip'
+              <Button
+                color='green'
+                variant='outlined'
+                size='middle'
                 onClick={() => handleRestoreCategory(category)}
-                title={t('button.restore')}
-              >
-                <i className='fa-solid fa-trash-can-arrow-up'></i>
-              </button>
+                icon={<i className='fa-solid fa-trash-can-arrow-up' />}
+              />
             )}
-            <span className='cus-tooltip-msg'>
-              {!category.isDeleted ? t('button.delete') : t('button.restore')}
-            </span>
-          </div>
+          </Tooltip>
         </div>
       )
     }
   ]
 
   return (
-    <div className='position-relative'>
-      {isLoading && <Loading />}
-      {error && <Error msg={error.message || 'Server Error'} />}
-      {isConfirming && deletedCategory && (
-        <ConfirmDialog
-          title={t('categoryDetail.delete')}
-          message={t('message.delete')}
-          color='danger'
-          onSubmit={onSubmitDelete}
-          onClose={() => setIsConfirming(false)}
-        />
-      )}
-      {isConfirmingRestore && restoredCategory && (
-        <ConfirmDialog
-          title={t('categoryDetail.restore')}
-          message={t('message.restore')}
-          onSubmit={onSubmitRestore}
-          onClose={() => setIsConfirmingRestore(false)}
-        />
-      )}
-      <div className='mb-2'>
-        {heading && <h5 className='text-start'>{t('admin.categories')}</h5>}
-      </div>
+    <div>
+      {error && <Alert message={error.message} type='error' />}
+      {/* Delete Confirmation Modal (AntD) */}
+      <Modal
+        open={isConfirming}
+        title={t('categoryDetail.delete')}
+        onOk={onSubmitDelete}
+        onCancel={() => setIsConfirming(false)}
+        okText={t('button.confirm')}
+        cancelText={t('button.cancel')}
+        okButtonProps={{ danger: true, loading: loadingDelete }}
+        confirmLoading={loadingDelete}
+        destroyOnClose
+      >
+        <div className='text-center p-3'>
+          <div className='mb-3'>{t('message.delete')}</div>
+        </div>
+      </Modal>
+      {/* Restore Confirmation Modal (AntD) */}
+      <Modal
+        open={isConfirmingRestore}
+        title={t('categoryDetail.restore')}
+        onOk={onSubmitRestore}
+        onCancel={() => setIsConfirmingRestore(false)}
+        okText={t('button.confirm')}
+        cancelText={t('button.cancel')}
+        confirmLoading={loadingRestore}
+        destroyOnClose
+      >
+        <div className='text-center p-3'>
+          <div className='mb-3'>{t('message.restore')}</div>
+        </div>
+      </Modal>
 
-      <div className='p-3 box-shadow bg-body rounded-2'>
-        <div className=' d-flex align-items-center justify-content-between mb-3'>
-          <SearchInput onChange={handleChangeKeyword} />
+      <div className='p-3 bg-white rounded-md'>
+        <div className='flex gap-3 items-center flex-wrap'>
+          <SearchInput
+            value={pendingFilter.search || ''}
+            onChange={handleChangeKeyword}
+            onSearch={handleSearch}
+            loading={isLoading}
+          />
 
           <div className='d-flex gap-1'>
             <div className='align-items-center d-flex justify-content-end'>
@@ -291,7 +288,7 @@ const AdminCategoriesTable = ({ heading = false }) => {
                   data-bs-toggle='modal'
                   data-bs-target='#admin-category-tree'
                 >
-                  <i className='fa-light fa-list-tree'></i>
+                  <i className='fa-light fa-list-tree' />
                   <span className='res-hide ms-2'>
                     {t('categoryDetail.tree')}
                   </span>
@@ -302,47 +299,62 @@ const AdminCategoriesTable = ({ heading = false }) => {
                 </small>
               </div>
             </div>
-            <Modal
+            <CustomModal
               id='admin-category-tree'
               hasCloseBtn={false}
               title={t('categoryDetail.tree')}
               style={{ maxWidth: '1000px', width: '100%', margin: 'auto' }}
             >
               <CategorySelector isActive={true} isSelected={false} />
-            </Modal>
-            <Link
-              type='button'
-              className='btn btn-primary ripple text-nowrap rounded-1'
-              to='/admin/category/create'
+            </CustomModal>
+            <Button
+              className='!h-10'
+              type='primary'
+              onClick={(e) => {
+                e.preventDefault()
+                setEditingCategory(null)
+                setDrawerOpen(true)
+              }}
+              icon={<Plus size={16} />}
             >
-              <i className='fa-light fa-plus'></i>
-              <span className='ms-2 res-hide'>{t('categoryDetail.add')}</span>
-            </Link>
+              <span className='res-hide'>{t('categoryDetail.add')}</span>
+            </Button>
           </div>
         </div>
-
-        <div className='table-scroll my-2'>
-          <Table
-            columns={columns}
-            dataSource={dataSource}
-            loading={isLoading}
-            pagination={false}
-          />
-        </div>
-        <div className='flex justify-between items-center px-4'>
-          {/* <ShowResult
-            limit={filter.limit}
-            size={categories.length}
-            pageCurrent={pagination.pageCurrent}
-          /> */}
-          {categories.length !== 0 && (
-            <Pagination
-              pagination={pagination}
-              onChangePage={handleChangePage}
-            />
-          )}
-        </div>
+        <Divider />
+        <Table
+          columns={columns}
+          dataSource={categories.map((category: CategoryType, idx: number) => ({
+            ...category,
+            key: category._id || idx
+          }))}
+          loading={isLoading}
+          pagination={{
+            current: pagination.pageCurrent,
+            pageSize: filter.limit,
+            total: data?.size || 0,
+            onChange: (page, pageSize) =>
+              handleTableChange({ current: page, pageSize }, {}, {}),
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} ${t('of')} ${total} ${t('result')}`
+          }}
+          onChange={handleTableChange}
+          rowKey='_id'
+          bordered
+          scroll={{ x: 'max-content' }}
+        />
       </div>
+      <Drawer
+        title={
+          editingCategory ? t('categoryDetail.edit') : t('categoryDetail.add')
+        }
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        width={900}
+        destroyOnClose
+      >
+        <AdminCreateCategoryForm />
+      </Drawer>
     </div>
   )
 }

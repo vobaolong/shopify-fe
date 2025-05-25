@@ -157,7 +157,7 @@ const AdminEditCategoryForm = ({ categoryId = '' }) => {
         >
           <div className='d-flex justify-content-between align-items-center'>
             <Link
-              to='/admin/category'
+              to='/admin/categories'
               className='text-decoration-none cus-link-hover res-w-100-md my-2'
             >
               <i className='fa-solid fa-angle-left'></i> {t('button.back')}

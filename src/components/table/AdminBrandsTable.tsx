@@ -249,8 +249,8 @@ const AdminBrandsTable = ({ heading = false }) => {
       )}
 
       {heading && <h5 className='text-start'>{t('title.productBrands')}</h5>}
-      <div className='p-3 box-shadow bg-body rounded-2'>
-        <div className=' d-flex align-items-center justify-content-between mb-3'>
+      <div className='p-3 bg-white rounded-md'>
+        <div className='flex gap-3 items-center flex-wrap'>
           <SearchInput onChange={handleChangeKeyword} />
           <Link
             type='button'

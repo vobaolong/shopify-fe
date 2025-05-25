@@ -505,6 +505,7 @@
     "active": "Active",
     "unActive": "UnActive",
     "banned": "Banned",
+    "deleted": "Deleted",
     "showing": "Showing",
     "hiding": "Hiding",
     "cantCancelOrder": "Can't can order",

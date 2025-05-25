@@ -6,7 +6,6 @@ import {
   useProductFavoriteCount,
   useIsFavoriteProduct
 } from '../../hooks/useFavorite'
-import StarRating from '../label/StarRating'
 import FollowProductButton from '../button/FollowProductButton'
 import { useTranslation } from 'react-i18next'
 import { calcPercent } from '../../helper/calcPercent'

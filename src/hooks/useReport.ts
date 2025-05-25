@@ -5,11 +5,11 @@ import { listReportsForAdmin, reportByUser, deleteReport } from '../apis/report'
 export const reportKeys = {
   all: ['reports'],
   lists: () => [...reportKeys.all, 'list'],
-  list: (filters) => [...reportKeys.lists(), { filters }]
+  list: (filters: any) => [...reportKeys.lists(), { filters }]
 }
 
 // Hooks
-export const useReportsForAdmin = (filters) => {
+export const useReportsForAdmin = (filters: Record<string, unknown>) => {
   return useQuery({
     queryKey: reportKeys.list(filters),
     queryFn: () => listReportsForAdmin(filters)
@@ -29,9 +29,8 @@ export const useReportByUser = () => {
 
 export const useDeleteReport = () => {
   const queryClient = useQueryClient()
-
   return useMutation({
-    mutationFn: (reportId) => deleteReport(reportId),
+    mutationFn: (reportId: string) => deleteReport(reportId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: reportKeys.lists() })
     }

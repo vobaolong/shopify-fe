@@ -26,7 +26,7 @@ const AdminCreateCategoryForm = () => {
       if (res.data.error) notification.error({ message: res.data.error })
       else {
         notification.success({ message: t('toastSuccess.category.create') })
-        navigate('/admin/category')
+        navigate('/admin/categories')
       }
     },
     onError: () => {
@@ -53,7 +53,7 @@ const AdminCreateCategoryForm = () => {
 
   const handleConfirmBack = () => {
     setIsConfirmingBack(false)
-    navigate('/admin/category')
+    navigate('/admin/categories')
   }
 
   const handleFinish = (values: any) => {
@@ -152,7 +152,7 @@ const AdminCreateCategoryForm = () => {
         >
           <div className='d-flex justify-content-end align-items-center'>
             <Link
-              to='/admin/category'
+              to='/admin/categories'
               className='btn btn-outline-primary ripple res-w-100-md rounded-1 me-3'
               style={{ width: '200px', maxWidth: '100%' }}
               onClick={handleBackClick}

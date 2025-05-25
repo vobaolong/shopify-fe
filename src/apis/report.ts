@@ -1,44 +1,20 @@
 import axiosClient from './client'
 
-export const listReportsForAdmin = async (filter: any) => {
-	const { search, sortBy, order, limit, page, isStore, isProduct, isReview } =
-		filter
-	try {
-		const res = await axiosClient.get('/reports', {
-			params: {
-				search,
-				sortBy,
-				isStore,
-				isProduct,
-				isReview,
-				order,
-				limit,
-				page
-			}
-		})
-		return res
-	} catch (error) {
-		console.log(error)
-		throw error
-	}
+type ReportsResponse = { size: number; reports: any[]; filter: any }
+export const listReportsForAdmin = async (
+  params: any
+): Promise<ReportsResponse> => {
+  return axiosClient.get('/admin/reports', {
+    params
+  })
 }
 
-export const reportByUser = async (data: any) => {
-	try {
-		const res = await axiosClient.post('/reports', data)
-		return res
-	} catch (error) {
-		console.error(error)
-		throw error
-	}
+export const reportByUser = async (data: any): Promise<ReportsResponse> => {
+  return axiosClient.post('/reports', data)
 }
 
-export const deleteReport = async (reportId: string) => {
-	try {
-		const res = await axiosClient.delete(`/reports/${reportId}`)
-		return res
-	} catch (error) {
-		console.log(error)
-		throw error
-	}
+export const deleteReport = async (
+  reportId: string
+): Promise<ReportsResponse> => {
+  return axiosClient.delete(`/admin/report/${reportId}`)
 }

@@ -1,278 +1,328 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from 'react'
-import { deleteReport, listReportsForAdmin } from '../../apis/report'
-import { humanReadableDate } from '../../helper/humanReadable'
-import Pagination from '../ui/Pagination'
-import SortByButton from './sub/SortByButton'
-import Loading from '../ui/Loading'
+import { useDeleteReport } from '../../hooks/useReport'
+import { useQuery } from '@tanstack/react-query'
+import { listReportsForAdmin } from '../../apis/report'
+import {
+  Table,
+  Button,
+  Modal,
+  Alert,
+  Divider,
+  Tabs,
+  Tooltip,
+  Select,
+  DatePicker,
+  notification
+} from 'antd'
+import { useState, useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import ShowResult from '../ui/ShowResult'
-import Error from '../ui/Error'
-import boxImg from '../../assets/box.svg'
-import { Link } from 'react-router-dom'
 import SearchInput from '../ui/SearchInput'
-import ConfirmDialog from '../ui/ConfirmDialog'
+import { humanReadableDate } from '../../helper/humanReadable'
+import { Link } from 'react-router-dom'
+import { PaginationType } from '../../@types/pagination.type'
+import { ReportType } from '../../@types/entity.types'
+import { Trash } from 'lucide-react'
+import dayjs, { Dayjs } from 'dayjs'
 
-const AdminReportsTable = ({ heading = false, activeTab = 'store' }) => {
+const tabOptions = [
+  { labelKey: 'title.listReportShop', value: 'stores' },
+  { labelKey: 'title.listReportProduct', value: 'products' },
+  { labelKey: 'title.listReportReview', value: 'reviews' }
+]
+
+const filterFieldOptions = [
+  { label: '_id', value: '_id' },
+  { label: 'objectId', value: 'objectId' },
+  { label: 'email', value: 'email' }
+]
+
+type Filter = {
+  search: string
+  sortBy: string
+  activeTab: string
+  order: string
+  limit: number
+  page: number
+  isStore?: boolean
+  isProduct?: boolean
+  isReview?: boolean
+  field: string
+  createdAtFrom?: string
+  createdAtTo?: string
+}
+
+const AdminReportsTable = () => {
   const { t } = useTranslation()
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [reports, setReports] = useState([])
-  const [pagination, setPagination] = useState({
-    size: 0
-  })
-  const [isConfirming, setIsConfirming] = useState(false)
-  const [reportToDelete, setReportToDelete] = useState(null)
-  const [filter, setFilter] = useState({
+  const [activeTab, setActiveTab] = useState('stores')
+  const [filterField, setFilterField] = useState<string>('_id')
+  const [dateRange, setDateRange] = useState<
+    [Dayjs | null, Dayjs | null] | null
+  >(null)
+  const [filter, setFilter] = useState<Filter>({
     search: '',
     sortBy: 'createdAt',
-    activeTab,
+    activeTab: 'stores',
     order: 'desc',
     limit: 10,
-    page: 1
+    page: 1,
+    isStore: true,
+    isProduct: false,
+    isReview: false,
+    field: '_id',
+    createdAtFrom: undefined,
+    createdAtTo: undefined
   })
-  const init = () => {
-    let isMounted = true
-    setIsLoading(true)
-    listReportsForAdmin(filter)
-      .then((data) => {
-        if (data.error) {
-          setError(data.error)
-        } else {
-          if (isMounted) {
-            setReports(data.reports || [])
-            setPagination({
-              size: data.size || 0,
-              pageCurrent: data.filter.pageCurrent || 1,
-              pageCount: data.filter.pageCount || 1
-            })
-          }
-        }
-        setTimeout(() => setError(''), 3000)
-      })
-      .catch(() => {
-        setError('Server Error')
-        setTimeout(() => setError(''), 3000)
-      })
-      .finally(() => {
-        if (isMounted) {
-          setIsLoading(false)
-        }
-      })
-    return () => {
-      isMounted = false
+  const [pendingFilter, setPendingFilter] = useState<Filter>(filter)
+  const [error, setError] = useState('')
+
+  // Data fetching
+  const { data, isLoading, refetch, isSuccess } = useQuery({
+    queryKey: ['admin-reports', filter],
+    queryFn: async () => {
+      return await listReportsForAdmin(filter)
     }
+  })
+  const deleteMutation = useDeleteReport()
+
+  const reports: ReportType[] = data?.reports || []
+  const pagination: PaginationType = {
+    size: data?.size || 0,
+    pageCurrent: data?.filter?.pageCurrent || filter.page,
+    pageCount: data?.filter?.pageCount || 1
   }
 
-  useEffect(() => {
-    init()
-  }, [filter, reports.length, reportToDelete])
+  const columns = useMemo(
+    () => [
+      {
+        title: '#',
+        dataIndex: 'index',
+        key: 'index',
+        align: 'center' as const,
+        render: (_: any, __: any, idx: number) =>
+          (pagination.pageCurrent - 1) * filter.limit + idx + 1,
+        width: 60
+      },
+      {
+        title: t('reportDetail.id'),
+        dataIndex: '_id',
+        key: '_id'
+      },
+      {
+        title: t('reportDetail.objectId'),
+        dataIndex: ['objectId', '_id'],
+        key: 'objectId',
+        render: (_: any, record: ReportType) => record.objectId?._id || '-'
+      },
+      // {
+      //   title: t('reportDetail.objectName'),
+      //   dataIndex: ['objectId', 'name'],
+      //   key: 'objectName',
+      //   render: (_: any, record: ReportType) =>
+      //     record.objectId?.name || record.objectId?.content || '-'
+      // },
+      {
+        title: t('reportDetail.userId'),
+        dataIndex: ['reportBy', 'email'],
+        key: 'userId',
+        render: (_: any, record: ReportType) => record.reportBy?.email || '-'
+      },
+      {
+        title: t('reportDetail.reason'),
+        dataIndex: 'reason',
+        key: 'reason'
+      },
+      {
+        title: t('reportDetail.createAt'),
+        dataIndex: 'createdAt',
+        key: 'createdAt',
+        sorter: true,
+        render: (createdAt: string) => humanReadableDate(createdAt)
+      },
+      {
+        title: t('action'),
+        key: 'action',
+        render: (_: any, record: ReportType) => (
+          <div className='flex gap-2'>
+            <Tooltip title={t('button.view')}>
+              <Button
+                type='primary'
+                icon={<i className='fa-solid fa-eye'></i>}
+                href={getLinkTo(record)}
+              />
+            </Tooltip>
+            <Tooltip title={t('button.delete')}>
+              <Button
+                type='default'
+                variant='outlined'
+                danger
+                icon={<i className='fa-solid fa-trash-alt'></i>}
+                loading={deleteMutation.isPending}
+                onClick={() => handleDelete(record._id)}
+              />
+            </Tooltip>
+          </div>
+        )
+      }
+    ],
+    [t, filter.limit, pagination.pageCurrent, deleteMutation.isPending]
+  )
 
-  const onSubmit = async () => {
-    if (!reportToDelete) return
-
-    setError('')
-    setIsLoading(true)
-    try {
-      await deleteReport(reportToDelete)
-      setReports(reports.filter((report) => report._id !== reportToDelete))
-      setIsConfirming(false)
-    } catch {
-      setError(t('Server Error'))
-      setTimeout(() => {
-        setError('')
-      }, 3000)
-    } finally {
-      setIsLoading(false)
-      setReportToDelete(null)
-    }
-  }
-  const handleDeleteReport = (reportId) => {
-    setReportToDelete(reportId)
-    setIsConfirming(true)
-  }
-
-  useEffect(() => {
-    setFilter((prevFilter) => ({
-      ...prevFilter,
-      activeTab,
-      isStore: activeTab === 'store',
-      isProduct: activeTab === 'product',
-      isReview: activeTab === 'review'
-    }))
-  }, [activeTab])
-
-  const handleChangePage = (newPage) => {
-    setFilter({
-      ...filter,
-      page: newPage
-    })
-  }
-  const handleChangeKeyword = (keyword) => {
-    setFilter({
-      ...filter,
-      search: keyword,
-      page: 1
-    })
-  }
-  const handleSetSortBy = (order, sortBy) => {
-    setFilter({
-      ...filter,
-      sortBy,
-      order
-    })
-  }
-
-  const getLinkTo = (report) => {
+  function getLinkTo(report: ReportType) {
     switch (activeTab) {
-      case 'store':
-        return `/store/${report.objectId?._id}`
-      case 'product':
-        return `/product/${report.objectId?._id}`
-      case 'review':
-        return `/review/${report.objectId?._id}`
+      case 'stores':
+        return `/stores/${report.objectId?._id}`
+      case 'products':
+        return `/products/${report.objectId?._id}`
+      case 'reviews':
+        return `/reviews/${report.objectId?._id}`
       default:
         return '#'
     }
   }
 
-  return (
-    <div className='position-relative'>
-      {heading && (
-        <h5 className='text-start'>
-          {activeTab === 'store'
-            ? t('title.listReportShop')
-            : activeTab === 'product'
-              ? t('title.listReportProduct')
-              : t('title.listReportReview')}
-        </h5>
-      )}
+  // Handlers
+  const handleChangePage = (page: number, pageSize: number) => {
+    setFilter((prev) => ({ ...prev, page, limit: pageSize }))
+  }
+  const handleFieldChange = (value: string) => {
+    setFilterField(value)
+    setPendingFilter((prev) => ({ ...prev, field: value }))
+  }
+  const handleDateRangeChange = (
+    dates: [Dayjs | null, Dayjs | null] | null
+  ) => {
+    setDateRange(dates)
+    if (Array.isArray(dates) && dates[0] && dates[1]) {
+      setPendingFilter((prev) => ({
+        ...prev,
+        createdAtFrom: dates[0]?.startOf('day').toISOString(),
+        createdAtTo: dates[1]?.endOf('day').toISOString(),
+        page: 1
+      }))
+    } else {
+      setPendingFilter((prev) => ({
+        ...prev,
+        createdAtFrom: undefined,
+        createdAtTo: undefined,
+        page: 1
+      }))
+    }
+  }
+  const handleChangeKeyword = (keyword: string) => {
+    setPendingFilter((prev) => ({ ...prev, search: keyword, page: 1 }))
+  }
+  const handleSearch = () => {
+    setFilter({ ...pendingFilter })
+  }
+  const handleTableChange = (_pagination: any, _filters: any, sorter: any) => {
+    setFilter((prev) => ({
+      ...prev,
+      sortBy: sorter.field || prev.sortBy,
+      order:
+        sorter.order === 'ascend'
+          ? 'asc'
+          : sorter.order === 'descend'
+            ? 'desc'
+            : prev.order
+    }))
+  }
+  const handleDelete = (reportId: string) => {
+    Modal.confirm({
+      title: t('reportDetail.delete'),
+      content: t('confirmDialog'),
+      okText: t('button.confirm'),
+      cancelText: t('button.cancel'),
+      onOk: async () => {
+        try {
+          await deleteMutation.mutateAsync(reportId as any)
+          notification.success({
+            message: t('toastSuccess.report.delete'),
+            duration: 1.5
+          })
+          refetch()
+        } catch (err: any) {
+          setError(err?.message)
+        }
+      }
+    })
+  }
 
-      {isLoading && <Loading />}
-      {error && <Error msg={error} />}
-      {isConfirming && (
-        <ConfirmDialog
-          title={t('reportDetail.delete')}
-          color='danger'
-          onSubmit={onSubmit}
-          onClose={() => {
-            setIsConfirming(false)
-            setReportToDelete(null)
-          }}
+  // Handle tab change
+  const handleTabChange = (key: string) => {
+    setActiveTab(key)
+    setFilter((prev) => ({
+      ...prev,
+      activeTab: key,
+      isStore: key === 'stores',
+      isProduct: key === 'products',
+      isReview: key === 'reviews',
+      page: 1
+    }))
+    setPendingFilter((prev) => ({
+      ...prev,
+      activeTab: key,
+      isStore: key === 'stores',
+      isProduct: key === 'products',
+      isReview: key === 'reviews',
+      page: 1
+    }))
+  }
+
+  return (
+    <div className='w-full'>
+      <div className='bg-white px-2 rounded-2 mb-3'>
+        <Tabs
+          activeKey={activeTab}
+          onChange={handleTabChange}
+          items={tabOptions.map((tab) => ({
+            key: tab.value,
+            label: t(tab.labelKey)
+          }))}
+          className='w-full'
+          moreIcon={null}
         />
-      )}
-      <div>
-        <div className='p-3 box-shadow bg-body rounded-2'>
-          <SearchInput onChange={handleChangeKeyword} />
-          {!isLoading && pagination.size === 0 ? (
-            <div className='my-4 text-center'>
-              <img className='mb-3' src={boxImg} alt='boxImg' width={'80px'} />
-              <h5>{t('reportDetail.none')}</h5>
-            </div>
-          ) : (
-            <div className='table-scroll my-2'>
-              <table className='table align-middle table-hover table-sm text-start'>
-                <thead>
-                  <tr>
-                    <th scope='col'>#</th>
-                    <th scope='col'>
-                      <span>{t('reportDetail.id')}</span>
-                    </th>
-                    <th scope='col'>
-                      <span>{t('reportDetail.objectId')}</span>
-                    </th>
-                    <th scope='col'>
-                      <span>{t('reportDetail.objectName')}</span>
-                    </th>
-                    <th scope='col'>
-                      <span>{t('reportDetail.userId')}</span>
-                    </th>
-                    <th scope='col'>
-                      <span>{t('reportDetail.reason')}</span>
-                    </th>
-                    <th scope='col'>
-                      <SortByButton
-                        currentOrder={filter.order}
-                        currentSortBy={filter.sortBy}
-                        title={t('reportDetail.createAt')}
-                        sortBy='createdAt'
-                        onSet={(order, sortBy) =>
-                          handleSetSortBy(order, sortBy)
-                        }
-                      />
-                    </th>
-                    <th scope='col'>{t('action')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reports.map((report, index) => (
-                    <tr key={index}>
-                      <th scope='row' className='text-center'>
-                        {index + 1 + (filter.page - 1) * filter.limit}
-                      </th>
-                      <td>{report._id}</td>
-                      <td>{report.objectId?._id}</td>
-                      <td
-                        style={{
-                          maxWidth: '400px',
-                          minWidth: '300px',
-                          whiteSpace: 'normal',
-                          overflow: 'auto'
-                        }}
-                      >
-                        {report.objectId?.name || report.objectId?.content}
-                      </td>
-                      <td>{report.reportBy?.email}</td>
-                      <td>{report.reason}</td>
-                      <td>{humanReadableDate(report.createdAt)}</td>
-                      <td>
-                        <div className='position-relative d-inline-block'>
-                          <Link
-                            type='button'
-                            className='btn btn-sm btn-primary rounded-1 cus-tooltip'
-                            to={getLinkTo(report)}
-                          >
-                            <i className='fa-solid fa-eye'></i>
-                          </Link>
-                          <span className='cus-tooltip-msg'>
-                            {t('button.view')}
-                          </span>
-                          <div className='position-relative d-inline-block ms-2'>
-                            <button
-                              type='button'
-                              className='btn btn-sm btn-outline-danger rounded-1 cus-tooltip'
-                              onClick={() => handleDeleteReport(report._id)}
-                            >
-                              <i className='fa-solid fa-trash'></i>
-                            </button>
-                            <span className='cus-tooltip-msg'>
-                              {t('button.delete')}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-          {
-            <div className='d-flex justify-content-between align-items-center px-4'>
-              <ShowResult
-                limit={filter.limit}
-                size={pagination.size}
-                pageCurrent={pagination.pageCurrent}
-              />
-              {pagination.size !== 0 && (
-                <Pagination
-                  pagination={pagination}
-                  onChangePage={handleChangePage}
-                />
-              )}
-            </div>
-          }
+      </div>
+      {error && <Alert message={error} type='error' showIcon />}
+      <div className='p-3 box-shadow bg-body rounded-2'>
+        <div className='flex gap-2 mb-2'>
+          <SearchInput
+            value={pendingFilter.search || ''}
+            onChange={handleChangeKeyword}
+            onSearch={handleSearch}
+            loading={isLoading}
+            searchField={filterField}
+            onFieldChange={handleFieldChange}
+            fieldOptions={filterFieldOptions}
+          />
+          <DatePicker.RangePicker
+            value={dateRange}
+            onChange={handleDateRangeChange}
+            allowClear
+            format='DD-MM-YYYY'
+          />
+          <Button type='primary' onClick={handleSearch} loading={isLoading}>
+            {t('search')}
+          </Button>
         </div>
+
+        <Divider />
+
+        <Table
+          columns={columns}
+          dataSource={reports}
+          rowKey='_id'
+          loading={isLoading}
+          bordered
+          pagination={{
+            current: pagination.pageCurrent,
+            pageSize: filter.limit,
+            total: pagination.size,
+            onChange: handleChangePage,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} ${t('of')} ${total} ${t('result')}`
+          }}
+          onChange={handleTableChange}
+          scroll={{ x: 'max-content' }}
+        />
       </div>
     </div>
   )

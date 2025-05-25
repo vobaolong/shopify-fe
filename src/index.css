@@ -107,6 +107,17 @@ input:focus {
 	height: 40px !important;
 }
 
+.ant-tabs-nav-list {
+	width: 100%;
+	display: flex;
+}
+
+.ant-tabs-tab {
+	flex: 1 1 0;
+	justify-content: center;
+	text-align: center;
+}
+
 .nav-tabs .nav-link {
 	border: none;
 	color: var(--black-color);

@@ -22,7 +22,8 @@ import {
   Typography,
   Modal,
   DatePicker,
-  notification
+  notification,
+  Divider
 } from 'antd'
 import { useState, useEffect } from 'react'
 import { Filter } from './AdminUsersTable'
@@ -32,9 +33,8 @@ import { CommissionType, StoreType } from '../../@types/entity.types'
 import { SyncOutlined } from '@ant-design/icons'
 import { ColumnsType } from 'antd/es/table'
 import { BanIcon, CheckCircle } from 'lucide-react'
-import { PaginationType } from './TransactionsTable'
 import { ColumnType } from 'antd/lib/table'
-const { RangePicker } = DatePicker
+import { PaginationType } from '../../@types/pagination.type'
 
 const AdminStoresTable = ({ heading = false }) => {
   const { t } = useTranslation()
@@ -318,23 +318,21 @@ const AdminStoresTable = ({ heading = false }) => {
         confirmLoading={mutation.isPending}
       />
       <div className='p-3 bg-white rounded-md'>
-        <div className='mb-3 d-flex gap-3 items-center flex-wrap'>
+        <div className='flex gap-3 items-center flex-wrap'>
           <SearchInput
             value={pendingFilter.search || ''}
             onChange={handleChangeKeyword}
             onSearch={handleSearch}
             loading={isLoading}
           />
-          <RangePicker
-            className='!h-10'
+          <DatePicker.RangePicker
             value={dateRange}
             onChange={handleDateRangeChange}
             style={{ minWidth: 240 }}
             allowClear
-            format='YYYY-MM-DD'
+            format='DD-MM-YYYY'
           />
           <Select
-            className='!h-10'
             style={{ minWidth: 140 }}
             value={statusFilter}
             onChange={handleStatusChange}
@@ -344,9 +342,9 @@ const AdminStoresTable = ({ heading = false }) => {
               { label: t('status.banned'), value: 'inactive' }
             ]}
             placeholder={t('storeDetail.status')}
+            allowClear
           />
           <Select
-            className='!h-10'
             style={{ minWidth: 140 }}
             value={pendingFilter.commissionId}
             onChange={handleCommissionChange}
@@ -356,7 +354,6 @@ const AdminStoresTable = ({ heading = false }) => {
             styles={{ popup: { root: { width: 220 } } }}
           />
           <Select
-            className='!h-10'
             style={{ minWidth: 120 }}
             value={pendingFilter.rating}
             onChange={handleRatingChange}
@@ -364,7 +361,7 @@ const AdminStoresTable = ({ heading = false }) => {
             placeholder={t('storeDetail.rating')}
             allowClear
           />
-          <Button type='primary' onClick={handleSearch} className='!h-10'>
+          <Button type='primary' onClick={handleSearch}>
             {t('search')}
           </Button>
           <Button
@@ -375,7 +372,7 @@ const AdminStoresTable = ({ heading = false }) => {
             icon={<SyncOutlined spin={isLoading} />}
           />
         </div>
-
+        <Divider />
         <Table
           columns={columns}
           dataSource={stores}

@@ -12,41 +12,43 @@ const CategorySmallCard = ({
   category,
   style = {},
   parent = true
-}: CategorySmallCardProps) => (
-  <span className='d-inline-flex align-items-center' style={style}>
-    <Link
-      className='text-reset text-decoration-none cus-link-hover'
-      to={`/category/${category._id}`}
-    >
-      <span>
-        {parent &&
-          category.categoryId &&
-          typeof category.categoryId === 'object' &&
-          'categoryId' in category.categoryId && (
-            <>
-              {category.categoryId.categoryId &&
-                typeof category.categoryId.categoryId === 'object' &&
-                'name' in category.categoryId.categoryId && (
-                  <>
-                    {category.categoryId.categoryId.name}{' '}
-                    <img src={chevronSvg} alt='chevron' />{' '}
-                  </>
-                )}
-            </>
-          )}
-        {parent &&
-          category.categoryId &&
-          typeof category.categoryId === 'object' &&
-          'name' in category.categoryId && (
-            <>
-              {category.categoryId.name}{' '}
-              <img src={chevronSvg} alt='chevron' />{' '}
-            </>
-          )}
-        {category.name}
-      </span>
-    </Link>
-  </span>
-)
+}: CategorySmallCardProps) => {
+  const getCategoryLine = (cat: CategoryType) => {
+    const nodes: React.ReactNode[] = []
+    let current: any = cat
+    const stack: string[] = []
+    while (
+      current &&
+      current.categoryId &&
+      typeof current.categoryId === 'object' &&
+      'name' in current.categoryId
+    ) {
+      stack.unshift(current.categoryId.name)
+      current = current.categoryId
+    }
+    stack.forEach((name, idx) => {
+      nodes.push(
+        <span key={name + idx} className='inline-flex items-center'>
+          {name} <img src={chevronSvg} alt='chevron' className='mx-1' />
+        </span>
+      )
+    })
+    return nodes
+  }
+
+  return (
+    <span className='flex items-center' style={style}>
+      <Link
+        className='text-reset text-decoration-none cus-link-hover'
+        to={`/category/${category._id}`}
+      >
+        <span className='flex items-center'>
+          {parent && getCategoryLine(category)}
+          {category.name}
+        </span>
+      </Link>
+    </span>
+  )
+}
 
 export default CategorySmallCard

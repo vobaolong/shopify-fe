@@ -117,7 +117,7 @@ const BellButton = ({ navFor = '' }: BellButtonProps) => {
                 : navFor === 'seller'
                   ? `/seller/orders/detail/${l.objectId}/${store._id}`
                   : navFor === 'admin'
-                    ? '/admin/report'
+                    ? '/admin/reports'
                     : '#'
             }
             key={l._id}

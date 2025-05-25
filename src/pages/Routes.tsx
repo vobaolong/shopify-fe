@@ -90,7 +90,7 @@ const Routers = () => {
           }
         />
         <Route
-          path='/admin/level'
+          path='/admin/levels'
           element={
             <AdminRoute>
               <AdminLevelPage />
@@ -98,7 +98,7 @@ const Routers = () => {
           }
         />
         <Route
-          path='/admin/commission'
+          path='/admin/commissions'
           element={
             <AdminRoute>
               <AdminCommissionPage />
@@ -106,7 +106,7 @@ const Routers = () => {
           }
         />
         <Route
-          path='/admin/report/:type?'
+          path='/admin/reports/:type?'
           element={
             <AdminRoute>
               <AdminReportPage />
@@ -123,7 +123,7 @@ const Routers = () => {
           }
         />
         <Route
-          path='/admin/store'
+          path='/admin/stores'
           element={
             <AdminRoute>
               <AdminStorePage />
@@ -131,7 +131,7 @@ const Routers = () => {
           }
         />
         <Route
-          path='/admin/review'
+          path='/admin/reviews'
           element={
             <AdminRoute>
               <AdminReviewPage />
@@ -139,7 +139,7 @@ const Routers = () => {
           }
         />
         <Route
-          path='/admin/category'
+          path='/admin/categories'
           element={
             <AdminRoute>
               <AdminCategoryPage />
@@ -163,7 +163,7 @@ const Routers = () => {
           }
         />
         <Route
-          path='/admin/variant'
+          path='/admin/variants'
           element={
             <AdminRoute>
               <AdminVariantPage />
@@ -196,7 +196,7 @@ const Routers = () => {
         />
         {/*  */}
         <Route
-          path='/admin/brand'
+          path='/admin/brands'
           element={
             <AdminRoute>
               <AdminBrandPage />
@@ -221,7 +221,7 @@ const Routers = () => {
         />
         {/*  */}
         <Route
-          path='/admin/product'
+          path='/admin/products'
           element={
             <AdminRoute>
               <AdminProductPage />
@@ -229,7 +229,7 @@ const Routers = () => {
           }
         />
         <Route
-          path='/admin/order'
+          path='/admin/orders'
           element={
             <AdminRoute>
               <AdminOrderPage />
@@ -245,7 +245,7 @@ const Routers = () => {
           }
         />
         <Route
-          path='/admin/transaction'
+          path='/admin/transactions'
           element={
             <AdminRoute>
               <AdminTransactionPage />

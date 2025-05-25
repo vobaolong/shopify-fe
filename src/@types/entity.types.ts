@@ -110,6 +110,7 @@ export interface CommissionType {
   _id: string
   name: string
   value: number
+  isDeleted: boolean
   fee: { $numberDecimal: number }
   description?: string
   createdAt?: string
@@ -137,4 +138,12 @@ export interface ApiResponse<T> {
   data: T
   error?: string
   [key: string]: any
+}
+
+export interface ReportType {
+  _id: string
+  objectId: { _id: string; name?: string; content?: string }
+  reportBy: { email?: string }
+  reason?: string
+  createdAt: string
 }

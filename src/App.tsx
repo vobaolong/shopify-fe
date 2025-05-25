@@ -6,6 +6,7 @@ import store from './store/store'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { socketId } from './socket'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import AntdConfigProvider from './provider/AntdConfigProvider'
 const queryClient = new QueryClient()
 
 export default function App() {
@@ -20,10 +21,12 @@ export default function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Provider store={store}>
-        <Routers />
-      </Provider>
-      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+      <AntdConfigProvider>
+        <Provider store={store}>
+          <Routers />
+        </Provider>
+        {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+      </AntdConfigProvider>
     </QueryClientProvider>
   )
 }
