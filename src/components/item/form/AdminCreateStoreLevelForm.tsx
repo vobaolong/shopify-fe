@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { getToken } from '../../../apis/auth'
-import { createStoreLevel } from '../../../apis/level'
+import { getToken } from '../../../apis/auth.api'
+import { createStoreLevel } from '../../../apis/level.api'
 import { Form, Input, Button, notification } from 'antd'
 import Loading from '../../ui/Loading'
 import ConfirmDialog from '../../ui/ConfirmDialog'

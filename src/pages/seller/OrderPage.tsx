@@ -9,14 +9,14 @@ const OrderPage = () => {
   const user = useSelector((state: any) => state.account.user)
   const store = useSelector((state: any) => state.seller.store)
   const { t } = useTranslation()
-  const [selectedStatus, setSelectedStatus] = useState('Not processed')
+  const [selectedStatus, setSelectedStatus] = useState('Pending')
 
   const orderStatus = [
     {
       label: t('status.all'),
-      value: 'Not processed|Processing|Shipped|Delivered|Cancelled|Returned'
+      value: 'Pending|Processing|Shipped|Delivered|Cancelled|Returned'
     },
-    { label: t('status.notProcessed'), value: 'Not processed' },
+    { label: t('status.pending'), value: 'Pending' },
     { label: t('status.processing'), value: 'Processing' },
     { label: t('status.shipped'), value: 'Shipped' },
     { label: t('status.delivered'), value: 'Delivered' },
@@ -57,7 +57,7 @@ const OrderPage = () => {
         heading={false}
         storeId={store._id}
         isEditable={
-          selectedStatus === 'Not processed' ||
+          selectedStatus === 'Pending' ||
           selectedStatus === 'Processing' ||
           selectedStatus === 'Shipped'
         }

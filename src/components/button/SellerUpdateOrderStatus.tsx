@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { getToken } from '../../apis/auth'
+import { getToken } from '../../apis/auth.api'
 import { useSellerUpdateOrderStatus } from '../../hooks/useSellerUpdateOrderStatus'
 import Loading from '../ui/Loading'
 import ConfirmDialog from '../ui/ConfirmDialog'
@@ -61,27 +61,27 @@ const SellerUpdateOrderStatus = ({
 
   const getStatusOptions = useMemo(() => {
     const options = [
-      { label: t('status.notProcessed'), value: OrderStatus.NOT_PROCESSED },
+      { label: t('status.notProcessed'), value: OrderStatus.PENDING },
       { label: t('status.processing'), value: OrderStatus.PROCESSING },
       { label: t('status.shipped'), value: OrderStatus.SHIPPED },
       { label: t('status.delivered'), value: OrderStatus.DELIVERED },
       { label: t('status.cancel'), value: OrderStatus.CANCELLED }
     ]
     switch (statusValue) {
-      case OrderStatus.NOT_PROCESSED:
+      case OrderStatus.PENDING:
         return options.filter(
           (option) =>
             ![
               OrderStatus.SHIPPED,
               OrderStatus.DELIVERED,
-              OrderStatus.NOT_PROCESSED
+              OrderStatus.PENDING
             ].includes(option.value)
         )
       case OrderStatus.PROCESSING:
         return options.filter(
           (option) =>
             ![
-              OrderStatus.NOT_PROCESSED,
+              OrderStatus.PENDING,
               OrderStatus.DELIVERED,
               OrderStatus.PROCESSING
             ].includes(option.value)
@@ -90,7 +90,7 @@ const SellerUpdateOrderStatus = ({
         return options.filter(
           (option) =>
             ![
-              OrderStatus.NOT_PROCESSED,
+              OrderStatus.PENDING,
               OrderStatus.PROCESSING,
               OrderStatus.SHIPPED,
               OrderStatus.CANCELLED

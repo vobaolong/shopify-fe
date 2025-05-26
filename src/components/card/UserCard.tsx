@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
-import { getUserLevel } from '../../apis/level'
+import { getUserLevel } from '../../apis/level.api'
 import { Link } from 'react-router-dom'
 import UserRoleLabel from '../label/UserRoleLabel'
 import LevelLabel from '../label/LevelLabel'

@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { listCategories, listActiveCategories } from '../../apis/category'
+import { listCategories, listActiveCategories } from '../../apis/category.api'
 import { CategoryFilter, CategoryType } from '../../@types/entity.types'
 import {
   Input,

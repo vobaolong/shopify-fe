@@ -4,9 +4,9 @@ import { connect } from 'react-redux'
 import { addUser } from '../../store/actions/user'
 import Loading from '../ui/Loading'
 import Error from '../ui/Error'
-import { getUserLevel } from '../../apis/level'
-import { countOrder } from '../../apis/order'
-import { getUser } from '../../apis/user'
+import { getUserLevel } from '../../apis/level.api'
+import { countOrder } from '../../apis/order.api'
+import { getUser } from '../../apis/user.api'
 import defaultImage from '../../assets/default.webp'
 
 interface UserInitProps {

@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
-import { getToken } from '../../../apis/auth'
-import { reviewProduct } from '../../../apis/review'
+import { getToken } from '../../../apis/auth.api'
+import { reviewProduct } from '../../../apis/review.api'
 import { numberTest, regexTest } from '../../../helper/test'
 import Loading from '../../ui/Loading'
 import ConfirmDialog from '../../ui/ConfirmDialog'

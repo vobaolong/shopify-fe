@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { getToken } from '../../../apis/auth'
+import { getToken } from '../../../apis/auth.api'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
 import StoreSearchBar from './StoreSearchBar'
 import StoreInit from '../../init/StoreInit'

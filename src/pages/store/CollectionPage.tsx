@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
-import { listSellingProductsByStore } from '../../apis/product'
+import { listSellingProductsByStore } from '../../apis/product.api'
 import useUpdateEffect from '../../hooks/useUpdateEffect'
 import ProductCard from '../../components/card/ProductCard'
 import Pagination from '../../components/ui/Pagination'

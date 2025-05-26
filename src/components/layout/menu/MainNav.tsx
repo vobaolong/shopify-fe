@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { getToken, signout } from '../../../apis/auth'
+import { getToken, signout } from '../../../apis/auth.api'
 import Logo from './Logo'
 import SearchBar from './SearchBar'
 import Language from '../../ui/Language'

@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
-import { listReviews, deleteReview } from '../../apis/review'
+import { listReviews, deleteReview } from '../../apis/review.api'
 import Loading from '../ui/Loading'
 import Error from '../ui/Error'
 import Pagination from '../ui/Pagination'
@@ -11,7 +11,7 @@ import SortByButton from './sub/SortByButton'
 import ShowResult from '../ui/ShowResult'
 import box from '../../assets/box.svg'
 import ProductSmallCard from '../card/ProductSmallCard'
-import { getToken } from '../../apis/auth'
+import { getToken } from '../../apis/auth.api'
 import { toast } from 'react-toastify'
 import ConfirmDialog from '../ui/ConfirmDialog'
 

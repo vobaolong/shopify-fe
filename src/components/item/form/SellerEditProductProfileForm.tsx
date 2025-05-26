@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
-import { getToken } from '../../../apis/auth'
-import { updateProduct } from '../../../apis/product'
+import { getToken } from '../../../apis/auth.api'
+import { updateProduct } from '../../../apis/product.api'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { notification, Form, Input, Button } from 'antd'
@@ -9,7 +9,7 @@ import CategorySelector from '../../selector/CategorySelector'
 import VariantSelector from '../../selector/VariantSelector'
 import DropDownMenu from '../../ui/DropDownMenu'
 import TextArea from '../../ui/TextArea'
-import { listBrandByCategory } from '../../../apis/brand'
+import { listBrandByCategory } from '../../../apis/brand.api'
 import { useNavigate } from 'react-router-dom'
 
 interface SellerEditProductProfileFormProps {

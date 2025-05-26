@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { listActiveCategories } from '../../apis/category'
+import { listActiveCategories } from '../../apis/category.api'
 import Skeleton from 'react-loading-skeleton'
 import { useQuery } from '@tanstack/react-query'
 import { notification } from 'antd'

@@ -16,13 +16,9 @@ export const axiosClientImg = axios.create({
   }
 })
 
-// Request interceptor - Thêm token vào header của mỗi request
 axiosClient.interceptors.request.use(
   (config) => {
-    // Lấy thông tin user từ localStorage
     const user = JSON.parse(localStorage.getItem('jwt') || '{}')
-
-    // Nếu có accessToken thì thêm vào header Authorization
     if (user?.accessToken) {
       config.headers.Authorization = `Bearer ${user.accessToken}`
     }
@@ -35,10 +31,7 @@ axiosClient.interceptors.request.use(
 
 axiosClientImg.interceptors.request.use(
   (config) => {
-    // Lấy thông tin user từ localStorage
     const user = JSON.parse(localStorage.getItem('jwt') || '{}')
-
-    // Nếu có accessToken thì thêm vào header Authorization
     if (user?.accessToken) {
       config.headers.Authorization = `Bearer ${user.accessToken}`
     }
@@ -49,14 +42,11 @@ axiosClientImg.interceptors.request.use(
   }
 )
 
-// Response interceptor - Xử lý response và error
 axiosClient.interceptors.response.use(
   (response) => {
-    // Chỉ trả về data từ response
     return response.data
   },
   (error) => {
-    // Log lỗi và reject promise
     console.error('API error:', error)
     return Promise.reject(error)
   }

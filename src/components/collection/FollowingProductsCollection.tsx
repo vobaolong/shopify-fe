@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { getToken } from '../../apis/auth'
+import { getToken } from '../../apis/auth.api'
 import { useFavoriteProducts } from '../../hooks/useFavorite'
 import ProductCard from '../card/ProductCard'
 import Loading from '../ui/Loading'

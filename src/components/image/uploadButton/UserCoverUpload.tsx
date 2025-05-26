@@ -1,5 +1,5 @@
-import { getToken } from '../../../apis/auth'
-import { updateCover } from '../../../apis/user'
+import { getToken } from '../../../apis/auth.api'
+import { updateCover } from '../../../apis/user.api'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
 import Loading from '../../ui/Loading'
 import Error from '../../ui/Error'

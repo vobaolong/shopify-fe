@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
-import { listActiveValues } from '../../apis/variant'
+import { listActiveValues } from '../../apis/variant.api'
 import Error from '../ui/Error'
 import Loading from '../ui/Loading'
 import AddVariantValueItem from '../item/AddVariantValueItem'

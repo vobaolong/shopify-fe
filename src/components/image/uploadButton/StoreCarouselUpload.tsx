@@ -1,6 +1,9 @@
 import { useState } from 'react'
-import { getToken } from '../../../apis/auth'
-import { updateFeaturedImage, removeFeaturedImage } from '../../../apis/store'
+import { getToken } from '../../../apis/auth.api'
+import {
+  updateFeaturedImage,
+  removeFeaturedImage
+} from '../../../apis/store.api'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
 import Loading from '../../ui/Loading'
 import ConfirmDialog from '../../ui/ConfirmDialog'

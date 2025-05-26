@@ -3,7 +3,7 @@ import StarRating from '../label/StarRating'
 import Input from '../ui/Input'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { getProvinces } from '../../apis/address'
+import { getProvinces } from '../../apis/address.api'
 
 interface ProductFilterProps {
   filter: any

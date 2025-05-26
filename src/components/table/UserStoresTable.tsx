@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { getToken } from '../../apis/auth'
-import { getStoresByUser } from '../../apis/store'
+import { getToken } from '../../apis/auth.api'
+import { getStoresByUser } from '../../apis/store.api'
 import StoreSmallCard from '../card/StoreSmallCard'
 import ManagerRoleLabel from '../label/ManagerRoleLabel'
 import StoreActiveLabel from '../label/StoreActiveLabel'

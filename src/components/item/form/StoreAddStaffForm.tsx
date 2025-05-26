@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
-import { getToken } from '../../../apis/auth'
-import { getListUsers } from '../../../apis/user'
-import { addStaff } from '../../../apis/store'
+import { getToken } from '../../../apis/auth.api'
+import { getListUsers } from '../../../apis/user.api'
+import { addStaff } from '../../../apis/store.api'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
 import UserSmallCard from '../../card/UserSmallCard'
 import SearchInput from '../../ui/SearchInput'

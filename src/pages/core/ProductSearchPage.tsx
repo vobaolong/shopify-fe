@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { listActiveProducts } from '../../apis/product'
+import { listActiveProducts } from '../../apis/product.api'
 import useUpdateEffect from '../../hooks/useUpdateEffect'
 import MainLayout from '../../components/layout/MainLayout'
 import ProductCard from '../../components/card/ProductCard'

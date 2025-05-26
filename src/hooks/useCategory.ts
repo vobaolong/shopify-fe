@@ -7,7 +7,7 @@ import {
   updateCategory,
   removeCategory,
   restoreCategory
-} from '../apis/category'
+} from '../apis/category.api'
 
 // Query keys
 type FiltersType = Record<string, any>

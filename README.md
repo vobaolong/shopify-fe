@@ -99,7 +99,7 @@ API requests use the centralized axios client:
 
 ```jsx
 // Direct API usage
-import { getProduct } from '../apis/product'
+import { getProduct } from '../apis/product.api'
 
 // Inside an async function
 const data = await getProduct(productId)

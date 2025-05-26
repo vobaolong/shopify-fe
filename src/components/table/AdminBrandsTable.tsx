@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { listBrands, removeBrand, restoreBrand } from '../../apis/brand'
+import { listBrands, removeBrand, restoreBrand } from '../../apis/brand.api'
 import Pagination from '../ui/Pagination'
 import SearchInput from '../ui/SearchInput'
 import DeletedLabel from '../label/DeletedLabel'

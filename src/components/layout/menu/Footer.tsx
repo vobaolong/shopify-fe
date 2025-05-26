@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { listActiveCategories } from '../../../apis/category'
+import { listActiveCategories } from '../../../apis/category.api'
 import { useTranslation } from 'react-i18next'
 import ListCategoryFooter from '../../list/ListCategoryFooter'
 import masterCard from '../../../assets/mastercard.svg'

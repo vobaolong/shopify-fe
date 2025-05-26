@@ -30,6 +30,8 @@ const SearchInput = ({
           className='min-w-[150px] min-h-[40px]'
           options={fieldOptions}
           dropdownStyle={{ minWidth: 150 }}
+          placeholder={t('filters.all')}
+          allowClear
         />
       )}
       <Input.Search

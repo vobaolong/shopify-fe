@@ -1,6 +1,6 @@
 import { useState, Fragment } from 'react'
-import { getToken } from '../../../apis/auth'
-import { updateListImages, removeListImages } from '../../../apis/product'
+import { getToken } from '../../../apis/auth.api'
+import { updateListImages, removeListImages } from '../../../apis/product.api'
 import Loading from '../../ui/Loading'
 import ConfirmDialog from '../../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'

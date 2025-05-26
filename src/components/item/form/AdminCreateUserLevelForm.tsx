@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { createUserLevel } from '../../../apis/level'
+import { createUserLevel } from '../../../apis/level.api'
 import { Form, Input, Button, notification } from 'antd'
 import Loading from '../../ui/Loading'
 import ConfirmDialog from '../../ui/ConfirmDialog'

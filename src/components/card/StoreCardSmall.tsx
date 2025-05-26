@@ -1,12 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { getToken } from '../../apis/auth'
+import { getToken } from '../../apis/auth.api'
 import {
   getStoreFollowerCount,
   checkFollowingStore
-} from '../../apis/followStore'
-import { getStoreLevel } from '../../apis/level'
+} from '../../apis/followStore.api'
+import { getStoreLevel } from '../../apis/level.api'
 import FollowStoreButton from '../button/FollowStoreButton'
 import defaultImage from '../../assets/default.webp'
 import Skeleton from 'react-loading-skeleton'

@@ -7,7 +7,7 @@ import {
   getProvincesGHN,
   getDistrictsGHN,
   getWardsGHN
-} from '../../../apis/address'
+} from '../../../apis/address.api'
 import { Input } from 'antd'
 import {
   AddressDetail,

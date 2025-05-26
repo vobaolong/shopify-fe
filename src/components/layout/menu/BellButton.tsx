@@ -4,7 +4,7 @@ import {
   deleteNotifications,
   getNotifications,
   updateRead
-} from '../../../apis/notification'
+} from '../../../apis/notification.api'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'

@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { getToken } from '../../../apis/auth'
-import { createProduct } from '../../../apis/product'
+import { getToken } from '../../../apis/auth.api'
+import { createProduct } from '../../../apis/product.api'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { notification, Form, Input, Button } from 'antd'
@@ -11,7 +11,7 @@ import DropDownMenu from '../../ui/DropDownMenu'
 import InputFile from '../../ui/InputFile'
 import Loading from '../../ui/Loading'
 import TextArea from '../../ui/TextArea'
-import { listBrandByCategory } from '../../../apis/brand'
+import { listBrandByCategory } from '../../../apis/brand.api'
 
 interface SellerCreateProductFormProps {
   storeId?: string

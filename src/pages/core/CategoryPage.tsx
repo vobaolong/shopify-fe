@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { getCategoryById } from '../../apis/category'
-import { listActiveProducts } from '../../apis/product'
+import { getCategoryById } from '../../apis/category.api'
+import { listActiveProducts } from '../../apis/product.api'
 import MainLayout from '../../components/layout/MainLayout'
 import ProductCard from '../../components/card/ProductCard'
 import Pagination from '../../components/ui/Pagination'

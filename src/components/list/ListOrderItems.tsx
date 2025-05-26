@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom'
-import { getToken } from '../../apis/auth'
+import { getToken } from '../../apis/auth.api'
 import {
   listItemsByOrder,
   listItemsByOrderByStore,
   listItemsByOrderForAdmin
-} from '../../apis/order'
+} from '../../apis/order.api'
 import { formatPrice } from '../../helper/formatPrice'
 import Loading from '../ui/Loading'
 import Error from '../ui/Error'

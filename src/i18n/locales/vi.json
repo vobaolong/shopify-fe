@@ -9,7 +9,7 @@
   },
   "createdAt": "Ngày tạo",
   "orderStatus": {
-    "Not processed": "Chưa xử lý",
+    "Pending": "Chưa xử lý",
     "Processing": "Đang xử lý",
     "Shipped": "Chờ giao",
     "Delivered": "Hoàn thành",
@@ -217,6 +217,7 @@
     "shippedOrders": "Đơn hàng chờ giao",
     "deliveredOrders": "Đơn hàng hoàn thành",
     "cancelledOrders": "Đơn hàng đã huỷ",
+    "returnedOrders": "Đơn hàng đã trả hàng",
     "userInSystem": "Người dùng trong hệ thống",
     "listStores": "Danh sách gian hàng"
   },
@@ -436,7 +437,9 @@
     "up": "trở lên",
     "apply": "Áp dụng",
     "reset": "Xoá tất cả",
-    "shippedFrom": "Nơi bán"
+    "shippedFrom": "Nơi bán",
+    "fromDate": "Từ ngày",
+    "toDate": "Đến ngày"
   },
   "transactions": "Giao dịch trong hệ thống",
 
@@ -575,7 +578,7 @@
     "hidden": "Đã ẩn",
     "cantCancelOrder": "Không thể huỷ đơn hàng",
     "all": "Tất cả",
-    "notProcessed": "Chưa xử lý",
+    "pending": "Chưa xử lý",
     "processing": "Đang xử lý",
     "shipped": "Chờ giao",
     "delivered": "Hoàn thành",
@@ -780,8 +783,8 @@
     "lastUpdateTime": "Cập nhật lần cuối",
     "includedDiscount": "Đã bao gồm giảm giá",
     "cancel": "Huỷ Đơn Hàng",
-    "cod": "Thanh toán khi nhận hàng",
-    "onlinePayment": "Thanh toán trực tuyến",
+    "cod": "Khi nhận hàng",
+    "onlinePayment": "Trực tuyến",
     "userReceiver": "Địa chỉ người nhận",
     "senderAddress": "Địa chỉ người gửi",
     "deliveryId": "Mã vận đơn",

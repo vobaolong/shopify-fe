@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
-import { getToken } from '../../apis/auth'
-import { checkReview } from '../../apis/review'
+import { getToken } from '../../apis/auth.api'
+import { checkReview } from '../../apis/review.api'
 import Loading from '../ui/Loading'
 import Modal from '../ui/Modal'
 import ReviewForm from './form/ReviewForm'

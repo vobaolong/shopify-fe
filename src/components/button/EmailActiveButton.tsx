@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { getToken } from '../../apis/auth'
+import { getToken } from '../../apis/auth.api'
 import { useSendConfirmationEmail } from '../../hooks/useSendConfirmationEmail'
 import Loading from '../ui/Loading'
 import { toast } from 'react-toastify'

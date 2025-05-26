@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { updateCommission } from '../../../apis/commission'
+import { updateCommission } from '../../../apis/commission.api'
 import { Form, Input, Button, notification, InputNumber, Modal } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from '@tanstack/react-query'

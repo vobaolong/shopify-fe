@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { getToken } from '../../../apis/auth'
-import { getProductByIdForManager } from '../../../apis/product'
+import { getToken } from '../../../apis/auth.api'
+import { getProductByIdForManager } from '../../../apis/product.api'
 import Loading from '../../ui/Loading'
 import SellerEditProductProfileForm from './SellerEditProductProfileForm'
 import SellerEditProductImagesForm from './SellerEditProductImagesForm'

@@ -1,13 +1,20 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Table, Button, Select, Modal, Alert, notification } from 'antd'
+import {
+  Table,
+  Button,
+  Select,
+  Modal,
+  Alert,
+  notification,
+  Divider
+} from 'antd'
 import { SyncOutlined } from '@ant-design/icons'
 import SearchInput from '../ui/SearchInput'
 import { DatePicker } from 'antd'
 import dayjs from 'dayjs'
 import { ProductType } from '../../@types/entity.types'
 import ProductSmallCard from '../card/ProductSmallCard'
-import StoreSmallCard from '../card/StoreSmallCard'
 import CategorySmallCard from '../card/CategorySmallCard'
 import ProductActiveLabel from '../label/ProductActiveLabel'
 import { humanReadableDate } from '../../helper/humanReadable'
@@ -15,12 +22,12 @@ import { useTranslation } from 'react-i18next'
 import {
   listProductsForAdmin,
   activeProduct as activeOrInactive
-} from '../../apis/product'
+} from '../../apis/product.api'
 import { toast } from 'react-toastify'
 import {
   sendActiveProductEmail,
   sendBanProductEmail
-} from '../../apis/notification'
+} from '../../apis/notification.api'
 import useInvalidate from '../../hooks/useInvalidate'
 import { ColumnsType } from 'antd/es/table'
 import { formatPrice } from '../../helper/formatPrice'
@@ -74,6 +81,7 @@ const AdminProductsTable = () => {
       setIsConfirming(false)
     }
   })
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
 
   const handleChangeKeyword = (keyword: string) => {
     setPendingFilter((prev) => ({ ...prev, search: keyword, page: 1 }))
@@ -170,9 +178,13 @@ const AdminProductsTable = () => {
       key: 'price',
       align: 'right',
       render: (price: any) => (
-        <span>{formatPrice(price?.$numberDecimal)}₫</span>
+        <span>
+          {formatPrice(price?.$numberDecimal)}
+          <sup>₫</sup>
+        </span>
       ),
-      sorter: true
+      sorter: true,
+      width: 150
     },
     {
       title: t('productDetail.salePrice'),
@@ -180,29 +192,33 @@ const AdminProductsTable = () => {
       key: 'salePrice',
       align: 'right',
       render: (salePrice: any) => (
-        <span>{formatPrice(salePrice?.$numberDecimal)}₫</span>
+        <span>
+          {formatPrice(salePrice?.$numberDecimal)}
+          <sup>₫</sup>
+        </span>
       ),
-      sorter: true
+      sorter: true,
+      width: 150
     },
     {
       title: t('productDetail.stock'),
       dataIndex: 'quantity',
       key: 'quantity',
-      align: 'center',
+      align: 'right',
       sorter: true
     },
     {
       title: t('productDetail.sold'),
       dataIndex: 'sold',
       key: 'sold',
-      align: 'center',
+      align: 'right',
       sorter: true
     },
     {
       title: t('filters.rating'),
       dataIndex: 'rating',
       key: 'rating',
-      align: 'center',
+      align: 'right',
       sorter: true
     },
     {
@@ -312,12 +328,17 @@ const AdminProductsTable = () => {
             icon={<SyncOutlined spin={isLoading} />}
           />
         </div>
+        <Divider />
         <Table
           columns={columns}
           dataSource={products}
           rowKey='_id'
           loading={isLoading}
           bordered
+          rowSelection={{
+            selectedRowKeys,
+            onChange: setSelectedRowKeys
+          }}
           pagination={{
             current: pagination.pageCurrent,
             pageSize: filter.limit,

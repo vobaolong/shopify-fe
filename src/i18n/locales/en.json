@@ -9,7 +9,7 @@
   },
   "createdAt": "Created At",
   "orderStatus": {
-    "Not processed": "Not processed",
+    "Pending": "Pending",
     "Processing": "Processing",
     "Shipped": "Shipped",
     "Delivered": "Delivered",
@@ -187,6 +187,7 @@
     "shippedOrders": "Shipped Orders",
     "deliveredOrders": "Delivered Orders",
     "cancelledOrders": "Cancelled Orders",
+    "returnedOrders": "Returned Orders",
     "userInSystem": "Users in the system",
     "listStores": "List of Stores"
   },
@@ -383,7 +384,9 @@
     "up": "up",
     "apply": "Apply",
     "reset": "Clear all",
-    "shippedFrom": "Shipped From"
+    "shippedFrom": "Shipped From",
+    "fromDate": "From date",
+    "toDate": "To date"
   },
   "transactions": "Transactions in the system",
 
@@ -510,7 +513,7 @@
     "hiding": "Hiding",
     "cantCancelOrder": "Can't can order",
     "all": "All",
-    "notProcessed": "Not processed",
+    "pending": "Pending",
     "processing": "Processing",
     "shipped": "Shipped",
     "delivered": "Delivered",

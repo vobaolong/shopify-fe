@@ -1,6 +1,6 @@
 import { useDeleteReport } from '../../hooks/useReport'
 import { useQuery } from '@tanstack/react-query'
-import { listReportsForAdmin } from '../../apis/report'
+import { listReportsForAdmin } from '../../apis/report.api'
 import {
   Table,
   Button,

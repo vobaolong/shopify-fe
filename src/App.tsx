@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { getToken } from './apis/auth'
+import { getToken } from './apis/auth.api'
 import Routers from './pages/Routes'
 import { Provider } from 'react-redux'
 import store from './store/store'

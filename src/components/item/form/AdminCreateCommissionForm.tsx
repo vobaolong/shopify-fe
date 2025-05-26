@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { getToken } from '../../../apis/auth'
-import { createCommission } from '../../../apis/commission'
+import { getToken } from '../../../apis/auth.api'
+import { createCommission } from '../../../apis/commission.api'
 import { Form, Input, Button, notification } from 'antd'
 import Loading from '../../ui/Loading'
 import ConfirmDialog from '../../ui/ConfirmDialog'

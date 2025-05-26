@@ -4,7 +4,7 @@ import {
   listCommissions,
   removeCommission,
   restoreCommission
-} from '../../apis/commission'
+} from '../../apis/commission.api'
 import SearchInput from '../ui/SearchInput'
 import StoreCommissionLabel from '../label/StoreCommissionLabel'
 import DeletedLabel from '../label/DeletedLabel'
@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next'
 import { humanReadableDate } from '../../helper/humanReadable'
 import { Table, Button, notification, Alert } from 'antd'
 import { CommissionType } from '../../@types/entity.types'
-import dayjs, { Dayjs } from 'dayjs'
+import { Dayjs } from 'dayjs'
 import { SyncOutlined } from '@ant-design/icons'
 import { ColumnsType } from 'antd/es/table'
 import { PaginationType } from '../../@types/pagination.type'

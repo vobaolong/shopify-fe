@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { socketId } from '../../../socket'
 import { toast } from 'react-toastify'
 import ConfirmDialog from '../../ui/ConfirmDialog'
-import { createReturnRequest } from '../../../apis/order'
-import { getToken } from '../../../apis/auth'
+import { createReturnRequest } from '../../../apis/order.api'
+import { getToken } from '../../../apis/auth.api'
 
 interface Reason {
   value: string

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getToken } from '../../apis/auth'
-import { openStore } from '../../apis/store'
+import { getToken } from '../../apis/auth.api'
+import { openStore } from '../../apis/store.api'
 import Loading from '../ui/Loading'
 import ConfirmDialog from '../ui/ConfirmDialog'
 import { toast } from 'react-toastify'

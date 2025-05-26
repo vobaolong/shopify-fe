@@ -1,4 +1,4 @@
-import axiosClient, { axiosClientImg } from './client'
+import axiosClient, { axiosClientImg } from './client.api'
 import { CategoryType, ApiResponse } from '../@types/entity.types'
 
 export type ListCategoriesResponse = {

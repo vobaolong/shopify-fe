@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getStoresForAdmin,
   activeStore as activeOrInactive
-} from '../../apis/store'
+} from '../../apis/store.api'
 import { humanReadableDate } from '../../helper/humanReadable'
 import SearchInput from '../ui/SearchInput'
 import StoreSmallCard from '../card/StoreSmallCard'
@@ -13,7 +13,7 @@ import StoreActiveLabel from '../label/StoreActiveLabel'
 import {
   sendActiveStoreEmail,
   sendBanStoreEmail
-} from '../../apis/notification'
+} from '../../apis/notification.api'
 import {
   Table,
   Button,
@@ -28,7 +28,7 @@ import {
 import { useState, useEffect } from 'react'
 import { Filter } from './AdminUsersTable'
 import dayjs from 'dayjs'
-import { listCommissions } from '../../apis/commission'
+import { listCommissions } from '../../apis/commission.api'
 import { CommissionType, StoreType } from '../../@types/entity.types'
 import { SyncOutlined } from '@ant-design/icons'
 import { ColumnsType } from 'antd/es/table'

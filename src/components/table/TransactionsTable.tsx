@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Table, Button, Alert, Select } from 'antd'
-import { getToken } from '../../apis/auth'
+import { Table, Button, Alert, Select, Divider } from 'antd'
+import { getToken } from '../../apis/auth.api'
 import {
   listTransactionsByUser,
   listTransactionsByStore,
   listTransactionsForAdmin
-} from '../../apis/transaction'
+} from '../../apis/transaction.api'
 import { humanReadableDate } from '../../helper/humanReadable'
 import { formatPrice } from '../../helper/formatPrice'
 import TransactionStatusLabel from '../label/TransactionStatusLabel'
@@ -39,15 +39,17 @@ interface OwnerType {
   [key: string]: any
 }
 
-interface Filter {
+export interface Filter {
   sortBy: string
   order: string
   limit: number
   page: number
   search?: string
+  status?: string
   searchField?: string
   type?: string
   createdAtFrom?: string
+  isPaidBefore?: string
   createdAtTo?: string
 }
 
@@ -295,6 +297,7 @@ const TransactionsTable = ({
             icon={<SyncOutlined spin={isLoading} />}
           />
         </div>
+        <Divider />
 
         <Table
           columns={columns}
@@ -311,7 +314,7 @@ const TransactionsTable = ({
               `${range[0]}-${range[1]} ${t('of')} ${total} ${t('result')}`
           }}
           onChange={handleTableChange}
-          scroll={{ x: 900 }}
+          scroll={{ x: 'max-content' }}
         />
       </div>
     </div>

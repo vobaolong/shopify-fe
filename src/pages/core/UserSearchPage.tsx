@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { getToken } from '../../apis/auth'
-import { getListUsers } from '../../apis/user'
+import { getToken } from '../../apis/auth.api'
+import { getListUsers } from '../../apis/user.api'
 import useUpdateEffect from '../../hooks/useUpdateEffect'
 import MainLayout from '../../components/layout/MainLayout'
 import UserCard from '../../components/card/UserCard'

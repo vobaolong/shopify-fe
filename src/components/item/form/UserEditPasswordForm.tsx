@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { getToken } from '../../../apis/auth'
-import { updatePassword } from '../../../apis/user'
+import { getToken } from '../../../apis/auth.api'
+import { updatePassword } from '../../../apis/user.api'
 import { regexTest } from '../../../helper/test'
 import Input from '../../ui/Input'
 import Loading from '../../ui/Loading'

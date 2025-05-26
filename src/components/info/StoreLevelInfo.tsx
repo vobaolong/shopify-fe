@@ -6,7 +6,7 @@ import Skeleton from 'react-loading-skeleton'
 import { formatMonth } from '../../helper/humanReadable'
 import Modal from '../ui/Modal'
 import ListReport from '../item/form/ListReport'
-import { getToken } from '../../apis/auth'
+import { getToken } from '../../apis/auth.api'
 import { useSelector } from 'react-redux'
 import { reportStoreReasons } from '../../constants/reasons.constant'
 

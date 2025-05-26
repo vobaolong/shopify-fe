@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { getToken } from '../../../apis/auth'
-import { updateAddress } from '../../../apis/user'
+import { getToken } from '../../../apis/auth.api'
+import { updateAddress } from '../../../apis/user.api'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
 import { regexTest } from '../../../helper/test'
 import Input from '../../ui/Input'

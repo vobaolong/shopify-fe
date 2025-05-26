@@ -1,6 +1,6 @@
 // import { useEffect, useState } from 'react'
 // import { useNavigate } from 'react-router-dom'
-// import { authSocial, setToken } from '../../../apis/auth'
+// import { authSocial, setToken } from '../../../apis/auth.api'
 // import { GoogleLogin } from 'react-google-login'
 // import Loading from '../../ui/Loading'
 // import Error from '../../ui/Error'

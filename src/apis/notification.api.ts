@@ -1,4 +1,4 @@
-import axiosClient from './client'
+import axiosClient from './client.api'
 
 export const getNotifications = async (userId: string): Promise<any> => {
   return axiosClient.get(`/notification/${userId}`)

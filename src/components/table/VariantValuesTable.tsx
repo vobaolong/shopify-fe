@@ -1,12 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, Fragment } from 'react'
-import { getToken } from '../../apis/auth'
+import { getToken } from '../../apis/auth.api'
 import {
   listValues,
   listActiveValues,
   removeValue,
   restoreValue
-} from '../../apis/variant'
+} from '../../apis/variant.api'
 import DeletedLabel from '../label/DeletedLabel'
 import Loading from '../ui/Loading'
 import ConfirmDialog from '../ui/ConfirmDialog'

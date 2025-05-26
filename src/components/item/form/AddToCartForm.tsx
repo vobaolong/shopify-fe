@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { getToken } from '../../../apis/auth'
-import { addToCart } from '../../../apis/cart'
+import { getToken } from '../../../apis/auth.api'
+import { addToCart } from '../../../apis/cart.api'
 import Loading from '../../ui/Loading'
 import VariantValueSelector from '../../selector/VariantValueSelector'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'

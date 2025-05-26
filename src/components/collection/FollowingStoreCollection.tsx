@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
-import { getToken } from '../../apis/auth'
-import { listFollowingStores } from '../../apis/followStore'
+import { getToken } from '../../apis/auth.api'
+import { listFollowingStores } from '../../apis/followStore.api'
 import Loading from '../ui/Loading'
 import Error from '../ui/Error'
 import StoreCard from '../card/StoreCard'

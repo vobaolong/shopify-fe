@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { getToken } from '../../../apis/auth'
-import { updateProfile } from '../../../apis/user'
+import { getToken } from '../../../apis/auth.api'
+import { updateProfile } from '../../../apis/user.api'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
 import Input from '../../ui/Input'
 import Loading from '../../ui/Loading'

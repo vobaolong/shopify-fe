@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { listCategories, listActiveCategories } from '../../apis/category'
+import { listCategories, listActiveCategories } from '../../apis/category.api'
 import SearchInput from '../ui/SearchInput'
 import CategorySmallCard from '../card/CategorySmallCard'
 import Error from '../ui/Error'

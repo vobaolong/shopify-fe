@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { reportByUser } from '../../../apis/report'
+import { reportByUser } from '../../../apis/report.api'
 import { socketId } from '../../../socket'
 import { toast } from 'react-toastify'
 import ConfirmDialog from '../../ui/ConfirmDialog'

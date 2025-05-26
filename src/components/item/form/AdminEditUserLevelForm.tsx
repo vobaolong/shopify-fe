@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { getToken } from '../../../apis/auth'
-import { updateUserLevel } from '../../../apis/level'
+import { getToken } from '../../../apis/auth.api'
+import { updateUserLevel } from '../../../apis/level.api'
 import { regexTest, numberTest } from '../../../helper/test'
 import Input from '../../ui/Input'
 import Error from '../../ui/Error'

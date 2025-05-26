@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { getToken } from '../../apis/auth'
+import { getToken } from '../../apis/auth.api'
 import { formatPrice } from '../../helper/formatPrice'
 import {
   useProductFavoriteCount,

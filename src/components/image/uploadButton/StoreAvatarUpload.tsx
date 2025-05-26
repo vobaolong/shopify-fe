@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { getToken } from '../../../apis/auth'
+import { getToken } from '../../../apis/auth.api'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
 import Loading from '../../ui/Loading'
 import Error from '../../ui/Error'
 import { toast } from 'react-toastify'
 import { useTranslation } from 'react-i18next'
-import { updateAvatar } from '../../../apis/store'
+import { updateAvatar } from '../../../apis/store.api'
 import { useMutation } from '@tanstack/react-query'
 
 interface StoreAvatarUploadProps {

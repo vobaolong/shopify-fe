@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import { getToken } from '../../../apis/auth'
+import { getToken } from '../../../apis/auth.api'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
 import Loading from '../../ui/Loading'
 import Input from '../../ui/Input'
@@ -8,7 +8,7 @@ import ConfirmDialog from '../../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import Error from '../../ui/Error'
-import { addAddress } from '../../../apis/user'
+import { addAddress } from '../../../apis/user.api'
 import { useMutation } from '@tanstack/react-query'
 import { AxiosResponse } from 'axios'
 import { notification } from 'antd'
@@ -17,7 +17,7 @@ import {
   getProvince,
   getWard,
   GHN_TOKEN
-} from '../../../apis/address'
+} from '../../../apis/address.api'
 
 async function getDistricts(provinceId: string) {
   const { data: districtList } = await axios.get(getDistrict, {

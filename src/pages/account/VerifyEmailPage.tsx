@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Navigate } from 'react-router-dom'
-import { verifyEmail } from '../../apis/auth'
+import { verifyEmail } from '../../apis/auth.api'
 import Loading from '../../components/ui/Loading'
 import Error from '../../components/ui/Error'
 

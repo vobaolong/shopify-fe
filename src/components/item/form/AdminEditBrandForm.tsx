@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { getToken } from '../../../apis/auth'
-import { updateBrand, getBrandById } from '../../../apis/brand'
+import { getToken } from '../../../apis/auth.api'
+import { updateBrand, getBrandById } from '../../../apis/brand.api'
 import { regexTest } from '../../../helper/test'
 import Input from '../../ui/Input'
 import Loading from '../../ui/Loading'

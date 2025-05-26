@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { getToken } from '../../apis/auth'
-import { deleteReview } from '../../apis/review'
+import { getToken } from '../../apis/auth.api'
+import { deleteReview } from '../../apis/review.api'
 import StarRating from '../label/StarRating'
 import ProductSmallCard from '../card/ProductSmallCard'
 import Loading from '../ui/Loading'

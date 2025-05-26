@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { getToken } from '../../../apis/auth'
-import { updateReview } from '../../../apis/review'
+import { getToken } from '../../../apis/auth.api'
+import { updateReview } from '../../../apis/review.api'
 import { numberTest, regexTest } from '../../../helper/test'
 import Loading from '../../ui/Loading'
 import TextArea from '../../ui/TextArea'

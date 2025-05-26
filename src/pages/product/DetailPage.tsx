@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { getToken } from '../../apis/auth'
+import { getToken } from '../../apis/auth.api'
 import { Link, useParams } from 'react-router-dom'
-import { getProduct } from '../../apis/product'
+import { getProduct } from '../../apis/product.api'
 import {
   getFavoriteCount,
   checkFavoriteProduct
-} from '../../apis/favoriteProduct'
+} from '../../apis/favoriteProduct.api'
 import Error from '../../components/ui/Error'
 import { useTranslation } from 'react-i18next'
 import { FacebookShareButton } from 'react-share'

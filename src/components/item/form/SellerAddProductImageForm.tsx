@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { getToken } from '../../../apis/auth'
-import { addListImages } from '../../../apis/product'
+import { getToken } from '../../../apis/auth.api'
+import { addListImages } from '../../../apis/product.api'
 import InputFile from '../../ui/InputFile'
 import Loading from '../../ui/Loading'
 import ConfirmDialog from '../../ui/ConfirmDialog'

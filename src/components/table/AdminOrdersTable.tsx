@@ -1,39 +1,35 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { getToken } from '../../apis/auth'
-import { listOrdersForAdmin } from '../../apis/order'
+import { useEffect, useState } from 'react'
+import { useOrdersForAdmin } from '../../hooks/useOrder'
 import { humanReadableDate } from '../../helper/humanReadable'
 import { formatPrice } from '../../helper/formatPrice'
-import Pagination from '../ui/Pagination'
-import Loading from '../ui/Loading'
-import Error from '../ui/Error'
-import SortByButton from './sub/SortByButton'
 import OrderStatusLabel from '../label/OrderStatusLabel'
 import OrderPaymentLabel from '../label/OrderPaymentLabel'
 import StoreSmallCard from '../card/StoreSmallCard'
 import UserSmallCard from '../card/UserSmallCard'
-import SearchInput from '../ui/SearchInput'
 import { useTranslation } from 'react-i18next'
-import ShowResult from '../ui/ShowResult'
-import noItem from '../../assets/noItem.png'
+import {
+  Table,
+  Input,
+  Spin,
+  Alert,
+  Typography,
+  Empty,
+  Divider,
+  Tabs,
+  Drawer,
+  Button,
+  Tooltip,
+  Select,
+  DatePicker
+} from 'antd'
+import { ColumnsType } from 'antd/es/table'
+import { CopyOutlined, EyeOutlined, SyncOutlined } from '@ant-design/icons'
+import { PaginationType } from '../../@types/pagination.type'
+import SearchInput from '../ui/SearchInput'
+import { OrderStatus } from '../../enums/OrderStatus.enum'
+import OrderDetailInfo from '../info/OrderDetailInfo'
+import { Dayjs } from 'dayjs'
 
-interface Pagination {
-  size: number
-  pageCurrent: number
-  pageCount: number
-}
-
-interface Filter {
-  search: string
-  sortBy: string
-  order: string
-  status: string
-  limit: number
-  page: number
-}
-
-// Minimal order type for admin table
 interface OrderType {
   _id: string
   createdAt: string
@@ -47,54 +43,92 @@ interface OrderType {
   status?: string
 }
 
-const AdminOrdersTable = ({
-  heading = true,
-  status = ''
-}: {
-  heading?: boolean
-  status?: string
-}) => {
+interface OrderFilter {
+  search: string
+  sortBy: string
+  order: string
+  status: string
+  isPaidBefore?: string
+  limit: number
+  page: number
+  createdAtFrom?: string
+  createdAtTo?: string
+}
+
+const AdminOrdersTable = ({ status = '' }: { status?: string }) => {
   const { t } = useTranslation()
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [error, setError] = useState<string>('')
-  const [orders, setOrders] = useState<OrderType[]>([])
-  const [pagination, setPagination] = useState<Pagination>({
-    size: 0,
-    pageCurrent: 1,
-    pageCount: 1
-  })
-  const [filter, setFilter] = useState<Filter>({
+  const { Text } = Typography
+  const [filter, setFilter] = useState<OrderFilter>({
     search: '',
     sortBy: 'createdAt',
     order: 'desc',
     status: status || '',
-    limit: 7,
-    page: 1
+    isPaidBefore: 'all',
+    limit: 5,
+    page: 1,
+    createdAtFrom: undefined,
+    createdAtTo: undefined
   })
+  const [pendingFilter, setPendingFilter] = useState<OrderFilter>(filter)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs] | null>(null)
 
-  const { _id } = getToken() || {}
+  const { data, isLoading, error, refetch } = useOrdersForAdmin(filter)
 
-  const init = () => {
-    setError('')
-    setIsLoading(true)
-    listOrdersForAdmin(filter)
-      .then((res) => {
-        const data = res.data
-        if (data.error) setError(data.error)
-        else {
-          setOrders(data.orders || [])
-          setPagination({
-            size: data.size || 0,
-            pageCurrent: data.filter?.pageCurrent || 1,
-            pageCount: data.filter?.pageCount || 1
-          })
-        }
-        setIsLoading(false)
-      })
-      .catch(() => {
-        setError('Server Error')
-        setIsLoading(false)
-      })
+  const orders: OrderType[] = data?.orders || []
+  const pagination: PaginationType = {
+    size: data?.size || 0,
+    pageCurrent: data?.filter?.pageCurrent || filter.page,
+    pageCount: data?.filter?.pageCount || 1
+  }
+  const handleSearch = () => {
+    setFilter({ ...pendingFilter })
+  }
+  const handleChangeKeyword = (keyword: string) => {
+    setPendingFilter({
+      ...pendingFilter,
+      search: keyword,
+      page: 1
+    })
+  }
+  const handleDateRangeChange = (dates: any, dateStrings: [string, string]) => {
+    setDateRange(dates)
+    setPendingFilter({
+      ...pendingFilter,
+      createdAtFrom:
+        dates && dates[0] ? dates[0].startOf('day').toISOString() : undefined,
+      createdAtTo:
+        dates && dates[1] ? dates[1].endOf('day').toISOString() : undefined,
+      page: 1
+    })
+  }
+
+  const handlePaidChange = (value: string) => {
+    setPendingFilter({
+      ...pendingFilter,
+      isPaidBefore: value,
+      page: 1
+    })
+  }
+
+  const handleTableChange = (
+    paginationConfig: any,
+    filters: any,
+    sorter: any
+  ) => {
+    setFilter((prev) => ({
+      ...prev,
+      page: paginationConfig.current || 1,
+      limit: paginationConfig.pageSize || prev.limit,
+      sortBy: sorter.field || prev.sortBy,
+      order:
+        sorter.order === 'ascend'
+          ? 'asc'
+          : sorter.order === 'descend'
+            ? 'desc'
+            : prev.order
+    }))
   }
 
   useEffect(() => {
@@ -102,281 +136,268 @@ const AdminOrdersTable = ({
       ...prev,
       status: status || ''
     }))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
 
-  useEffect(() => {
-    init()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter])
+  const columns: ColumnsType<OrderType> = [
+    {
+      title: '#',
+      dataIndex: 'index',
+      key: 'index',
+      align: 'center',
+      render: (_: any, __: any, idx: number) =>
+        (pagination.pageCurrent - 1) * filter.limit + idx + 1,
+      width: 60,
+      fixed: 'left'
+    },
+    {
+      title: t('orderDetail.id'),
+      dataIndex: '_id',
+      key: '_id',
+      render: (id: string) => (
+        <Text
+          className='uppercase'
+          copyable={{ text: id.toUpperCase(), icon: <CopyOutlined /> }}
+        >
+          #{id.slice(-10).toUpperCase()}
+        </Text>
+      ),
+      width: 150
+    },
+    {
+      title: t('orderDetail.date'),
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      align: 'right',
+      sorter: true,
+      render: (date: string) => <Text>{humanReadableDate(date)}</Text>,
+      width: 150
+    },
+    {
+      title: t('orderDetail.total'),
+      dataIndex: 'amountFromUser',
+      key: 'amountFromUser',
+      sorter: true,
+      align: 'right',
+      render: (amount: { $numberDecimal: number }) => (
+        <Text className='whitespace-nowrap'>
+          {formatPrice(amount?.$numberDecimal)}
+          <sup> ₫</sup>
+        </Text>
+      ),
+      width: 150
+    },
+    {
+      title: t('orderDetail.buyer'),
+      dataIndex: 'userId',
+      key: 'userId',
+      render: (user: any) => (
+        <div>
+          <UserSmallCard user={user} isAvatar={false} />
+        </div>
+      ),
+      width: 200
+    },
+    {
+      title: t('seller'),
+      dataIndex: 'storeId',
+      key: 'storeId',
+      render: (store: any) => (
+        <div>
+          <StoreSmallCard store={store} isAvatar={false} />
+        </div>
+      ),
+      width: 200
+    },
+    {
+      title: t('orderDetail.profit'),
+      dataIndex: 'amountToStore',
+      key: 'amountToStore',
+      sorter: true,
+      align: 'right',
+      render: (amount: { $numberDecimal: number }) => (
+        <Text className='whitespace-nowrap'>
+          {amount && formatPrice(amount.$numberDecimal)}
+          <sup> ₫</sup>
+        </Text>
+      ),
+      width: 150
+    },
+    {
+      title: t('orderDetail.commission'),
+      dataIndex: 'amountToPlatform',
+      key: 'amountToPlatform',
+      sorter: true,
+      align: 'right',
+      render: (amount: { $numberDecimal: number }) => (
+        <Text className='whitespace-nowrap'>
+          {amount && formatPrice(amount.$numberDecimal)}
+          <sup> ₫</sup>
+        </Text>
+      ),
+      width: 150
+    },
+    {
+      title: t('orderDetail.deliveryUnit'),
+      dataIndex: 'shippingFee',
+      key: 'shippingFee',
+      align: 'right',
+      render: (fee: { $numberDecimal: number }) => (
+        <div>
+          <Text italic>Giao hàng nhanh</Text>
+          <br />
+          <Text>
+            {formatPrice(fee?.$numberDecimal)}
+            <sup> ₫</sup>
+          </Text>
+        </div>
+      )
+    },
+    {
+      title: t('orderDetail.payment'),
+      dataIndex: 'isPaidBefore',
+      key: 'isPaidBefore',
+      sorter: true,
+      render: (isPaid: boolean) => <OrderPaymentLabel isPaidBefore={isPaid} />,
+      width: 150
+    },
+    {
+      title: t('status.status'),
+      dataIndex: 'status',
+      key: 'status',
+      sorter: true,
+      align: 'center',
+      render: (status: string) => <OrderStatusLabel status={status} />,
+      width: 120
+    },
+    {
+      title: t('action'),
+      key: 'action',
+      fixed: 'right',
+      render: (_: any, record: OrderType) => (
+        <Tooltip title={t('button.detail')}>
+          <Button
+            type='primary'
+            onClick={() => {
+              setSelectedOrderId(record._id)
+              setDrawerOpen(true)
+            }}
+            icon={<EyeOutlined />}
+          />
+        </Tooltip>
+      )
+    }
+  ]
 
-  const handleChangeKeyword = (keyword: string) => {
-    setFilter({
-      ...filter,
-      search: keyword,
-      page: 1
-    })
+  const orderStatusTabs = [
+    { key: '', label: t('title.allOrders') },
+    { key: OrderStatus.PENDING, label: t('title.notProcessedOrders') },
+    { key: OrderStatus.PROCESSING, label: t('title.processingOrders') },
+    { key: OrderStatus.SHIPPED, label: t('title.shippedOrders') },
+    { key: OrderStatus.DELIVERED, label: t('title.deliveredOrders') },
+    { key: OrderStatus.CANCELLED, label: t('title.cancelledOrders') },
+    { key: OrderStatus.RETURNED, label: t('title.returnedOrders') }
+  ]
+
+  const searchFieldOptions = [
+    { label: t('orderDetail.id'), value: 'orderId' },
+    { label: t('orderDetail.buyer'), value: 'buyerName' },
+    { label: t('seller'), value: 'storeName' }
+  ]
+
+  const handleQuickView = (orderId: string) => {
+    setSelectedOrderId(orderId)
+    setDrawerOpen(true)
   }
 
-  const handleChangePage = (newPage: number) => {
-    setFilter({
-      ...filter,
-      page: newPage
-    })
-  }
-
-  const handleSetSortBy = (order: string, sortBy: string) => {
-    setFilter({
-      ...filter,
-      sortBy,
-      order
-    })
+  const handleCloseDrawer = () => {
+    setDrawerOpen(false)
+    setSelectedOrderId(null)
   }
 
   return (
-    <div className='position-relative'>
-      {heading && (
-        <>
-          {status ===
-            'Not processed|Processing|Shipped|Delivered|Cancelled|Returned' && (
-            <h5 className='text-start'>{t('title.allOrders')}</h5>
-          )}
-          {status === 'Not processed' && (
-            <h5 className='text-start'>{t('title.notProcessedOrders')}</h5>
-          )}
-          {status === 'Processing' && (
-            <h5 className='text-start'>{t('title.processingOrders')}</h5>
-          )}
-          {status === 'Shipped' && (
-            <h5 className='text-start'>{t('title.shippedOrders')}</h5>
-          )}
-          {status === 'Delivered' && (
-            <h5 className='text-start'>{t('title.deliveredOrders')}</h5>
-          )}
-          {status === 'Cancelled' && (
-            <h5 className='text-start'>{t('title.cancelledOrders')}</h5>
-          )}
-          {status === 'Returned' && (
-            <h5 className='text-start'>{t('title.returnedOrders')}</h5>
-          )}
-        </>
-      )}
-
-      {isLoading && <Loading />}
-      {error && <Error msg={error} />}
-
-      <div className='p-3 box-shadow bg-body rounded-2'>
-        <div className='mb-3'>
-          <SearchInput onChange={handleChangeKeyword} />
-        </div>
-        {!isLoading && pagination.size === 0 ? (
-          <div className='my-4 text-center'>
-            <img className='mb-3' src={noItem} alt='noItem' width={'100px'} />
-            <h5>{t('orderDetail.noOrder')}</h5>
-          </div>
-        ) : (
-          <div className='table-scroll my-2'>
-            <table className='table align-middle table-hover table-sm text-start'>
-              <thead>
-                <tr>
-                  <th scope='col' className='text-center'></th>
-                  <th scope='col'>
-                    <SortByButton
-                      currentOrder={filter.order}
-                      currentSortBy={filter.sortBy}
-                      title={t('orderDetail.id')}
-                      sortBy='_id'
-                      onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
-                    />
-                  </th>
-                  <th scope='col'>
-                    <SortByButton
-                      currentOrder={filter.order}
-                      currentSortBy={filter.sortBy}
-                      title={t('orderDetail.date')}
-                      sortBy='createdAt'
-                      onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
-                    />
-                  </th>
-                  <th scope='col' className='text-end'>
-                    <SortByButton
-                      currentOrder={filter.order}
-                      currentSortBy={filter.sortBy}
-                      title={t('orderDetail.total')}
-                      sortBy='amountFromUser'
-                      onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
-                    />
-                  </th>
-                  <th scope='col'>
-                    <SortByButton
-                      currentOrder={filter.order}
-                      currentSortBy={filter.sortBy}
-                      title={t('orderDetail.buyer')}
-                      sortBy='userId'
-                      onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
-                    />
-                  </th>
-                  <th scope='col'>
-                    <SortByButton
-                      currentOrder={filter.order}
-                      currentSortBy={filter.sortBy}
-                      title={t('seller')}
-                      sortBy='storeId'
-                      onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
-                    />
-                  </th>
-
-                  <th scope='col' className='text-end'>
-                    <SortByButton
-                      currentOrder={filter.order}
-                      currentSortBy={filter.sortBy}
-                      title={t('orderDetail.profit')}
-                      sortBy='amountToStore'
-                      onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
-                    />
-                  </th>
-                  <th scope='col' className='text-end'>
-                    <SortByButton
-                      currentOrder={filter.order}
-                      currentSortBy={filter.sortBy}
-                      title={t('orderDetail.commission')}
-                      sortBy='amountToPlatform'
-                      onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
-                    />
-                  </th>
-                  <th scope='col'>
-                    <SortByButton
-                      currentOrder={filter.order}
-                      currentSortBy={filter.sortBy}
-                      title={t('orderDetail.deliveryUnit')}
-                      sortBy='deliveryId'
-                      onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
-                    />
-                  </th>
-                  <th scope='col'>
-                    <SortByButton
-                      currentOrder={filter.order}
-                      currentSortBy={filter.sortBy}
-                      title={t('orderDetail.payment')}
-                      sortBy='isPaidBefore'
-                      onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
-                    />
-                  </th>
-                  <th scope='col'>
-                    <SortByButton
-                      currentOrder={filter.order}
-                      currentSortBy={filter.sortBy}
-                      title={t('status.status')}
-                      sortBy='status'
-                      onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
-                    />
-                  </th>
-
-                  <th scope='col'>
-                    <span
-                      style={{ fontWeight: '400', fontSize: '.875rem' }}
-                      className='text-secondary'
-                    >
-                      {t('action')}
-                    </span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((order, index) => (
-                  <tr key={index}>
-                    <th scope='row' className='text-center'>
-                      {index + 1 + (filter.page - 1) * filter.limit}
-                    </th>
-                    <td>
-                      <small>{order._id}</small>
-                    </td>
-                    <td>
-                      <small>{humanReadableDate(order.createdAt)}</small>
-                    </td>
-                    <td className='text-end'>
-                      <small className='text-nowrap'>
-                        {formatPrice(order.amountFromUser?.$numberDecimal)}
-                        <sup>₫</sup>
-                      </small>
-                    </td>
-                    <td>
-                      <small className='hidden-avatar'>
-                        <UserSmallCard user={order.userId} />
-                      </small>
-                    </td>
-                    <td>
-                      <small className='hidden-avatar'>
-                        <StoreSmallCard store={order.storeId} />
-                      </small>
-                    </td>
-                    <td className='text-end'>
-                      <small className='text-nowrap'>
-                        {order.amountToStore &&
-                          formatPrice(order.amountToStore.$numberDecimal)}
-                        <sup>₫</sup>
-                      </small>
-                    </td>
-                    <td className='text-end'>
-                      <small className='text-nowrap'>
-                        {order.amountToPlatform &&
-                          formatPrice(order.amountToPlatform.$numberDecimal)}
-                        <sup>₫</sup>
-                      </small>
-                    </td>
-                    <td>
-                      <small>
-                        <i>Giao hàng nhanh</i>
-                        <br />
-                        {formatPrice(order.shippingFee?.$numberDecimal)}
-                        <sup>₫</sup>
-                      </small>
-                    </td>
-                    <td>
-                      <span style={{ fontSize: '1rem' }}>
-                        <OrderPaymentLabel isPaidBefore={order.isPaidBefore} />
-                      </span>
-                    </td>
-                    <td>
-                      <span style={{ fontSize: '1rem' }}>
-                        <OrderStatusLabel status={order.status} />
-                      </span>
-                    </td>
-                    <td>
-                      <div className='position-relative d-inline-block'>
-                        <Link
-                          type='button'
-                          className='btn btn-sm btn-outline-secondary rounded-1 ripple cus-tooltip'
-                          to={`/admin/order/detail/${order._id}`}
-                          title={t('button.detail')}
-                        >
-                          <i className='fa-solid fa-info-circle'></i>
-                        </Link>
-                        <span className='cus-tooltip-msg'>
-                          {t('button.detail')}
-                        </span>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-        <div className='d-flex justify-content-between align-items-center px-4'>
-          <ShowResult
-            limit={filter.limit}
-            size={pagination.size}
-            pageCurrent={pagination.pageCurrent}
+    <div className='w-full'>
+      {error && <Alert message={error.message} type='error' showIcon />}
+      <div className='p-3 bg-white rounded-md'>
+        <Tabs
+          activeKey={filter.status}
+          onChange={(key) =>
+            setFilter((prev) => ({ ...prev, status: key, page: 1 }))
+          }
+          items={orderStatusTabs}
+        />
+        <div className='flex gap-3 items-center flex-wrap mb-3'>
+          <SearchInput
+            value={pendingFilter.search || ''}
+            onChange={handleChangeKeyword}
+            onSearch={handleSearch}
+            loading={isLoading}
+            fieldOptions={searchFieldOptions}
           />
-          {pagination.size !== 0 && (
-            <Pagination
-              pagination={pagination}
-              onChangePage={handleChangePage}
-            />
-          )}
+          <Select
+            style={{ minWidth: 140 }}
+            value={pendingFilter.isPaidBefore || undefined}
+            onChange={handlePaidChange}
+            options={[
+              { label: t('filters.all'), value: 'all' },
+              { label: t('orderDetail.onlinePayment'), value: 'true' },
+              { label: t('orderDetail.cod'), value: 'false' }
+            ]}
+            placeholder={t('orderDetail.payment')}
+            allowClear
+          />
+          <DatePicker.RangePicker
+            value={dateRange}
+            onChange={handleDateRangeChange}
+            className='min-w-[240px]'
+            allowClear
+            format='DD-MM-YYYY'
+            placeholder={[t('filters.fromDate'), t('filters.toDate')]}
+          />
+          <Button type='primary' onClick={handleSearch}>
+            {t('search')}
+          </Button>
+          <Button
+            onClick={() => refetch()}
+            className='!h-10 !w-10 flex items-center justify-center'
+            type='default'
+            loading={isLoading}
+            icon={<SyncOutlined spin={isLoading} />}
+          />
         </div>
+        <Divider />
+        <Spin spinning={isLoading}>
+          <Table
+            columns={columns}
+            dataSource={orders}
+            rowKey='_id'
+            pagination={{
+              current: pagination.pageCurrent,
+              total: pagination.size,
+              pageSize: filter.limit,
+              showTotal: (total, range) =>
+                `${range[0]}-${range[1]} of ${total} items`,
+              pageSizeOptions: ['5', '10', '20', '50']
+            }}
+            onChange={handleTableChange}
+            locale={{
+              emptyText: <Empty description={t('orderDetail.noOrder')} />
+            }}
+            scroll={{ x: 'max-content' }}
+            bordered
+          />
+        </Spin>
       </div>
+      <Drawer
+        title={t('orderDetail.quickview')}
+        open={drawerOpen}
+        onClose={handleCloseDrawer}
+        width={600}
+        destroyOnClose
+      >
+        {selectedOrderId && (
+          <OrderDetailInfo orderId={selectedOrderId} by='admin' />
+        )}
+      </Drawer>
     </div>
   )
 }

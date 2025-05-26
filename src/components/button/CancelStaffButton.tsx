@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getToken } from '../../apis/auth'
+import { getToken } from '../../apis/auth.api'
 import { useCancelStaff } from '../../hooks/useCancelStaff'
 import Loading from '../ui/Loading'
 import ConfirmDialog from '../ui/ConfirmDialog'

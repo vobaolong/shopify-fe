@@ -10,15 +10,15 @@ const OrderPage = () => {
   const { t } = useTranslation()
 
   const [selectedStatus, setSelectedStatus] = useState(
-    'Not processed|Processing|Shipped|Delivered|Cancelled|Returned'
+    'Pending|Processing|Shipped|Delivered|Cancelled|Returned'
   )
 
   const orderStatus = [
     {
       label: t('status.all'),
-      value: 'Not processed|Processing|Shipped|Delivered|Cancelled|Returned'
+      value: 'Pending|Processing|Shipped|Delivered|Cancelled|Returned'
     },
-    { label: t('status.notProcessed'), value: 'Not processed' },
+    { label: t('status.pending'), value: 'Pending' },
     { label: t('status.processing'), value: 'Processing' },
     { label: t('status.shipped'), value: 'Shipped' },
     { label: t('status.delivered'), value: 'Delivered' },

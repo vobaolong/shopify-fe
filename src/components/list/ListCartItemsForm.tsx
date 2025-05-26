@@ -2,12 +2,12 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { getToken } from '../../apis/auth'
+import { getToken } from '../../apis/auth.api'
 import {
   listItemsByCart,
   deleteFromCart,
   updateCartItem
-} from '../../apis/cart'
+} from '../../apis/cart.api'
 import { totalProducts } from '../../helper/total'
 import { formatPrice } from '../../helper/formatPrice'
 import useUpdateDispatch from '../../hooks/useUpdateDispatch'

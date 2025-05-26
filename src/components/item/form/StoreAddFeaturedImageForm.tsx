@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { getToken } from '../../../apis/auth'
-import { addFeaturedImage } from '../../../apis/store'
+import { getToken } from '../../../apis/auth.api'
+import { addFeaturedImage } from '../../../apis/store.api'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
 import InputFile from '../../ui/InputFile'
 import Error from '../../ui/Error'

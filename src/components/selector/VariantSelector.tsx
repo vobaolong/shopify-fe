@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { listVariantByCategory } from '../../apis/variant'
+import { listVariantByCategory } from '../../apis/variant.api'
 import Loading from '../ui/Loading'
 import MultiVariantValueSelector from '../selector/MultiVariantValueSelector'
 import Error from '../ui/Error'

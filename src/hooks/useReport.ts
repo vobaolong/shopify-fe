@@ -1,5 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { listReportsForAdmin, reportByUser, deleteReport } from '../apis/report'
+import {
+  listReportsForAdmin,
+  reportByUser,
+  deleteReport
+} from '../apis/report.api'
 
 // Query keys
 export const reportKeys = {

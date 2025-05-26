@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { notification } from 'antd'
-import { getListStores } from '../../apis/store'
+import { getListStores } from '../../apis/store.api'
 import Loading from '../ui/Loading'
 import StoreCard from '../card/StoreCard'
 import Slider from 'react-slick'

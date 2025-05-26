@@ -4,7 +4,7 @@ import {
   listCategories,
   removeCategory,
   restoreCategory
-} from '../../apis/category'
+} from '../../apis/category.api'
 import SearchInput from '../ui/SearchInput'
 import DeletedLabel from '../label/DeletedLabel'
 import CategorySmallCard from '../card/CategorySmallCard'

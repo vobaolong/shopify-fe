@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { signin, setToken, forgotPassword } from '../../../apis/auth'
+import { signin, setToken, forgotPassword } from '../../../apis/auth.api'
 import { regexTest } from '../../../helper/test'
 import Input from '../../ui/Input'
 import Loading from '../../ui/Loading'

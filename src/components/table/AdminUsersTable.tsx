@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { listUserForAdmin } from '../../apis/user'
+import { listUserForAdmin } from '../../apis/user.api'
 import { humanReadableDate } from '../../helper/humanReadable'
 import SearchInput from '../ui/SearchInput'
 import UserSmallCard from '../card/UserSmallCard'
@@ -233,7 +233,7 @@ const AdminUsersTable = ({ heading = false }) => {
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} ${t('of')} ${total} ${t('result')}`
           }}
-          scroll={{ x: 900 }}
+          scroll={{ x: 'max-content' }}
         />
       </div>
     </div>

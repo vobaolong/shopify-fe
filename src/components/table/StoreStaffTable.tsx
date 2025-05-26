@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
-import { getToken } from '../../apis/auth'
-import { deleteStaff } from '../../apis/store'
+import { getToken } from '../../apis/auth.api'
+import { deleteStaff } from '../../apis/store.api'
 import useUpdateDispatch from '../../hooks/useUpdateDispatch'
 import UserSmallCard from '../card/UserSmallCard'
 import StoreAddStaffItem from '../item/StoreAddStaffItem'

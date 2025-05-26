@@ -1,10 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
-import { getToken } from '../../apis/auth'
+import { getToken } from '../../apis/auth.api'
 import {
   listReturnByStore,
   sellerUpdateReturnStatusOrder
-} from '../../apis/order'
+} from '../../apis/order.api'
 import { humanReadableDate } from '../../helper/humanReadable'
 import { formatPrice } from '../../helper/formatPrice'
 import Pagination from '../ui/Pagination'

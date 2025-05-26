@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react'
 import Loading from '../ui/Loading'
-import { getToken } from '../../apis/auth'
+import { getToken } from '../../apis/auth.api'
 import { useTranslation } from 'react-i18next'
 import { useToggleProductFavorite } from '../../hooks/useToggleProductFavorite'
 import { notification, Spin } from 'antd'

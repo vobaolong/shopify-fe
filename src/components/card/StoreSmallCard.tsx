@@ -1,46 +1,35 @@
 import { Link } from 'react-router-dom'
 import defaultImage from '../../assets/default.webp'
-import Skeleton from 'react-loading-skeleton'
+import { Avatar, Typography } from 'antd'
 import { StoreType } from '../../@types/entity.types'
 
 interface StoreSmallCardProps {
   store: StoreType
   borderName?: boolean
   link?: string
-  isLoading?: boolean
+  isAvatar?: boolean
 }
 
 const StoreSmallCard = ({
   store,
   borderName = false,
   link = `/store/${store?._id}`,
-  isLoading = false
+  isAvatar = true
 }: StoreSmallCardProps) => (
-  <span
-    className={`d-inline-flex align-items-center ${
-      borderName && 'bg-body shadow p-1 rounded-2'
-    }`}
+  <div
+    className={`inline-flex items-center ${borderName ? 'bg-white shadow p-2 rounded-lg' : ''}`}
   >
-    <Link className='text-reset text-decoration-none' to={link}>
-      {isLoading ? (
-        <Skeleton circle={true} height={40} width={40} />
-      ) : (
-        <img
-          loading='lazy'
-          src={store?.avatar ? store?.avatar : defaultImage}
-          className='small-card-img'
+    <Link to={link} className='!no-underline flex items-center gap-1'>
+      {isAvatar && (
+        <Avatar
+          size={32}
+          src={store?.avatar || defaultImage}
           alt={store?.name}
         />
       )}
+      <Typography.Text className='text-sm'>{store?.name}</Typography.Text>
     </Link>
-    <Link className='text-reset link-hover m-auto ms-2' to={link}>
-      {isLoading ? (
-        <Skeleton height={20} width={100} />
-      ) : (
-        <span style={{ fontSize: '0.9rem' }}>{store?.name}</span>
-      )}
-    </Link>
-  </span>
+  </div>
 )
 
 export default StoreSmallCard

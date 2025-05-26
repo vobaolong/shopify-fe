@@ -1,8 +1,8 @@
 import { useSelector } from 'react-redux'
 import { useParams, Link } from 'react-router-dom'
-import OrderDetailInfo from '../../components/info/OrderDetailInfo'
 import AdminLayout from '../../components/layout/AdminLayout'
 import { useTranslation } from 'react-i18next'
+import OrderDetailDrawer from '../../components/info/OrderDetailInfo'
 
 const OrderDetailPage = () => {
   const user = useSelector((state: any) => state.account.user)
@@ -20,15 +20,7 @@ const OrderDetailPage = () => {
   return (
     <AdminLayout user={user} paths={paths}>
       <div className='res-mx--12-md bg-white rounded-1 box-shadow p-4'>
-        <OrderDetailInfo orderId={orderId} by='admin' isEditable={true} />
-        <div className='mt-4'>
-          <Link
-            to='/admin/order'
-            className='text-decoration-none cus-link-hover'
-          >
-            <i className='fa-solid fa-angle-left'></i> {t('button.back')}
-          </Link>
-        </div>
+        <OrderDetailDrawer orderId={orderId} by='admin' isEditable={true} />
       </div>
     </AdminLayout>
   )

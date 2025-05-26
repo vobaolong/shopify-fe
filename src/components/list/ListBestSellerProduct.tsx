@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { listActiveProducts } from '../../apis/product'
+import { listActiveProducts } from '../../apis/product.api'
 import Loading from '../ui/Loading'
 import ProductCard from '../card/ProductCard'
 import Slider from 'react-slick'

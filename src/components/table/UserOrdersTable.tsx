@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { getToken } from '../../apis/auth'
-import { listOrdersByUser } from '../../apis/order'
+import { getToken } from '../../apis/auth.api'
+import { listOrdersByUser } from '../../apis/order.api'
 import { formatPrice } from '../../helper/formatPrice'
 import { humanReadableDate } from '../../helper/humanReadable'
 import StoreSmallCard from '../card/StoreSmallCard'
@@ -109,10 +109,10 @@ const UserOrdersTable = ({ heading = true, status = '' }) => {
       {heading && (
         <>
           {status ===
-            'Not processed|Processing|Shipped|Delivered|Cancelled|Returned' && (
+            'Pending|Processing|Shipped|Delivered|Cancelled|Returned' && (
             <h5 className='text-start'>{t('title.allOrders')}</h5>
           )}
-          {status === 'Not processed' && (
+          {status === 'Pending' && (
             <h5 className='text-start'>{t('title.notProcessedOrders')}</h5>
           )}
           {status === 'Processing' && (

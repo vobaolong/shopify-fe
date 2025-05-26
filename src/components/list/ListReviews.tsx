@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
-import { listReviews } from '../../apis/review'
+import { listReviews } from '../../apis/review.api'
 import Loading from '../ui/Loading'
 import Error from '../ui/Error'
 import Pagination from '../ui/Pagination'

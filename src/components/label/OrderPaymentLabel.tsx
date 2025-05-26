@@ -1,25 +1,13 @@
 import { useTranslation } from 'react-i18next'
+import { Tag } from 'antd'
 
 const OrderPaymentLabel = ({ isPaidBefore = false, detail = true }) => {
   const { t } = useTranslation()
   return (
-    <span className='position-relative d-inline-block'>
-      {isPaidBefore ? (
-        <span className='badge border rounded-1 bg-primary-rgba'>
-          {detail && (
-            <span className='text-primary'>
-              {t('orderDetail.onlinePayment')}
-            </span>
-          )}
-        </span>
-      ) : (
-        <span className='badge border rounded-1 bg-danger-rgba'>
-          {detail && (
-            <span className='text-danger'>{t('orderDetail.cod')}</span>
-          )}
-        </span>
-      )}
-    </span>
+    <Tag color={isPaidBefore ? 'blue' : 'red'}>
+      {detail &&
+        t(isPaidBefore ? 'orderDetail.onlinePayment' : 'orderDetail.cod')}
+    </Tag>
   )
 }
 

@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from 'react'
-import { getToken } from '../../apis/auth'
+import { getToken } from '../../apis/auth.api'
 import { useToggleFollowStore } from '../../hooks/useToggleFollowStore'
 import Loading from '../ui/Loading'
 import Error from '../ui/Error'

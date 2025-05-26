@@ -4,7 +4,7 @@ import {
   createCategory,
   updateCategory,
   getCategoryById
-} from '../../../apis/category'
+} from '../../../apis/category.api'
 import InputFile from '../../ui/InputFile'
 import Loading from '../../ui/Loading'
 import ConfirmDialog from '../../ui/ConfirmDialog'

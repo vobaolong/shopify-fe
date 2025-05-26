@@ -1,11 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { getToken } from '../../apis/auth'
+import { getToken } from '../../apis/auth.api'
 import {
   listProductsForManager,
   sellingProduct as showOrHide
-} from '../../apis/product'
+} from '../../apis/product.api'
 import { formatDate, humanReadableDate } from '../../helper/humanReadable'
 import { formatPrice } from '../../helper/formatPrice'
 import Pagination from '../ui/Pagination'

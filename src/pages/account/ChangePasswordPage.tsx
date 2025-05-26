@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
 import { useParams, Navigate } from 'react-router-dom'
-import { changePassword } from '../../apis/auth'
+import { changePassword } from '../../apis/auth.api'
 import Loading from '../../components/ui/Loading'
 import Error from '../../components/ui/Error'
 import Logo from '../../components/layout/menu/Logo'

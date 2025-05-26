@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { getToken } from '../../../apis/auth'
-import { updateValue } from '../../../apis/variant'
+import { getToken } from '../../../apis/auth.api'
+import { updateValue } from '../../../apis/variant.api'
 import { regexTest } from '../../../helper/test'
 import Input from '../../ui/Input'
 import Loading from '../../ui/Loading'

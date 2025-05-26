@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
-import { getToken } from '../../../apis/auth'
-import { createValue } from '../../../apis/variant'
+import { getToken } from '../../../apis/auth.api'
+import { createValue } from '../../../apis/variant.api'
 import { regexTest } from '../../../helper/test'
 import Input from '../../ui/Input'
 import Loading from '../../ui/Loading'

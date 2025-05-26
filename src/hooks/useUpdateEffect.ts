@@ -1,8 +1,15 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, DependencyList } from 'react'
 
-const useUpdateEffect = (callback, dependencies) => {
-  const firstRenderRef = useRef(true)
+/**
+ * Custom hook that runs an effect only on updates (skips the first render)
+ * @param callback - The effect callback function
+ * @param dependencies - The dependency array for the effect
+ */
+const useUpdateEffect = (
+  callback: () => void | (() => void),
+  dependencies?: DependencyList
+): void => {
+  const firstRenderRef = useRef<boolean>(true)
 
   useEffect(() => {
     if (firstRenderRef.current) {

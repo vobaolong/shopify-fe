@@ -1,218 +1,188 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Layout, Menu, Button } from 'antd'
+import {
+  DashboardOutlined,
+  UsergroupAddOutlined,
+  ShopOutlined,
+  ShoppingCartOutlined,
+  TransactionOutlined,
+  AppstoreOutlined,
+  BgColorsOutlined,
+  DropboxOutlined,
+  SafetyCertificateOutlined,
+  PercentageOutlined,
+  WarningOutlined,
+  CommentOutlined,
+  FontColorsOutlined,
+  MenuUnfoldOutlined,
+  MenuFoldOutlined
+} from '@ant-design/icons'
+import { useState } from 'react'
 
+const { Sider } = Layout
+
+const menuItems = (t: (key: string) => string) => [
+  {
+    key: 'dashboard',
+    icon: <DashboardOutlined />,
+    label: (
+      <Link to='/admin/dashboard' className='!no-underline'>
+        {t('admin.adDashboard.dashboard')}
+      </Link>
+    )
+  },
+  {
+    key: 'users',
+    icon: <UsergroupAddOutlined />,
+    label: (
+      <Link to='/admin/users' className='!no-underline'>
+        {t('admin.users')}
+      </Link>
+    )
+  },
+  {
+    key: 'stores',
+    icon: <ShopOutlined />,
+    label: (
+      <Link to='/admin/stores' className='!no-underline'>
+        {t('admin.stores')}
+      </Link>
+    )
+  },
+  {
+    key: 'orders',
+    icon: <ShoppingCartOutlined />,
+    label: (
+      <Link to='/admin/orders' className='!no-underline'>
+        {t('admin.orders')}
+      </Link>
+    )
+  },
+  {
+    key: 'transactions',
+    icon: <TransactionOutlined />,
+    label: (
+      <Link to='/admin/transactions' className='!no-underline'>
+        {t('admin.transactions')}
+      </Link>
+    )
+  },
+  {
+    key: 'categories',
+    icon: <AppstoreOutlined />,
+    label: (
+      <Link to='/admin/categories' className='!no-underline'>
+        {t('admin.categories')}
+      </Link>
+    )
+  },
+  {
+    key: 'variants',
+    icon: <BgColorsOutlined />,
+    label: (
+      <Link to='/admin/variants' className='!no-underline'>
+        {t('admin.variants')}
+      </Link>
+    )
+  },
+  {
+    key: 'products',
+    icon: <DropboxOutlined />,
+    label: (
+      <Link to='/admin/products' className='!no-underline'>
+        {t('admin.products')}
+      </Link>
+    )
+  },
+  {
+    key: 'levels',
+    icon: <SafetyCertificateOutlined />,
+    label: (
+      <Link to='/admin/levels' className='!no-underline'>
+        {t('admin.levels')}
+      </Link>
+    )
+  },
+  {
+    key: 'commissions',
+    icon: <PercentageOutlined />,
+    label: (
+      <Link to='/admin/commissions' className='!no-underline'>
+        {t('admin.commissions')}
+      </Link>
+    )
+  },
+  {
+    key: 'reports',
+    icon: <WarningOutlined />,
+    label: (
+      <Link to='/admin/reports' className='!no-underline'>
+        {t('admin.reports')}
+      </Link>
+    )
+  },
+  {
+    key: 'reviews',
+    icon: <CommentOutlined />,
+    label: (
+      <Link to='/admin/reviews' className='!no-underline'>
+        {t('admin.reviews')}
+      </Link>
+    )
+  },
+  {
+    key: 'brands',
+    icon: <FontColorsOutlined />,
+    label: (
+      <Link to='/admin/brands' className='!no-underline'>
+        {t('admin.brands')}
+      </Link>
+    )
+  }
+]
+const siderStyle: React.CSSProperties = {
+  height: '100vh',
+  position: 'sticky',
+  top: 0,
+  bottom: 0,
+  backgroundColor: 'white'
+}
 const AdminSideBar = () => {
   const { t } = useTranslation()
-  const path = useLocation().pathname.split('/')[2]
+  const location = useLocation()
+  const path = location.pathname.split('/')[2] || 'dashboard'
+  const [collapsed, setCollapsed] = useState(false)
 
   return (
-    <div
-      className='sticky-sidebar d-flex flex-column flex-shrink-0 p-2 box-shadow bg-body rounded-1 res-account-sidebar
-      '
+    <Sider
+      collapsible
+      collapsed={collapsed}
+      onCollapse={(value) => setCollapsed(value)}
+      trigger={null}
+      breakpoint='lg'
+      collapsedWidth='80'
+      width={220}
+      style={siderStyle}
     >
-      <ul className='nav nav-pills flex-column mb-auto justify-content-around gap-1'>
-        <li className='nav-item'>
-          <Link
-            to={`/admin/dashboard`}
-            className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'dashboard' ? 'active' : ''
-            }`}
-          >
-            <i
-              className={`${
-                path === 'dashboard' ? 'fa-solid' : 'fa-light'
-              } w-10 text-center fa-chart-line`}
-            ></i>
-            <span className='ms-3 res-hide-lg'>
-              {t('admin.adDashboard.dashboard')}
-            </span>
-          </Link>
-        </li>
-        <li className='nav-item'>
-          <Link
-            to={`/admin/users`}
-            className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'users' ? 'active' : ''
-            }`}
-          >
-            <i
-              className={`${
-                path === 'users' ? 'fa-solid' : 'fa-light'
-              } w-10 text-center fa-user-group`}
-            ></i>
-            <span className='ms-3 res-hide-lg'>{t('admin.users')}</span>
-          </Link>
-        </li>
-        <li className='nav-item'>
-          <Link
-            to={`/admin/stores`}
-            className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'stores' ? 'active' : ''
-            }`}
-          >
-            <i
-              className={`${
-                path === 'stores' ? 'fa-solid' : 'fa-light'
-              } w-10 text-center fa-store`}
-            ></i>
-
-            <span className='ms-3 res-hide-lg'>{t('admin.stores')}</span>
-          </Link>
-        </li>
-        <li className='nav-item'>
-          <Link
-            to='/admin/orders'
-            className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'orders' ? 'active' : ''
-            }`}
-          >
-            <i
-              className={`${
-                path === 'orders' ? 'fa-solid' : 'fa-light'
-              } w-10 text-center fa-receipt`}
-            ></i>
-            <span className='ms-3 res-hide-lg'>{t('admin.orders')}</span>
-          </Link>
-        </li>
-        <li className='nav-item'>
-          <Link
-            to='/admin/transactions'
-            className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'transactions' ? 'active' : ''
-            }`}
-          >
-            <i
-              className={`${
-                path === 'transactions' ? 'fa-solid' : 'fa-light'
-              } w-10 text-center fa-money-bill-transfer`}
-            ></i>
-            <span className='ms-3 res-hide-lg'>{t('admin.transactions')}</span>
-          </Link>
-        </li>
-        <li className='nav-item'>
-          <Link
-            to={`/admin/categories`}
-            className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'categories' ? 'active' : ''
-            }`}
-          >
-            <i
-              className={`${
-                path === 'categories' ? 'fa-solid' : 'fa-light'
-              } w-10 text-center fa-list`}
-            ></i>
-            <span className='ms-3 res-hide-lg'>{t('admin.categories')}</span>
-          </Link>
-        </li>
-        <li className='nav-item'>
-          <Link
-            to={`/admin/variants`}
-            className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'variants' ? 'active' : ''
-            }`}
-          >
-            <i
-              className={`${
-                path === 'variants' ? 'fa-solid' : 'fa-light'
-              } w-10 text-center fa-palette`}
-            ></i>
-            <span className='ms-3 res-hide-lg'>{t('admin.variants')}</span>
-          </Link>
-        </li>
-        <li className='nav-item'>
-          <Link
-            to={`/admin/products`}
-            className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'products' ? 'active' : ''
-            }`}
-          >
-            <i
-              className={`${
-                path === 'products' ? 'fa-solid' : 'fa-light'
-              } w-10 text-center fa-box`}
-            ></i>
-            <span className='ms-3 res-hide-lg'>{t('admin.products')}</span>
-          </Link>
-        </li>
-        <li className='nav-item'>
-          <Link
-            to={`/admin/levels`}
-            className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'levels' ? 'active' : ''
-            }`}
-          >
-            <i
-              className={`${
-                path === 'levels' ? 'fa-solid' : 'fa-light'
-              } w-10 text-center fa-shield-alt`}
-            ></i>
-            <span className='ms-3 res-hide-lg'>{t('admin.levels')}</span>
-          </Link>
-        </li>
-        <li className='nav-item'>
-          <Link
-            to={`/admin/commissions`}
-            className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'commissions' ? 'active' : ''
-            }`}
-          >
-            <i
-              className={`${
-                path === 'commissions' ? 'fa-solid' : 'fa-light'
-              } w-10 text-center fa-percent`}
-            ></i>
-            <span className='ms-3 res-hide-lg'>{t('admin.commissions')}</span>
-          </Link>
-        </li>
-        <li className='nav-item'>
-          <Link
-            to={`/admin/reports`}
-            className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'reports' ? 'active' : ''
-            }`}
-          >
-            <i
-              className={`${
-                path === 'reports' ? 'fa-solid' : 'fa-light'
-              } w-10 text-center fa-triangle-exclamation`}
-            ></i>
-            <span className='ms-3 res-hide-lg'>{t('admin.reports')}</span>
-          </Link>
-        </li>
-        {/*  */}
-        <li className='nav-item'>
-          <Link
-            to={`/admin/reviews`}
-            className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'reviews' ? 'active' : ''
-            }`}
-          >
-            <i
-              className={`${
-                path === 'reviews' ? 'fa-solid' : 'fa-light'
-              } w-10 text-center fa-comment`}
-            ></i>
-            <span className='ms-3 res-hide-lg'>{t('admin.reviews')}</span>
-          </Link>
-        </li>
-        {/*  */}
-        <li className='nav-item'>
-          <Link
-            to={`/admin/brands`}
-            className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'brands' ? 'active' : ''
-            }`}
-          >
-            <i
-              className={`${
-                path === 'brands' ? 'fa-solid' : 'fa-light'
-              } w-10 text-center fa-font-awesome`}
-            ></i>
-            <span className='ms-3 res-hide-lg'>{t('admin.brands')}</span>
-          </Link>
-        </li>
-      </ul>
-    </div>
+      <div className='flex items-center justify-between px-4 py-3'>
+        <div className='text-xl font-bold text-primary'>
+          {!collapsed && 'ADMIN'}
+        </div>
+        <Button
+          type='text'
+          icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+          onClick={() => setCollapsed(!collapsed)}
+          className='flex items-center justify-center'
+        />
+      </div>
+      <Menu
+        mode='inline'
+        selectedKeys={[path]}
+        items={menuItems(t)}
+        style={{ height: '100%', borderRight: 0 }}
+      />
+    </Sider>
   )
 }
 

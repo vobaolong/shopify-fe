@@ -8,7 +8,7 @@ import {
   sendActiveStoreEmail,
   sendActiveProductEmail,
   sendBanProductEmail
-} from '../apis/notification'
+} from '../apis/notification.api'
 
 // Query keys
 export const notificationKeys = {

@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { getToken } from '../../apis/auth'
+import { getToken } from '../../apis/auth.api'
 import { useQuery } from '@tanstack/react-query'
 import {
   getStoreFollowerCount,
   checkFollowingStore
-} from '../../apis/followStore'
-import { getStoreLevel } from '../../apis/level'
+} from '../../apis/followStore.api'
+import { getStoreLevel } from '../../apis/level.api'
 import StoreFollowLabel from '../label/StoreFollowLabel'
 import StarRating from '../label/StarRating'
 import FollowStoreButton from '../button/FollowStoreButton'

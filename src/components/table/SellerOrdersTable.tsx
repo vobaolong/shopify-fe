@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { getToken } from '../../apis/auth'
-import { listOrdersByStore } from '../../apis/order'
+import { getToken } from '../../apis/auth.api'
+import { listOrdersByStore } from '../../apis/order.api'
 import { humanReadableDate } from '../../helper/humanReadable'
 import { formatPrice } from '../../helper/formatPrice'
 import Pagination from '../ui/Pagination'
@@ -109,10 +109,10 @@ const SellerOrdersTable = ({
       {heading && (
         <>
           {status ===
-            'Not processed|Processing|Shipped|Delivered|Cancelled|Returned' && (
+            'Pending|Processing|Shipped|Delivered|Cancelled|Returned' && (
             <h5 className='text-start'>{t('title.allOrders')}</h5>
           )}
-          {status === 'Not processed' && (
+          {status === 'Pending' && (
             <h5 className='text-start'>{t('title.notProcessedOrders')}</h5>
           )}
           {status === 'Processing' && (

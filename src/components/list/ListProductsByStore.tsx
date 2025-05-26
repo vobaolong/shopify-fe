@@ -1,4 +1,4 @@
-import { listSellingProductsByStore } from '../../apis/product'
+import { listSellingProductsByStore } from '../../apis/product.api'
 import Loading from '../ui/Loading'
 import ProductCard from '../card/ProductCard'
 import Slider from 'react-slick'

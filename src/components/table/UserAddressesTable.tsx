@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { getToken } from '../../apis/auth'
+import { getToken } from '../../apis/auth.api'
 import useUpdateDispatch from '../../hooks/useUpdateDispatch'
 import AddressForm from '../item/form/AddressForm'
 import UserAddAddressItem from '../item/UserAddAddressItem'
@@ -8,9 +8,9 @@ import Loading from '../ui/Loading'
 import ConfirmDialog from '../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
-import { getAddress } from '../../apis/address'
+import { getAddress } from '../../apis/address.api'
 import Error from '../ui/Error'
-import { deleteAddresses, updateAddress } from '../../apis/user'
+import { deleteAddresses, updateAddress } from '../../apis/user.api'
 
 const UserAddressesTable = ({ addresses = [] }) => {
   const { t } = useTranslation()

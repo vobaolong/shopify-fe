@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { getListStores } from '../../apis/store'
+import { getListStores } from '../../apis/store.api'
 import useUpdateEffect from '../../hooks/useUpdateEffect'
 import MainLayout from '../../components/layout/MainLayout'
 import StoreCard from '../../components/card/StoreCard'
