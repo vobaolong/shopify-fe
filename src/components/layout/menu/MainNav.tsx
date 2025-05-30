@@ -14,6 +14,8 @@ import StoreSmallCard from '../../card/StoreSmallCard'
 import { useTranslation } from 'react-i18next'
 import BellButton from './BellButton'
 import clsx from 'clsx'
+import { selectAccountUser } from '../../../store/slices/accountSlice'
+import { selectSellerStore } from '../../../store/slices/sellerSlice'
 
 interface MainNavProps {
   navFor?: string
@@ -21,9 +23,9 @@ interface MainNavProps {
 
 const MainNav = ({ navFor = 'user' }: MainNavProps) => {
   const { t } = useTranslation()
-  const { cartCount } = useSelector((state: any) => state.account.user)
-  const user = useSelector((state: any) => state.account.user)
-  const store = useSelector((state: any) => state.seller.store)
+  const user = useSelector(selectAccountUser)
+  const store = useSelector(selectSellerStore)
+  const cartCount = user?.cartCount || 0
   const [isConfirming, setIsConfirming] = useState(false)
   const { refreshToken } = getToken()
   const navigate = useNavigate()
@@ -176,10 +178,38 @@ const MainNav = ({ navFor = 'user' }: MainNavProps) => {
               </div>
 
               <div className='offcanvas-body'>
-                <UserSmallCard user={user} link='/account/profile' />
+                <UserSmallCard
+                  user={{
+                    _id: user._id || '',
+                    userName: user.userName || '',
+                    email: user.email || '',
+                    isEmailActive: user.isEmailActive || false,
+                    name: user.name || '',
+                    avatar: user.avatar || '',
+                    cartCount: user.cartCount || 0,
+                    role: user.role || '',
+                    ...user
+                  }}
+                  link='/account/profile'
+                />
                 <hr />
                 {navFor === 'seller' && (
-                  <StoreSmallCard store={store} link={`/seller/${store._id}`} />
+                  <StoreSmallCard
+                    store={{
+                      _id: store._id || '',
+                      name: store.name || '',
+                      avatar: store.avatar || '',
+                      address: store.address || '',
+                      ownerId: store.ownerId || '',
+                      isActive: store.isActive || false,
+                      isOpen: store.isOpen || false,
+                      createdAt: store.createdAt || '',
+                      updatedAt: store.updatedAt || '',
+                      rating: store.rating || 0,
+                      ...store
+                    }}
+                    link={`/seller/${store._id}`}
+                  />
                 )}
 
                 <ul className='navbar-nav justify-content-end flex-grow-1 gap-2 mt-2'>

@@ -12,11 +12,13 @@ import StoreLevelInfo from '../../components/info/StoreLevelInfo'
 import StoreProfileInfo from '../../components/info/StoreProfileInfo'
 import { useTranslation } from 'react-i18next'
 import StoreActiveLabel from '../../components/label/StoreActiveLabel'
+import { selectAccountUser } from '../../store/slices/accountSlice'
+import { selectSellerStore } from '../../store/slices/sellerSlice'
 
 const ProfilePage = () => {
   const { t } = useTranslation()
-  const user = useSelector((state: any) => state.account.user)
-  const store = useSelector((state: any) => state.seller.store)
+  const user = useSelector(selectAccountUser)
+  const store = useSelector(selectSellerStore)
   const [updateDispatch] = useUpdateDispatch()
   const onHandleRun = (newStore) => {
     updateDispatch('seller', newStore)

@@ -79,7 +79,7 @@ const ReviewInfo: React.FC<ReviewInfoProps> = ({
                 (review.rating === 1 && t('reviewDetail.terrible'))}
             </small>
             <span className='text-primary fw-medium'>
-              {review?.userId?.firstName} {review?.userId?.lastName}
+              {review?.userId?.userName} {review?.userId?.name}
             </span>
             {/* <span className='text-secondary'>{review?.productId?.name}</span> */}
             <span className='text-success rounded-1 px-1 bg-success-rgba my-auto'>

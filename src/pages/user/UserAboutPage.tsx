@@ -2,9 +2,10 @@ import { useSelector } from 'react-redux'
 import UserLayout from '../../components/layout/UserLayout'
 import UserProfileInfo from '../../components/info/UserProfileInfo'
 import UserLevelInfo from '../../components/info/UserLevelInfo'
+import { selectUserUser } from '../../store/slices/userSlice'
 
 const UserAboutPage = () => {
-  const user = useSelector((state: any) => state.user.user)
+  const user = useSelector(selectUserUser)
   return (
     <UserLayout user={user}>
       <div style={{ margin: '0 auto' }}>

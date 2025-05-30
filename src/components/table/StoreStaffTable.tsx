@@ -58,8 +58,8 @@ const StoreStaffTable = ({
     const filterList = staffIds
       .filter(
         (staff) =>
-          staff.firstName.toLowerCase().includes(search) ||
-          staff.lastName.toLowerCase().includes(search)
+          staff.userName.toLowerCase().includes(search) ||
+          staff.name.toLowerCase().includes(search)
       )
       .sort(compareFunc(filter.sortBy, filter.order))
 
@@ -291,9 +291,9 @@ export default StoreStaffTable
 const compareFunc = (sortBy, order) => {
   return (a, b) => {
     let valueA =
-      sortBy !== 'name' ? a[sortBy] : (a.firstName + a.lastName).toLowerCase()
+      sortBy !== 'name' ? a[sortBy] : (a.userName + a.name).toLowerCase()
     let valueB =
-      sortBy !== 'name' ? b[sortBy] : (b.firstName + b.lastName).toLowerCase()
+      sortBy !== 'name' ? b[sortBy] : (b.userName + b.name).toLowerCase()
 
     if (typeof valueA === 'undefined') valueA = ''
     if (typeof valueB === 'undefined') valueB = ''

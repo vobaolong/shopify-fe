@@ -11,6 +11,8 @@ import { useTranslation } from 'react-i18next'
 import { timeAgo } from '../../../helper/calcTime'
 import { humanReadableDate } from '../../../helper/humanReadable'
 import { socketId } from '../../../socket'
+import { selectAccountUser } from '../../../store/slices/accountSlice'
+import { selectSellerStore } from '../../../store/slices/sellerSlice'
 
 interface Notification {
   _id: string
@@ -27,8 +29,8 @@ interface BellButtonProps {
 const BellButton = ({ navFor = '' }: BellButtonProps) => {
   const { t } = useTranslation()
   const [list, setList] = useState<Notification[]>([])
-  const user = useSelector((state: any) => state.account.user)
-  const store = useSelector((state: any) => state.seller.store)
+  const user = useSelector(selectAccountUser)
+  const store = useSelector(selectSellerStore)
   const [notificationCount, setNotificationCount] = useState<number>(
     list.length
   )

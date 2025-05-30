@@ -36,8 +36,8 @@ export interface ProductType {
 
 export interface UserType {
   _id: string
-  firstName: string
-  lastName: string
+  userName: string
+  name: string
   email: string
   avatar: string
   cover?: string
@@ -63,6 +63,7 @@ export interface StoreType {
   avatar: string
   cover?: string
   address: string
+  bio?: string
   ownerId: string | UserType
   isActive: boolean
   isOpen: boolean
@@ -74,6 +75,8 @@ export interface StoreType {
   numberOfSuccessfulOrders?: number
   numberOfFailedOrders?: number
   rating: number
+  commissionId?: string | CommissionType
+  point?: number
 }
 
 export interface OrderItemType {
@@ -163,4 +166,54 @@ export type CategoryFilter = {
   order: string
   limit: number
   page: number
+}
+
+export type OrderDetailType = {
+  _id: string
+  orderId?: string
+  storeId: string | StoreType
+  userId: string | UserType
+  items?: OrderItemType[]
+  totalPrice?: { $numberDecimal: number }
+  totalSalePrice?: { $numberDecimal: number }
+  status: string
+  createdAt: string
+  updatedAt?: string
+  isDeleted?: boolean
+  paymentMethod?: string
+  shippingAddress?: AddressType
+  // Additional properties from API response
+  userName: string
+  name: string
+  phone: string
+  address: string
+  isPaidBefore: boolean
+  returnRequests?: {
+    reason?: string
+    status?: string
+    [key: string]: any
+  }
+  shippingFee?: { $numberDecimal: string }
+  amountFromUser?: { $numberDecimal: string }
+}
+
+export interface OrderType {
+  _id: string
+  createdAt: string
+  userId: any
+  storeId: any
+  amountFromUser?: { $numberDecimal: number }
+  amountToStore?: { $numberDecimal: number }
+  amountToPtform?: { $numberDecimal: number }
+  shippingFee?: { $numberDecimal: number }
+  isPaidBefore?: boolean
+  status?: string
+}
+
+export interface ReviewType {
+  _id: string
+  rating: number
+  content: string
+  productId: any
+  createdAt: string
 }

@@ -121,10 +121,22 @@ const AdminUsersTable = ({ heading = false }) => {
       width: 60
     },
     {
-      title: t('userDetail.name'),
-      dataIndex: 'fullName',
-      key: 'fullName',
+      title: t('userDetail.userName'),
+      dataIndex: 'userName',
+      key: 'userName',
       render: (_: any, user: UserType) => <UserSmallCard user={user} />
+    },
+    {
+      title: t('userDetail.email'),
+      dataIndex: 'email',
+      key: 'email',
+      render: (email: string) => email || '-'
+    },
+    {
+      title: t('userDetail.phone'),
+      dataIndex: 'phone',
+      key: 'phone',
+      render: (phone: string) => phone || '-'
     },
     {
       align: 'center',
@@ -141,22 +153,10 @@ const AdminUsersTable = ({ heading = false }) => {
       render: (id_card: string) => id_card || '-'
     },
     {
-      title: t('userDetail.email'),
-      dataIndex: 'email',
-      key: 'email',
-      render: (email: string) => email || '-'
-    },
-    {
       title: t('userDetail.KYC'),
       dataIndex: 'isEmailActive',
       key: 'isEmailActive',
       render: (isEmailActive: boolean) => <VerifyLabel verify={isEmailActive} />
-    },
-    {
-      title: t('userDetail.phone'),
-      dataIndex: 'phone',
-      key: 'phone',
-      render: (phone: string) => phone || '-'
     },
     {
       title: t('joined'),
@@ -234,6 +234,7 @@ const AdminUsersTable = ({ heading = false }) => {
               `${range[0]}-${range[1]} ${t('of')} ${total} ${t('result')}`
           }}
           scroll={{ x: 'max-content' }}
+          size='small'
         />
       </div>
     </div>

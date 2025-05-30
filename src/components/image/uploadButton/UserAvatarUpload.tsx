@@ -1,32 +1,29 @@
 import { getToken } from '../../../apis/auth.api'
-import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
-import Loading from '../../ui/Loading'
-import Error from '../../ui/Error'
-import { toast } from 'react-toastify'
 import { useTranslation } from 'react-i18next'
-import { updateAvatar } from '../../../apis/store.api'
+import { updateAvatar } from '../../../apis/user.api'
 import { useMutation } from '@tanstack/react-query'
+import { notification, Spin } from 'antd'
+import useInvalidate from '../../../hooks/useInvalidate'
 
 const UserAvatarUpload = () => {
-  const [updateDispatch] = useUpdateDispatch()
   const { t } = useTranslation()
   const { _id } = getToken()
-
+  const invalidate = useInvalidate()
   const avatarMutation = useMutation({
-    mutationFn: (formData: FormData) => updateAvatar(_id, formData, ''),
-    onSuccess: (res) => {
-      const data = res.data || res
-      if (!data.error) {
-        updateDispatch('account', data.user)
-        toast.success(t('toastSuccess.addAvatar'))
-      }
+    mutationFn: (formData: FormData) => updateAvatar(_id, formData),
+    onSuccess: () => {
+      invalidate({ queryKey: ['userProfile', _id] })
+      notification.success({ message: t('toastSuccess.addAvatar') })
+    },
+    onError: (error) => {
+      notification.error({ message: error.message })
     }
   })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0] == null) return
     const formData = new FormData()
-    formData.set('photo', e.target.files![0])
+    formData.set('image', e.target.files![0])
     avatarMutation.mutate(formData)
   }
 
@@ -39,14 +36,9 @@ const UserAvatarUpload = () => {
 
   return (
     <>
-      {isLoading && <Loading />}
+      {isLoading && <Spin />}
       <label className='cus-avatar-icon'>
-        <i className='fa-solid fa-camera'></i>
-        {error && (
-          <span>
-            <Error msg={error} />
-          </span>
-        )}
+        <i className='fa-solid fa-camera' />
         <input
           className='visually-hidden'
           type='file'

@@ -25,7 +25,7 @@ const AccountSideBar = ({
               <Avatar name=' ' avatar={user.avatar} size='small' />
               <div>
                 <small className='fw-light'>Tài khoản của</small>
-                <p>{user.firstName + ' ' + user.lastName}</p>
+                <p>{user.userName + ' ' + user.name}</p>
               </div>
             </div>
 

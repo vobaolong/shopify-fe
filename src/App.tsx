@@ -3,11 +3,9 @@ import { getToken } from './apis/auth.api'
 import Routers from './pages/Routes'
 import { Provider } from 'react-redux'
 import store from './store/store'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { socketId } from './socket'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import AntdConfigProvider from './provider/AntdConfigProvider'
-const queryClient = new QueryClient()
+import ReactQueryProvider from './provider/ReactQueryProvider'
 
 export default function App() {
   useEffect(() => {
@@ -20,13 +18,12 @@ export default function App() {
   }, [])
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <ReactQueryProvider>
       <AntdConfigProvider>
         <Provider store={store}>
           <Routers />
         </Provider>
-        {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       </AntdConfigProvider>
-    </QueryClientProvider>
+    </ReactQueryProvider>
   )
 }

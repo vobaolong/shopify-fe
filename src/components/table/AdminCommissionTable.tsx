@@ -369,7 +369,7 @@ const AdminCommissionTable = () => {
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
           width={400}
-          destroyOnClose
+          destroyOnHidden
         >
           <AdminEditCommissionForm
             oldCommission={editedCommission || undefined}

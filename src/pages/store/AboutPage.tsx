@@ -5,9 +5,10 @@ import StoreLevelInfo from '../../components/info/StoreLevelInfo'
 import MainLayout from '../../components/layout/MainLayout'
 import Error from '../../components/ui/Error'
 import { useTranslation } from 'react-i18next'
+import { selectStoreStore } from '../../store/slices/storeSlice'
 
 const AboutPage = () => {
-  const store = useSelector((state: any) => state.store.store)
+  const store = useSelector(selectStoreStore)
   const { t } = useTranslation()
   const paths = [
     { name: t('breadcrumbs.home'), url: '/' },

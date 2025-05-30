@@ -31,7 +31,8 @@ const AdminVariantsTable = ({ heading = false }) => {
   const [deletedVariant, setDeletedVariant] = useState({})
   const [restoredVariant, setRestoredVariant] = useState({})
   const [variants, setVariants] = useState([])
-  const [pagination, setPagination] = useState({
+  
+	const [pagination, setPagination] = useState({
     size: 0
   })
   const [filter, setFilter] = useState({

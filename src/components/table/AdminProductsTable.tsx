@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation } from '@tanstack/react-query'
 import {
   Table,
   Button,
@@ -7,9 +7,10 @@ import {
   Modal,
   Alert,
   notification,
-  Divider
+  Divider,
+  Rate
 } from 'antd'
-import { SyncOutlined } from '@ant-design/icons'
+import { StarFilled, SyncOutlined } from '@ant-design/icons'
 import SearchInput from '../ui/SearchInput'
 import { DatePicker } from 'antd'
 import dayjs from 'dayjs'
@@ -23,7 +24,6 @@ import {
   listProductsForAdmin,
   activeProduct as activeOrInactive
 } from '../../apis/product.api'
-import { toast } from 'react-toastify'
 import {
   sendActiveProductEmail,
   sendBanProductEmail
@@ -31,6 +31,8 @@ import {
 import useInvalidate from '../../hooks/useInvalidate'
 import { ColumnsType } from 'antd/es/table'
 import { formatPrice } from '../../helper/formatPrice'
+import { Star, StarIcon } from 'lucide-react'
+import StarRating from '../label/StarRating'
 
 const { RangePicker } = DatePicker
 
@@ -41,7 +43,7 @@ const AdminProductsTable = () => {
     status: 'all',
     sortBy: 'createdAt',
     order: 'desc',
-    limit: 10,
+    limit: 5,
     page: 1,
     createdAtFrom: undefined,
     createdAtTo: undefined
@@ -149,6 +151,7 @@ const AdminProductsTable = () => {
       width: 60,
       fixed: 'left'
     },
+
     {
       title: t('productDetail.name'),
       dataIndex: 'name',
@@ -180,21 +183,7 @@ const AdminProductsTable = () => {
       render: (price: any) => (
         <span>
           {formatPrice(price?.$numberDecimal)}
-          <sup>₫</sup>
-        </span>
-      ),
-      sorter: true,
-      width: 150
-    },
-    {
-      title: t('productDetail.salePrice'),
-      dataIndex: 'salePrice',
-      key: 'salePrice',
-      align: 'right',
-      render: (salePrice: any) => (
-        <span>
-          {formatPrice(salePrice?.$numberDecimal)}
-          <sup>₫</sup>
+          <sup> ₫</sup>
         </span>
       ),
       sorter: true,
@@ -219,15 +208,16 @@ const AdminProductsTable = () => {
       dataIndex: 'rating',
       key: 'rating',
       align: 'right',
-      sorter: true
+      sorter: true,
+      render: (rating: number) => <StarRating stars={rating} />
     },
     {
       title: t('status.status'),
       dataIndex: 'isActive',
       key: 'isActive',
       align: 'center',
-      render: (isActive: boolean) => <ProductActiveLabel isActive={isActive} />,
-      sorter: true
+      sorter: true,
+      render: (isActive: boolean) => <ProductActiveLabel isActive={isActive} />
     },
     {
       title: t('productDetail.date'),
@@ -346,10 +336,11 @@ const AdminProductsTable = () => {
             onChange: handleChangePage,
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} ${t('of')} ${total} ${t('result')}`,
-            pageSizeOptions: [10, 20, 50, 100],
+            pageSizeOptions: [5, 10, 20, 50],
             showSizeChanger: true
           }}
           onChange={handleTableChange}
+          size='small'
           scroll={{ x: 'max-content' }}
         />
       </div>

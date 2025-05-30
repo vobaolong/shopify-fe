@@ -1,13 +1,21 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
 
+interface SortByButtonProps {
+  title?: string
+  currentSortBy?: string
+  currentOrder?: string
+  sortBy?: string
+  onSet?: (order: string, sortBy: string) => void
+}
+
 const SortByButton = ({
   title = '',
   currentSortBy = '',
   currentOrder = 'asc',
   sortBy = '',
   onSet = () => {}
-}) => {
+}: SortByButtonProps) => {
   const [flag, setFlag] = useState('')
 
   useEffect(

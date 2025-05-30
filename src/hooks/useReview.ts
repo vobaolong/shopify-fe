@@ -5,8 +5,10 @@ import {
   reviewProduct,
   updateReview,
   deleteReview,
-  restoreReview
+  restoreReview,
+  deleteReviewByAdmin
 } from '../apis/review.api'
+import useInvalidate from './useInvalidate'
 
 // Query keys
 export const reviewKeys = {
@@ -34,7 +36,7 @@ export const useCheckReview = (userId: string, data: any) => {
 }
 
 export const useReviewProduct = () => {
-  const queryClient = useQueryClient()
+  const invalidate = useInvalidate()
   return useMutation({
     mutationFn: ({ userId, review }: { userId: string; review: any }) =>
       reviewProduct(userId, review),
@@ -45,13 +47,13 @@ export const useReviewProduct = () => {
           queryKey: ['products', 'detail', variables.review.productId]
         })
       }
-      filters.forEach((f) => queryClient.invalidateQueries(f))
+      filters.forEach((f) => invalidate(f))
     }
   })
 }
 
 export const useUpdateReview = () => {
-  const queryClient = useQueryClient()
+  const invalidate = useInvalidate()
   return useMutation({
     mutationFn: ({
       userId,
@@ -72,29 +74,40 @@ export const useUpdateReview = () => {
           queryKey: ['products', 'detail', variables.review.productId]
         })
       }
-      filters.forEach((f) => queryClient.invalidateQueries(f))
+      filters.forEach((f) => invalidate(f))
     }
   })
 }
 
-export const usedeleteReview = () => {
-  const queryClient = useQueryClient()
+export const useDeleteReview = () => {
+  const invalidate = useInvalidate()
   return useMutation({
     mutationFn: ({ userId, reviewId }: { userId: string; reviewId: string }) =>
       deleteReview(userId, reviewId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: reviewKeys.lists() })
+      invalidate({ queryKey: reviewKeys.lists() })
+    }
+  })
+}
+
+export const useDeleteReviewByAdmin = () => {
+  const invalidate = useInvalidate()
+  return useMutation({
+    mutationFn: ({ reviewId }: { reviewId: string }) =>
+      deleteReviewByAdmin(reviewId),
+    onSuccess: () => {
+      invalidate({ queryKey: reviewKeys.lists() })
     }
   })
 }
 
 export const useRestoreReview = () => {
-  const queryClient = useQueryClient()
+  const invalidate = useInvalidate()
   return useMutation({
     mutationFn: ({ userId, reviewId }: { userId: string; reviewId: string }) =>
       restoreReview(userId, reviewId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: reviewKeys.lists() })
+      invalidate({ queryKey: reviewKeys.lists() })
     }
   })
 }

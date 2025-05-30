@@ -22,7 +22,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             <AccountInit />
           </div>
         </Header>
-
         <Content className='m-4 min-h-screen'>{children}</Content>
       </Layout>
     </Layout>

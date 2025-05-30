@@ -36,7 +36,9 @@ import { BanIcon, CheckCircle } from 'lucide-react'
 import { ColumnType } from 'antd/lib/table'
 import { PaginationType } from '../../@types/pagination.type'
 
-const AdminStoresTable = ({ heading = false }) => {
+const { Text } = Typography
+
+const AdminStoresTable = () => {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -146,19 +148,17 @@ const AdminStoresTable = ({ heading = false }) => {
       key: 'ownerId',
       render: (owner: any) => (
         <small className='d-grid'>
-          <span>
+          <Text>
             {t('userDetail.name')}:{' '}
-            <span className='text-primary'>
-              {owner?.firstName + ' ' + owner?.lastName || '-'}
-            </span>
-          </span>
-          <span>
-            Email: <span className='text-primary'>{owner?.email || '-'}</span>
-          </span>
-          <span>
+            <Text className='text-primary'>{owner?.userName || '-'}</Text>
+          </Text>
+          <Text>
+            Email: <Text className='text-primary'>{owner?.email || '-'}</Text>
+          </Text>
+          <Text>
             {t('userDetail.phone')}:{' '}
-            <span className='text-primary'>{owner?.phone || '-'}</span>
-          </span>
+            <Text className='text-primary'>{owner?.phone || '-'}</Text>
+          </Text>
         </small>
       )
     },

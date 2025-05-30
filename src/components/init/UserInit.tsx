@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { connect } from 'react-redux'
-import { addUser } from '../../store/actions/user'
 import Loading from '../ui/Loading'
 import Error from '../ui/Error'
 import { getUserLevel } from '../../apis/level.api'
 import { countOrder } from '../../apis/order.api'
 import { getUser } from '../../apis/user.api'
 import defaultImage from '../../assets/default.webp'
+import { addUser } from '../../store/slices/userSlice'
 
 interface UserInitProps {
   user: any
@@ -74,7 +74,7 @@ const UserInit = ({ user, actions }: UserInitProps) => {
         alt='avatar'
       />
       <span className='your-store-name unselect'>
-        {user.firstName + ' ' + user.lastName}
+        {user.userName}
         {error && <Error msg={error} />}
       </span>
     </div>

@@ -3,10 +3,12 @@ import SellerLayout from '../../components/layout/SellerLayout'
 import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
 import SellerReturnTable from '../../components/table/SellerReturnTable'
+import { selectAccountUser } from '../../store/slices/accountSlice'
+import { selectSellerStore } from '../../store/slices/sellerSlice'
 
 const ReturnPage = () => {
-  const user = useSelector((state: any) => state.account.user)
-  const store = useSelector((state: any) => state.seller.store)
+  const user = useSelector(selectAccountUser)
+  const store = useSelector(selectSellerStore)
   const { t } = useTranslation()
   const [selectedStatus, setSelectedStatus] = useState('Pending')
 

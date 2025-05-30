@@ -26,6 +26,10 @@ export const deleteReview = async (userId: string, reviewId: string) => {
   return await axiosClient.delete(`/review/${reviewId}/${userId}`)
 }
 
+export const deleteReviewByAdmin = async (reviewId: string) => {
+  return await axiosClient.delete(`/admin/review/${reviewId}`)
+}
+
 export const restoreReview = async (userId: string, reviewId: string) => {
   return await axiosClient.get(`/review/restore/${reviewId}/${userId}`)
 }

@@ -4,10 +4,13 @@ import SellerOrdersTable from '../../components/table/SellerOrdersTable'
 import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { selectAccountUser } from '../../store/slices/accountSlice'
+import { selectSellerStore } from '../../store/slices/sellerSlice'
+
 const OrderPage = () => {
   const navigate = useNavigate()
-  const user = useSelector((state: any) => state.account.user)
-  const store = useSelector((state: any) => state.seller.store)
+  const user = useSelector(selectAccountUser)
+  const store = useSelector(selectSellerStore)
   const { t } = useTranslation()
   const [selectedStatus, setSelectedStatus] = useState('Pending')
 

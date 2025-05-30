@@ -355,7 +355,7 @@ const AdminBrandsTable = ({ heading = false }) => {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         width={900}
-        destroyOnClose
+        destroyOnHidden
       >
         {editingBrandId ? (
           <AdminEditBrandForm brandId={editingBrandId} />

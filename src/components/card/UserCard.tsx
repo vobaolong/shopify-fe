@@ -47,10 +47,11 @@ const UserCard = ({ user }: UserCardProps) => {
           <div className='d-flex align-items-center'>
             <span className='me-1'>
               <UserRoleLabel role={userValue.role} detail={false} />
-            </span>
-
+            </span>{' '}
             <span className=''>
-              <LevelLabel level={userValue.level} detail={false} />
+              {userValue.level && (
+                <LevelLabel level={userValue.level} detail={false} />
+              )}
             </span>
           </div>
         </small>

@@ -1,6 +1,14 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-const initialState = {
+interface SellerState {
+  store: {
+    id?: string
+    name?: string
+    [key: string]: any
+  }
+}
+
+const initialState: SellerState = {
   store: {}
 }
 
@@ -17,3 +25,7 @@ const sellerSlice = createSlice({
 export const { addSeller } = sellerSlice.actions
 
 export default sellerSlice.reducer
+
+// Selector
+export const selectSellerStore = (state: { seller: SellerState }) =>
+  state.seller.store

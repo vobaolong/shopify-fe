@@ -1,30 +1,26 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import Modal from '../ui/Modal'
 import UserEditPasswordForm from './form/UserEditPasswordForm'
-import { Button } from 'antd'
+import { Button, Modal } from 'antd'
 
 const UserEditPasswordItem = () => {
   const { t } = useTranslation()
+  const [open, setOpen] = useState(false)
   return (
-    <div className='position-relative d-inline-block'>
-      <Button
-        type='primary'
-        className='btn btn-outline-primary rounded-1 ripple cus-tooltip'
-        data-bs-toggle='modal'
-        data-bs-target='#password-edit-form'
-      >
+    <div className='relative inline-block'>
+      <Button type='primary' onClick={() => setOpen(true)}>
         <i className='fa-solid fa-lock me-2'></i>
         {t('userDetail.changePassword')}
       </Button>
-
       <Modal
-        id='password-edit-form'
-        hasCloseBtn={false}
+        open={open}
+        onCancel={() => setOpen(false)}
+        footer={null}
         title={t('userDetail.changePassword')}
+        destroyOnHidden
       >
         <UserEditPasswordForm />
       </Modal>
-
       <small className='cus-tooltip-msg'>
         {t('userDetail.changePassword')}
       </small>

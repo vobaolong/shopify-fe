@@ -392,7 +392,7 @@ const AdminOrdersTable = ({ status = '' }: { status?: string }) => {
         open={drawerOpen}
         onClose={handleCloseDrawer}
         width={600}
-        destroyOnClose
+        destroyOnHidden
       >
         {selectedOrderId && (
           <OrderDetailInfo orderId={selectedOrderId} by='admin' />

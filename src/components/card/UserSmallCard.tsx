@@ -21,19 +21,19 @@ const UserSmallCard = ({
   >
     <Link
       className='!no-underline flex items-center gap-1 text-nowrap'
-      title={user?.firstName + ' ' + user?.lastName}
+      title={user?.userName}
       to={link}
     >
       {isAvatar && (
         <Avatar
           src={user?.avatar || defaultImage}
-          alt={user?.firstName + ' ' + user?.lastName}
+          alt={user?.userName}
           size={32}
           className='object-cover'
         />
       )}
       <Typography.Text className='text-sm !no-underline'>
-        {user?.firstName} {user?.lastName}
+        {user?.userName}
       </Typography.Text>
     </Link>
   </div>

@@ -108,8 +108,8 @@ interface Item {
 }
 
 interface OrderState {
-  firstName: string
-  lastName: string
+  userName: string
+  name: string
   phone: string
   address: string
   isValidFirstName: boolean
@@ -153,7 +153,7 @@ const CheckoutForm = ({
   const [updateDispatch] = useUpdateDispatch()
   const navigate = useNavigate()
   const user = useSelector((state: any) => state.account.user)
-  const { firstName, lastName, phone, addresses, level: userLevel } = user
+  const { userName, name, phone, addresses, level: userLevel } = user
 
   const init = async () => {
     try {
@@ -203,8 +203,8 @@ const CheckoutForm = ({
       const amountFromUser = amountFromUser1 + shippingFee
 
       setOrder({
-        firstName: firstName || '',
-        lastName: lastName || '',
+        userName: userName || '',
+        name: name || '',
         phone: order?.phone || phone || '',
         address: order?.address || addresses[0] || '',
         isValidFirstName: true,
@@ -237,8 +237,8 @@ const CheckoutForm = ({
     userId,
     storeId,
     items,
-    firstName,
-    lastName,
+    userName,
+    name,
     phone,
     addresses,
     userLevel,
@@ -271,8 +271,8 @@ const CheckoutForm = ({
     if (!order) return
     const {
       cartId,
-      firstName,
-      lastName,
+      userName,
+      name,
       phone,
       address,
       shippingFee,
@@ -285,8 +285,8 @@ const CheckoutForm = ({
     if (
       !cartId ||
       !commissionId ||
-      !firstName ||
-      !lastName ||
+      !userName ||
+      !name ||
       !phone ||
       !shippingFee ||
       !address ||
@@ -297,8 +297,8 @@ const CheckoutForm = ({
     ) {
       setOrder({
         ...order,
-        isValidFirstName: regexTest('name', order.firstName),
-        isValidLastName: regexTest('name', order.lastName),
+        isValidFirstName: regexTest('name', order.userName),
+        isValidLastName: regexTest('name', order.name),
         isValidPhone: regexTest('phone', order.phone)
       })
       return
@@ -316,8 +316,8 @@ const CheckoutForm = ({
     if (!order) return
     const { _id } = getToken()
     const {
-      firstName,
-      lastName,
+      userName,
+      name,
       phone,
       address,
       shippingFee,
@@ -328,8 +328,8 @@ const CheckoutForm = ({
       amountToPlatform
     } = order
     const orderBody = {
-      firstName,
-      lastName,
+      userName,
+      name,
       phone,
       address,
       shippingFee,
@@ -388,15 +388,15 @@ const CheckoutForm = ({
                 <div className='flex-grow-1'>
                   <Input
                     type='text'
-                    label={t('userDetail.firstName')}
-                    value={order?.firstName || ''}
+                    label={t('userDetail.userName')}
+                    value={order?.userName || ''}
                     isValid={order?.isValidFirstName}
                     feedback={t('userDetail.validFirstName')}
                     validator='name'
                     placeholder='Ví dụ: Nguyen Van'
                     required={true}
                     onChange={(value) =>
-                      handleChange('firstName', 'isValidFirstName', value)
+                      handleChange('userName', 'isValidFirstName', value)
                     }
                     onValidate={(flag) =>
                       handleValidate('isValidFirstName', flag)
@@ -408,15 +408,15 @@ const CheckoutForm = ({
                 <div className='flex-grow-1'>
                   <Input
                     type='text'
-                    label={t('userDetail.lastName')}
-                    value={order?.lastName || ''}
+                    label={t('userDetail.name')}
+                    value={order?.name || ''}
                     isValid={order?.isValidLastName}
                     feedback={t('userDetail.validLastName')}
                     validator='name'
                     placeholder='Ví dụ: A'
                     required={true}
                     onChange={(value) =>
-                      handleChange('lastName', 'isValidLastName', value)
+                      handleChange('name', 'isValidLastName', value)
                     }
                     onValidate={(flag) =>
                       handleValidate('isValidLastName', flag)
@@ -429,13 +429,13 @@ const CheckoutForm = ({
                     <button
                       className='btn btn-primary ripple rounded-1'
                       type='button'
-                      disabled={!firstName || !lastName}
+                      disabled={!userName || !name}
                       onClick={() => {
                         if (!order) return
                         setOrder({
                           ...order,
-                          firstName: firstName || '',
-                          lastName: lastName || '',
+                          userName: userName || '',
+                          name: name || '',
                           isValidFirstName: true,
                           isValidLastName: true,
                           phone: order.phone || '',
@@ -494,8 +494,8 @@ const CheckoutForm = ({
                           ...order,
                           phone: phone || '',
                           isValidPhone: true,
-                          firstName: order.firstName || '',
-                          lastName: order.lastName || '',
+                          userName: order.userName || '',
+                          name: order.name || '',
                           address: order.address || '',
                           cartId: order.cartId || '',
                           shippingFeeBeforeDiscount:
@@ -541,8 +541,8 @@ const CheckoutForm = ({
                       setOrder({
                         ...order,
                         address: address || '',
-                        firstName: order.firstName || '',
-                        lastName: order.lastName || '',
+                        userName: order.userName || '',
+                        name: order.name || '',
                         phone: order.phone || '',
                         cartId: order.cartId || '',
                         shippingFeeBeforeDiscount:
@@ -752,8 +752,8 @@ const CheckoutForm = ({
                       const {
                         cartId,
                         commissionId,
-                        firstName,
-                        lastName,
+                        userName,
+                        name,
                         phone,
                         shippingFee,
                         address,
@@ -779,8 +779,8 @@ const CheckoutForm = ({
                         vnp_OrderInfo: `Thanh toan cho ma GD: ${tnx}`
                       })
                       const orderBody = {
-                        firstName,
-                        lastName,
+                        userName,
+                        name,
                         phone,
                         address,
                         commissionId,

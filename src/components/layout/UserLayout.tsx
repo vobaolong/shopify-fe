@@ -16,14 +16,14 @@ const UserLayout: React.FC<UserLayoutProps> = ({ user, children }) => (
       <div className='position-relative bg-body rounded-2 p-2 box-shadow'>
         <Cover
           cover={user.cover}
-          alt={(user.firstName || '') + ' ' + (user.lastName || '')}
+          alt={(user.userName || '') + ' ' + (user.name || '')}
         />
         <div className='avatar-absolute avatar-absolute--store'>
           <Avatar
             avatar={user.avatar}
-            name={(user.firstName || '') + ' ' + (user.lastName || '')}
+            name={(user.userName || '') + ' ' + (user.name || '')}
             borderName={true}
-            alt={(user.firstName || '') + ' ' + (user.lastName || '')}
+            alt={(user.userName || '') + ' ' + (user.name || '')}
             onRun={() => {}}
           />
         </div>

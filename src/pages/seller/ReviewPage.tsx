@@ -3,10 +3,12 @@ import SellerLayout from '../../components/layout/SellerLayout'
 import SellerReviewTable from '../../components/table/SellerReviewTable'
 import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
+import { selectAccountUser } from '../../store/slices/accountSlice'
+import { selectSellerStore } from '../../store/slices/sellerSlice'
 
 const ReviewPage = () => {
-  const user = useSelector((state: any) => state.account.user)
-  const store = useSelector((state: any) => state.seller.store)
+  const user = useSelector(selectAccountUser)
+  const store = useSelector(selectSellerStore)
   const { t } = useTranslation()
   const [selectedRating, setSelectedRating] = useState(0)
 

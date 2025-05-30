@@ -15,8 +15,8 @@ interface SignupFormProps {
 }
 
 interface AccountState {
-  firstName: string
-  lastName: string
+  userName: string
+  name: string
   username: string
   password: string
   isValidFirstName: boolean
@@ -32,8 +32,8 @@ const SignupForm = ({ onSwap = () => {} }: SignupFormProps) => {
   const [isValidPasswordConfirmation, setIsValidPasswordConfirmation] =
     useState(true)
   const [account, setAccount] = useState<AccountState>({
-    firstName: '',
-    lastName: '',
+    userName: '',
+    name: '',
     username: '',
     password: '',
     isValidFirstName: true,
@@ -51,8 +51,8 @@ const SignupForm = ({ onSwap = () => {} }: SignupFormProps) => {
       } else {
         setAccount({
           ...account,
-          firstName: '',
-          lastName: '',
+          userName: '',
+          name: '',
           username: '',
           password: ''
         })
@@ -94,22 +94,16 @@ const SignupForm = ({ onSwap = () => {} }: SignupFormProps) => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    const { firstName, lastName, username, password } = account
+    const { userName, name, username, password } = account
     if (password !== passwordConfirmation) {
       notification.error({ message: 'Mật khẩu không khớp, vui lòng thử lại!' })
       return
     }
-    if (
-      !firstName ||
-      !lastName ||
-      !username ||
-      !password ||
-      !passwordConfirmation
-    ) {
+    if (!userName || !name || !username || !password || !passwordConfirmation) {
       setAccount({
         ...account,
-        isValidFirstName: regexTest('name', firstName),
-        isValidLastName: regexTest('name', lastName),
+        isValidFirstName: regexTest('name', userName),
+        isValidLastName: regexTest('name', name),
         isValidUsername:
           regexTest('email', username) || regexTest('phone', username),
         isValidPassword: regexTest('password', password)
@@ -129,8 +123,8 @@ const SignupForm = ({ onSwap = () => {} }: SignupFormProps) => {
   }
 
   const onSignupSubmit = () => {
-    const { firstName, lastName, username, password } = account
-    const user: Record<string, string> = { firstName, lastName, password }
+    const { userName, name, username, password } = account
+    const user: Record<string, string> = { userName, name, password }
     if (regexTest('email', username)) user.email = username
     if (regexTest('phone', username)) user.phone = username
     signupMutation.mutate(user)
@@ -152,15 +146,15 @@ const SignupForm = ({ onSwap = () => {} }: SignupFormProps) => {
         <div className='col-6'>
           <Input
             type='text'
-            label={t('userDetail.firstName')}
-            value={account.firstName}
+            label={t('userDetail.userName')}
+            value={account.userName}
             isValid={account.isValidFirstName}
             feedback={t('userDetail.validFirstName')}
             placeholder='Nguyen Van'
             required={true}
             validator='name'
             onChange={(value) =>
-              handleChange('firstName', 'isValidFirstName', value)
+              handleChange('userName', 'isValidFirstName', value)
             }
             onValidate={(flag) => handleValidate('isValidFirstName', flag)}
           />
@@ -169,16 +163,14 @@ const SignupForm = ({ onSwap = () => {} }: SignupFormProps) => {
         <div className='col-6'>
           <Input
             type='text'
-            label={t('userDetail.lastName')}
-            value={account.lastName}
+            label={t('userDetail.name')}
+            value={account.name}
             isValid={account.isValidLastName}
             feedback={t('userDetail.validLastName')}
             validator='name'
             placeholder='A'
             required={true}
-            onChange={(value) =>
-              handleChange('lastName', 'isValidLastName', value)
-            }
+            onChange={(value) => handleChange('name', 'isValidLastName', value)}
             onValidate={(flag) => handleValidate('isValidLastName', flag)}
           />
         </div>

@@ -29,7 +29,6 @@ const SellerEditProductImagesForm = ({
               productId={product._id}
               productIndex={0}
               isEditable='product'
-              noRadius={true}
               onRun={onRun}
             />
             <small className='mt-2 text-center'>
@@ -47,7 +46,6 @@ const SellerEditProductImagesForm = ({
                   productId={product._id}
                   productIndex={index}
                   isEditable='product'
-                  noRadius={true}
                   onRun={onRun}
                 />
                 {index >= 1 && (

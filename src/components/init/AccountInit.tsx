@@ -15,7 +15,6 @@ import {
 } from '@ant-design/icons'
 import defaultImage from '../../assets/default.webp'
 import { OrderStatus } from '../../enums/OrderStatus.enum'
-import { useMemo } from 'react'
 
 const AccountInit = () => {
   const navigate = useNavigate()
@@ -24,18 +23,17 @@ const AccountInit = () => {
   const _id = token._id
   const refreshToken = token.refreshToken
   const role = token.role
-
   const { data, isLoading, error } = useQuery({
-    queryKey: ['userProfile', _id],
+    queryKey: ['userAccountInit', _id],
     queryFn: async () => {
       const res = await getUserProfile(_id)
-      const newUser = res.data
-      // try {
-      //   const levelRes = await getUserLevel(_id)
-      //   newUser.level = levelRes.data.level
-      // } catch {
-      //   newUser.level = {}
-      // }
+      const newUser = res.data || {}
+      try {
+        const levelRes = await getUserLevel(_id)
+        newUser.level = levelRes.data.level
+      } catch {
+        newUser.level = {}
+      }
       try {
         const cartRes = await getCartCount(_id)
         newUser.cartCount = cartRes.data.count
@@ -56,6 +54,7 @@ const AccountInit = () => {
 
       return newUser
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
     refetchOnReconnect: false
   })

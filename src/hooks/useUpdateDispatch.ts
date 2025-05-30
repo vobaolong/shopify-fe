@@ -1,12 +1,11 @@
-/* eslint-disable default-case */
 import { useSelector, useDispatch } from 'react-redux'
 import { useCallback } from 'react'
 import { notification } from 'antd'
-import { addAccount } from '../store/actions/account'
-import { addSeller } from '../store/actions/seller'
-import { addUser } from '../store/actions/user'
-import { addStore } from '../store/actions/store'
-import { addProduct } from '../store/actions/product'
+import { addAccount } from '../store/slices/accountSlice'
+import { addSeller } from '../store/slices/sellerSlice'
+import { addUser } from '../store/slices/userSlice'
+import { addStore } from '../store/slices/storeSlice'
+import { addProduct } from '../store/slices/productSlice'
 import {
   getStoreFollowerCount,
   checkFollowingStore
@@ -15,9 +14,10 @@ import { getUserLevel, getStoreLevel } from '../apis/level.api'
 import { countOrder } from '../apis/order.api'
 import { getCartCount } from '../apis/cart.api'
 import { getToken } from '../apis/auth.api'
+import { OrderStatus } from '../enums/OrderStatus.enum'
 
 // Types for Redux state
-interface RootState {
+export interface RootState {
   account: { user: any }
   seller: { store: any }
   user: { user: any }
@@ -31,18 +31,11 @@ interface UpdateDispatchData {
   _id?: string
   level?: any
   cartCount?: number
-  numberOfSuccessfulOrders?: number
-  numberOfFailedOrders?: number
   numberOfFollowers?: number
   isFollowing?: boolean
   [key: string]: any
 }
 
-/**
- * Custom hook for updating various dispatch actions with enriched data
- * Uses Ant Design notifications for error handling and modern async patterns
- * @returns Array containing the updateDispatch function
- */
 const useUpdateDispatch = (): [
   (name: DispatchType, data: UpdateDispatchData) => Promise<void>
 ] => {
@@ -53,6 +46,15 @@ const useUpdateDispatch = (): [
   const { _id } = getToken() || { _id: '' }
 
   const dispatch = useDispatch()
+
+  const mergeUser = (oldUser: any, newUser: any) => {
+    return {
+      ...oldUser,
+      ...Object.fromEntries(
+        Object.entries(newUser).filter(([_, v]) => v !== undefined)
+      )
+    }
+  }
 
   const updateDispatch = useCallback(
     async (name: DispatchType, data: UpdateDispatchData): Promise<void> => {
@@ -77,8 +79,8 @@ const useUpdateDispatch = (): [
 
             // Get count orders
             try {
-              const res1 = await countOrder('Delivered', _id, '')
-              const res2 = await countOrder('Cancelled', _id, '')
+              const res1 = await countOrder(OrderStatus.DELIVERED, _id, '')
+              const res2 = await countOrder(OrderStatus.CANCELLED, _id, '')
               data.numberOfSuccessfulOrders = (res1 as any)?.count
               data.numberOfFailedOrders = (res2 as any)?.count
             } catch {
@@ -86,7 +88,19 @@ const useUpdateDispatch = (): [
               data.numberOfFailedOrders = account?.numberOfFailedOrders
             }
 
-            dispatch(addAccount(data))
+            // Nếu data chỉ có 1-2 trường, cảnh báo dev
+            const dataKeys = Object.keys(data)
+            if (dataKeys.length <= 2) {
+              console.warn(
+                '[useUpdateDispatch] Cảnh báo: updateDispatch("account", data) chỉ nhận được',
+                dataKeys,
+                'Có thể gây mất thông tin user. Hãy truyền object user đầy đủ.'
+              )
+            }
+
+            // Merge với user cũ để không mất trường
+            const mergedUser = mergeUser(account, data)
+            dispatch(addAccount(mergedUser))
             break
           }
 
@@ -107,18 +121,8 @@ const useUpdateDispatch = (): [
               data.numberOfFollowers = seller?.numberOfFollowers
             }
 
-            // Get count orders
-            try {
-              const res1 = await countOrder('Delivered', '', data._id!)
-              const res2 = await countOrder('Cancelled', '', data._id!)
-              data.numberOfSuccessfulOrders = (res1 as any)?.count
-              data.numberOfFailedOrders = (res2 as any)?.count
-            } catch {
-              data.numberOfSuccessfulOrders = seller?.numberOfSuccessfulOrders
-              data.numberOfFailedOrders = seller?.numberOfFailedOrders
-            }
-
-            dispatch(addSeller(data))
+            const mergedSeller = mergeUser(seller, data)
+            dispatch(addSeller(mergedSeller))
             break
           }
 
@@ -130,19 +134,8 @@ const useUpdateDispatch = (): [
             } catch {
               data.level = user?.level
             }
-
-            // Get count orders
-            try {
-              const res1 = await countOrder('Delivered', data._id!, '')
-              const res2 = await countOrder('Cancelled', data._id!, '')
-              data.numberOfSuccessfulOrders = (res1 as any)?.count
-              data.numberOfFailedOrders = (res2 as any)?.count
-            } catch {
-              data.numberOfSuccessfulOrders = user?.numberOfSuccessfulOrders
-              data.numberOfFailedOrders = user?.numberOfFailedOrders
-            }
-
-            dispatch(addUser(data))
+            const mergedUser = mergeUser(user, data)
+            dispatch(addUser(mergedUser))
             break
           }
 
@@ -185,19 +178,8 @@ const useUpdateDispatch = (): [
                 data.isFollowing = store?.isFollowing
               }
             }
-
-            // Get count orders
-            try {
-              const res1 = await countOrder('Delivered', '', data._id!)
-              const res2 = await countOrder('Cancelled', '', data._id!)
-              data.numberOfSuccessfulOrders = (res1 as any)?.count
-              data.numberOfFailedOrders = (res2 as any)?.count
-            } catch {
-              data.numberOfSuccessfulOrders = store?.numberOfSuccessfulOrders
-              data.numberOfFailedOrders = store?.numberOfFailedOrders
-            }
-
-            dispatch(addStore(data))
+            const mergedStore = mergeUser(store, data)
+            dispatch(addStore(mergedStore))
             break
           }
 

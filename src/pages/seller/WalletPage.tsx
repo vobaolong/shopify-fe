@@ -2,10 +2,12 @@ import { useSelector } from 'react-redux'
 import SellerLayout from '../../components/layout/SellerLayout'
 import TransactionsTable from '../../components/table/TransactionsTable'
 import { useTranslation } from 'react-i18next'
+import { selectAccountUser } from '../../store/slices/accountSlice'
+import { selectSellerStore } from '../../store/slices/sellerSlice'
 
 const WalletPage = () => {
-  const user = useSelector((state: any) => state.account.user)
-  const store = useSelector((state: any) => state.seller.store)
+  const user = useSelector(selectAccountUser)
+  const store = useSelector(selectSellerStore)
   const { t } = useTranslation()
 
   const paths = [

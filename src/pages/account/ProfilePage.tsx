@@ -1,63 +1,74 @@
-import { useSelector } from 'react-redux'
-import AccountLayout from '../../components/layout/AccountLayout'
-import UserLevelInfo from '../../components/info/UserLevelInfo'
-import UserProfileInfo from '../../components/info/UserProfileInfo'
+import { useQuery } from '@tanstack/react-query'
+import { Spin, Alert } from 'antd'
+import { useTranslation } from 'react-i18next'
 import Cover from '../../components/image/Cover'
 import Avatar from '../../components/image/Avatar'
-import MetaData from '../../components/layout/meta/MetaData'
-import { useTranslation } from 'react-i18next'
+import UserProfileInfo from '../../components/info/UserProfileInfo'
+import UserLevelInfo from '../../components/info/UserLevelInfo'
 import UserRankInfo from '../../components/info/UserRankInfo'
+import { getUserProfile } from '../../apis/user.api'
+import { getUserLevel } from '../../apis/level.api'
+import { getToken } from '../../apis/auth.api'
+import AccountLayout from '../../components/layout/AccountLayout'
 
-const ProfilePage = () => {
-  const user = useSelector((state: any) => state.account.user)
+const NewProfilePage = () => {
   const { t } = useTranslation()
+  const token = getToken()
+  const _id = token._id
   const paths = [
     { name: t('breadcrumbs.home'), url: '/' },
     { name: t('breadcrumbs.profileInfo'), url: '/account/profile' }
   ]
+  const {
+    data: user,
+    isLoading,
+    error
+  } = useQuery({
+    queryKey: ['userProfilePage', _id],
+    queryFn: async () => {
+      const res = await getUserProfile(_id)
+      const user = { ...res.user }
+      try {
+        const levelRes = await getUserLevel(_id)
+        user.level = levelRes.data.level
+      } catch {
+        user.level = {}
+      }
+      return user
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false
+  })
 
+  console.log('user: ', user)
+  if (isLoading) return <Spin size='large' />
+  if (error)
+    return (
+      <Alert type='error' message={t('error')} description={error.message} />
+    )
   return (
     <AccountLayout user={user} paths={paths}>
-      <MetaData title={`${t('userDetail.myAccount')} | Buynow Việt Nam`} />
-      <div className='res-mx--12-md'>
-        <div className='position-relative bg-body rounded-2 p-2 box-shadow'>
-          <Cover
-            cover={user.cover}
-            alt={user.firstName + ' ' + user.lastName}
-            isEditStore={false}
-          />
-          <div className='avatar-absolute avatar-absolute--store'>
+      <div className='mx-auto mt-8 bg-white rounded-lg shadow-lg p-6 grid gap-10'>
+        <div className='relative mb-8'>
+          <Cover cover={user.cover} alt={user.userName} isEditStore={false} />
+          <div className='absolute left-10 -bottom-12'>
             <Avatar
               avatar={user.avatar}
-              name={
-                user.firstName && user.lastName
-                  ? user.firstName + ' ' + user.lastName
-                  : undefined
-              }
-              alt={user.firstName + ' ' + user.lastName}
-              borderName={true}
+              alt={user.userName}
               isEditable='user'
             />
           </div>
-          <div className='level-group-absolute res-hide bg-white w-50 h-100'>
-            <UserLevelInfo user={user} />
-          </div>
         </div>
-
-        <div className='mt-2 d-none res-dis'>
-          <UserLevelInfo user={user} />
-        </div>
-
-        <div className='mt-2'>
+        <div className='mt-20 grid grid-cols-1 md:grid-cols-2 gap-2'>
           <UserProfileInfo user={user} isEditable={true} />
-        </div>
-
-        <div className='mt-2'>
-          <UserRankInfo user={user} />
+          <div className='flex flex-col gap-4'>
+            <UserLevelInfo user={user} />
+            <UserRankInfo user={user} />
+          </div>
         </div>
       </div>
     </AccountLayout>
   )
 }
 
-export default ProfilePage
+export default NewProfilePage

@@ -36,7 +36,9 @@ const AdminStoreLevelsTable = ({ heading = false }) => {
   const [restoredLevel, setRestoredLevel] = useState({})
   const [levels, setLevels] = useState([])
   const [pagination, setPagination] = useState({
-    size: 0
+    size: 0,
+    pageCurrent: 1,
+    pageCount: 1
   })
   const [filter, setFilter] = useState({
     search: '',

@@ -13,9 +13,10 @@ import StoreLayout from '../../components/layout/StoreLayout'
 import MainLayout from '../../components/layout/MainLayout'
 import { useTranslation } from 'react-i18next'
 import ShowResult from '../../components/ui/ShowResult'
+import { selectStoreStore } from '../../store/slices/storeSlice'
 
 const CollectionPage = () => {
-  const store = useSelector((state: any) => state.store.store)
+  const store = useSelector(selectStoreStore)
   const { t } = useTranslation()
 
   const [error, setError] = useState('')

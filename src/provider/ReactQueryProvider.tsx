@@ -4,7 +4,12 @@ import { ReactNode } from 'react'
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { refetchOnWindowFocus: false, staleTime: 0, retry: false }
+    queries: {
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: false,
+      refetchOnReconnect: false
+    }
   }
 })
 

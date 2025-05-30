@@ -130,7 +130,7 @@ const OrderDetailInfo: React.FC<OrderDetailInfoProps> = ({
             </Descriptions.Item>
             <Descriptions.Item label={t('orderDetail.userReceiver')}>
               <div>
-                {order.firstName} {order.lastName}
+                {order.userName} {order.name}
               </div>
               <div>{order.phone}</div>
               <div>{order.address}</div>

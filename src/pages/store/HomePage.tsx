@@ -6,10 +6,11 @@ import Error from '../../components/ui/Error'
 import MainLayout from '../../components/layout/MainLayout'
 import { useTranslation } from 'react-i18next'
 import MetaData from '../../components/layout/meta/MetaData'
+import { selectStoreStore } from '../../store/slices/storeSlice'
 
 const HomePage = () => {
   const { t } = useTranslation()
-  const store = useSelector((state: any) => state.store.store)
+  const store = useSelector(selectStoreStore)
 
   return (
     <>

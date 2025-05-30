@@ -419,6 +419,7 @@
   "store": "Shop",
   "searchHolder": "Search for products and shops",
   "userDetail": {
+    "username": "Username",
     "nonEditEmail": "Linked email is non editable",
     "sentVerifyEmailSuccess": "Sent Verify Email Successfully",
     "role": {
@@ -453,8 +454,8 @@
     "out": "Out",
     "date": "Created At",
     "total": "Total",
-    "firstName": "First Name",
-    "lastName": "Last Name",
+    "userName": "First Name",
+    "name": "Last Name",
     "name": "Full name",
     "phone": "Phone",
     "validFirstName": "Please provide a valid First Name!",

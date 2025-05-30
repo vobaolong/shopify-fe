@@ -1,104 +1,43 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
-import { listReviews, deleteReview } from '../../apis/review.api'
-import Loading from '../ui/Loading'
-import Error from '../ui/Error'
-import Pagination from '../ui/Pagination'
-import StarRating from '../label/StarRating'
+import { Table, Button, Modal, Space, Tag, message, Empty, Spin } from 'antd'
+import {
+  DeleteOutlined,
+  ExclamationCircleOutlined,
+  StarFilled
+} from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { humanReadableDate } from '../../helper/humanReadable'
-import SortByButton from './sub/SortByButton'
-import ShowResult from '../ui/ShowResult'
-import box from '../../assets/box.svg'
+import { useReviews, useDeleteReviewByAdmin } from '../../hooks/useReview'
+import { ReviewType } from '../../@types/entity.types'
+import { PaginationType } from '../../@types/pagination.type'
 import ProductSmallCard from '../card/ProductSmallCard'
-import { getToken } from '../../apis/auth.api'
-import { toast } from 'react-toastify'
-import ConfirmDialog from '../ui/ConfirmDialog'
+
+interface AdminReviewTableProps {
+  productId?: string
+  storeId?: string
+  userId?: string
+  rating?: number
+}
 
 const AdminReviewTable = ({
   productId = '',
   storeId = '',
   userId = '',
   rating
-}) => {
+}: AdminReviewTableProps) => {
   const { t } = useTranslation()
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [reviews, setReviews] = useState([])
-  const [pagination, setPagination] = useState({
-    size: 0
-  })
-  const [deleteReview, setDeleteReview] = useState(null)
-  const [isConfirming, setIsConfirming] = useState(false)
-
   const [filter, setFilter] = useState({
     productId,
     storeId,
     userId,
-    rating: rating,
+    rating: rating === 0 ? '' : rating,
     sortBy: 'createdAt',
     order: 'desc',
-    limit: 7,
+    limit: 10,
     page: 1
   })
-  const handleDeleteReview = (review) => {
-    setDeleteReview(review)
-    setIsConfirming(true)
-  }
-  const init = () => {
-    setError('')
-    setIsLoading(true)
 
-    listReviews(filter)
-      .then((data) => {
-        if (data.error) setError(data.error)
-        else {
-          setReviews(data.reviews)
-          setPagination({
-            size: data.size,
-            pageCurrent: data.filter.pageCurrent,
-            pageCount: data.filter.pageCount
-          })
-        }
-        setIsLoading(false)
-        setTimeout(() => setError(''), 3000)
-      })
-      .catch(() => {
-        setError('Server Error')
-        setIsLoading(false)
-        setTimeout(() => setError(''), 3000)
-      })
-  }
-
-  const { _id } = getToken()
-  const onSubmit = () => {
-    if (!deleteReview) return
-    setError('')
-    setIsLoading(true)
-    deleteReview(_id, deleteReview._id)
-      .then((data) => {
-        if (data.error) {
-          setError(data.error)
-        } else {
-          init()
-          toast.success(t('toastSuccess.review.delete'))
-        }
-        setIsLoading(false)
-        setDeleteReview(null)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
-      .catch(() => {
-        setError('Server Error')
-        setIsLoading(false)
-        setDeleteReview(null)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
-  }
-
+  // Update filter when rating or storeId changes
   useEffect(() => {
     setFilter((prevFilter) => ({
       ...prevFilter,
@@ -107,136 +46,169 @@ const AdminReviewTable = ({
     }))
   }, [rating, storeId])
 
-  useEffect(() => {
-    init()
-  }, [filter])
+  // TanStack Query for fetching reviews
+  const { data, isLoading, error, refetch } = useReviews(filter)
 
-  const handleChangePage = (newPage) => {
-    setFilter({
-      ...filter,
-      page: newPage
+  // TanStack Query mutation for deleting reviews
+  const deleteReviewMutation = useDeleteReviewByAdmin()
+  const reviews: ReviewType[] = data?.data?.reviews || []
+  const pagination: PaginationType = {
+    size: data?.data?.size || 0,
+    pageCurrent: data?.data?.pageCurrent || 1,
+    pageCount: data?.data?.pageCount || 1
+  }
+
+  const handleDeleteReview = (review: ReviewType) => {
+    Modal.confirm({
+      title: t('dialog.deleteReview'),
+      icon: <ExclamationCircleOutlined />,
+      content: t('message.delete'),
+      okText: t('button.delete'),
+      okType: 'danger',
+      cancelText: t('button.cancel'),
+      onOk: () => {
+        deleteReviewMutation.mutate(
+          { reviewId: review._id },
+          {
+            onSuccess: () => {
+              message.success(t('toastSuccess.review.delete'))
+              refetch()
+            },
+            onError: () => {
+              message.error('Server Error')
+            }
+          }
+        )
+      }
     })
   }
 
-  const handleSetSortBy = (order, sortBy) => {
-    setFilter({
-      ...filter,
-      sortBy,
-      order
-    })
+  const handleTableChange = (
+    paginationConfig: any,
+    filters: any,
+    sorter: any
+  ) => {
+    setFilter((prev) => ({
+      ...prev,
+      page: paginationConfig.current,
+      limit: paginationConfig.pageSize,
+      sortBy: sorter.field || 'createdAt',
+      order: sorter.order === 'ascend' ? 'asc' : 'desc'
+    }))
+  }
+
+  const StarRating = ({ stars }: { stars: number }) => (
+    <div className='flex items-center gap-1'>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <StarFilled
+          key={star}
+          className={`text-sm ${star <= stars ? 'text-yellow-400' : 'text-gray-300'}`}
+        />
+      ))}
+    </div>
+  )
+
+  const columns = [
+    {
+      title: '#',
+      key: 'index',
+      width: 60,
+      render: (_: any, __: any, index: number) =>
+        index + 1 + (filter.page - 1) * filter.limit,
+      className: 'text-center'
+    },
+    {
+      title: t('productDetail.name'),
+      key: 'product',
+      width: 300,
+      render: (record: ReviewType) => (
+        <div className='min-w-0'>
+          <ProductSmallCard product={record.productId as any} />
+        </div>
+      )
+    },
+    {
+      title: t('Rating'),
+      dataIndex: 'rating',
+      key: 'rating',
+      width: 120,
+      sorter: true,
+      render: (rating: number) => <StarRating stars={rating} />
+    },
+    {
+      title: t('reviewDetail.content'),
+      dataIndex: 'content',
+      key: 'content',
+      width: 400,
+      render: (content: string) => (
+        <div className='max-w-sm break-words whitespace-normal overflow-hidden'>
+          {content}
+        </div>
+      )
+    },
+    {
+      title: t('createdAt'),
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      width: 150,
+      sorter: true,
+      render: (date: string) => humanReadableDate(date)
+    },
+    {
+      title: t('action'),
+      key: 'actions',
+      width: 100,
+      render: (record: ReviewType) => (
+        <Space>
+          <Button
+            type='primary'
+            danger
+            size='small'
+            icon={<DeleteOutlined />}
+            onClick={() => handleDeleteReview(record)}
+            loading={deleteReviewMutation.isPending}
+          >
+            {t('button.delete')}
+          </Button>
+        </Space>
+      )
+    }
+  ]
+
+  if (error) {
+    message.error(error.message || 'Server Error')
   }
 
   return (
-    <div className='position-relative'>
-      {isLoading && <Loading />}
-      {error && <Error msg={error} />}
-      {isConfirming && (
-        <ConfirmDialog
-          title={t('dialog.deleteReview')}
-          color='danger'
-          onSubmit={onSubmit}
-          onClose={() => setIsConfirming(false)}
+    <div className='relative'>
+      <div className='bg-white rounded-lg shadow-sm p-6'>
+        <Table
+          columns={columns}
+          dataSource={reviews}
+          rowKey='_id'
+          loading={isLoading || deleteReviewMutation.isPending}
+          pagination={{
+            current: pagination.pageCurrent,
+            pageSize: filter.limit,
+            total: pagination.size,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} ${t('of')} ${total} ${t('items')}`,
+            pageSizeOptions: ['5', '10', '20', '50']
+          }}
+          onChange={handleTableChange}
+          locale={{
+            emptyText: (
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description={t('reviewDetail.noReview')}
+              />
+            )
+          }}
+          scroll={{ x: 800 }}
+          className='w-full'
         />
-      )}
-      <div className='p-3 box-shadow bg-body rounded-1'>
-        {!isLoading && pagination.size === 0 ? (
-          <div className='my-4 text-center'>
-            <img className='mb-3' src={box} alt='noItem' width={'100px'} />
-            <h5>{t('reviewDetail.noReview')}</h5>
-          </div>
-        ) : (
-          <div className='table-scroll my-2'>
-            <table className='table table-sm table-hover align-middle text-start'>
-              <thead>
-                <tr>
-                  <th scope='col' className='text-center'>
-                    #
-                  </th>
-                  <th scope='col'>{t('productDetail.name')}</th>
-                  <th scope='col'>
-                    <SortByButton
-                      currentOrder={filter.order}
-                      currentSortBy={filter.sortBy}
-                      title={t('Rating')}
-                      sortBy='rating'
-                      onSet={handleSetSortBy}
-                    />
-                  </th>
-                  <th scope='col'>{t('reviewDetail.content')}</th>
-                  <th scope='col'>
-                    <SortByButton
-                      currentOrder={filter.order}
-                      currentSortBy={filter.sortBy}
-                      title={t('createdAt')}
-                      sortBy='createdAt'
-                      onSet={handleSetSortBy}
-                    />
-                  </th>
-                  <th scope='col'>
-                    <span>{t('action')}</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {reviews.map((review, index) => (
-                  <tr key={review._id}>
-                    <th scope='row'>
-                      {index + 1 + (filter.page - 1) * filter.limit}
-                    </th>
-                    <td
-                      style={{
-                        whiteSpace: 'normal',
-                        minWidth: '400px',
-                        width: 'fit-content'
-                      }}
-                    >
-                      <small>
-                        <ProductSmallCard product={review.productId} />
-                      </small>
-                    </td>
-                    <td>
-                      <StarRating stars={review.rating} />
-                    </td>
-                    <td
-                      style={{
-                        maxWidth: '400px',
-                        minWidth: '300px',
-                        whiteSpace: 'normal',
-                        wordWrap: 'break-word',
-                        overflow: 'auto'
-                      }}
-                    >
-                      {review.content}
-                    </td>
-                    <td>{humanReadableDate(review.createdAt)}</td>
-                    <td>
-                      <button
-                        type='button'
-                        className='btn btn-sm btn-danger'
-                        onClick={() => handleDeleteReview(review)}
-                      >
-                        {t('button.delete')}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-        <div className='d-flex justify-content-between align-items-center px-4'>
-          <ShowResult
-            limit={filter.limit}
-            size={pagination.size}
-            pageCurrent={pagination.pageCurrent}
-          />
-          {pagination.size !== 0 && (
-            <Pagination
-              pagination={pagination}
-              onChangePage={handleChangePage}
-            />
-          )}
-        </div>
       </div>
     </div>
   )

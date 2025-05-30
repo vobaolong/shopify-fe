@@ -4,11 +4,13 @@ import StoreProductsTable from '../../components/table/StoreProductsTable'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
+import { selectAccountUser } from '../../store/slices/accountSlice'
+import { selectSellerStore } from '../../store/slices/sellerSlice'
 
 const ProductsPage = () => {
   const { t } = useTranslation()
-  const user = useSelector((state: any) => state.account.user)
-  const store = useSelector((state: any) => state.seller.store)
+  const user = useSelector(selectAccountUser)
+  const store = useSelector(selectSellerStore)
   const paths = [
     { name: t('breadcrumbs.home'), url: `/seller/${store._id}` },
     {

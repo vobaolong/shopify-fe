@@ -4,10 +4,12 @@ import SellerLayout from '../../components/layout/SellerLayout'
 import StoreOwnerTable from '../../components/table/StoreOwnerTable'
 import StoreStaffTable from '../../components/table/StoreStaffTable'
 import { useTranslation } from 'react-i18next'
+import { selectAccountUser } from '../../store/slices/accountSlice'
+import { selectSellerStore } from '../../store/slices/sellerSlice'
 
 const StaffPage = () => {
-  const user = useSelector((state: any) => state.account.user)
-  const store = useSelector((state: any) => state.seller.store)
+  const user = useSelector(selectAccountUser)
+  const store = useSelector(selectSellerStore)
   const [flag, toggleFlag] = useToggle(true)
   const { t } = useTranslation()
   const paths = [

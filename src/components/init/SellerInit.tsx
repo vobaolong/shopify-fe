@@ -1,7 +1,6 @@
 import { useState, useEffect, Fragment } from 'react'
 import { Link, useParams, Navigate } from 'react-router-dom'
 import { connect } from 'react-redux'
-import { addSeller } from '../../store/actions/seller'
 import { getToken } from '../../apis/auth.api'
 import { getStoreProfile } from '../../apis/store.api'
 import { getStoreLevel } from '../../apis/level.api'
@@ -11,6 +10,7 @@ import Loading from '../ui/Loading'
 import Error from '../ui/Error'
 import { useTranslation } from 'react-i18next'
 import defaultImage from '../../assets/default.webp'
+import { addSeller } from '../../store/slices/sellerSlice'
 
 interface SellerInitProps {
   store: any

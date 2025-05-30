@@ -78,7 +78,7 @@ const StoreAddStaffForm = ({
   useEffect(() => {
     setFilter({
       search: '',
-      sortBy: 'firstName',
+      sortBy: 'userName',
       role: 'customer',
       order: 'asc',
       limit: 3,

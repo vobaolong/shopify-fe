@@ -250,7 +250,7 @@ const AdminCategoriesTable = () => {
         cancelText={t('button.cancel')}
         okButtonProps={{ danger: true, loading: loadingDelete }}
         confirmLoading={loadingDelete}
-        destroyOnClose
+        destroyOnHidden
       >
         <div className='text-center p-3'>
           <div className='mb-3'>{t('message.delete')}</div>
@@ -265,7 +265,7 @@ const AdminCategoriesTable = () => {
         okText={t('button.confirm')}
         cancelText={t('button.cancel')}
         confirmLoading={loadingRestore}
-        destroyOnClose
+        destroyOnHidden
       >
         <div className='text-center p-3'>
           <div className='mb-3'>{t('message.restore')}</div>
@@ -352,7 +352,7 @@ const AdminCategoriesTable = () => {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         width={900}
-        destroyOnClose
+        destroyOnHidden
       >
         <AdminUpsertCategoryForm
           categoryId={editingCategory ? editingCategory._id : undefined}

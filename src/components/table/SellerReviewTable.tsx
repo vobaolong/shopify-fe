@@ -14,6 +14,7 @@ import ProductSmallCard from '../card/ProductSmallCard'
 import Modal from '../ui/Modal'
 import ListReport from '../item/form/ListReport'
 import { useSelector } from 'react-redux'
+import { selectAccountUser } from '../../store/slices/accountSlice'
 
 const reviewReasons = [
   {
@@ -42,7 +43,7 @@ const SellerReviewTable = ({
   productId = '',
   storeId = '',
   userId = '',
-  rating
+  rating = 0
 }) => {
   const { t } = useTranslation()
   const [isLoading, setIsLoading] = useState(false)
@@ -51,7 +52,7 @@ const SellerReviewTable = ({
   const [pagination, setPagination] = useState({
     size: 0
   })
-  const user = useSelector((state) => state.account.user)
+  const user = useSelector(selectAccountUser)
 
   const [filter, setFilter] = useState({
     productId,

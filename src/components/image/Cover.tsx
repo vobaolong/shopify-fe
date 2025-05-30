@@ -8,22 +8,15 @@ const Cover = ({
   alt = 'cover',
   isEditStore = false
 }) => (
-  <div className='cus-cover-wrap'>
-    <div className='cus-cover'>
-      <img
-        loading='lazy'
-        src={cover ? cover : defaultCover}
-        className='cus-cover-img'
-        alt={alt}
-      />
-
-      <div className='position-absolute overlay'></div>
-      {isEditStore ? (
-        <StoreCoverUpload storeId={storeId} />
-      ) : (
-        <UserCoverUpload />
-      )}
-    </div>
+  <div className='!h-[110px] relative pb-[25%]'>
+    <img
+      loading='lazy'
+      src={cover ? cover : defaultCover}
+      className='cus-cover-img'
+      alt={alt}
+    />
+    <div className='position-absolute overlay'></div>
+    {isEditStore ? <StoreCoverUpload storeId={storeId} /> : <UserCoverUpload />}
   </div>
 )
 

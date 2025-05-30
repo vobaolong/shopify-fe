@@ -34,8 +34,8 @@
 //     setIsLoading(true)
 //     const data = res.profileObj || res
 //     const user: Record<string, any> = {
-//       firstName: data.givenName || data.name.split(' ')[0],
-//       lastName:
+//       userName: data.givenName || data.name.split(' ')[0],
+//       name:
 //         (data.familyName ? data.familyName : data.givenName) ||
 //         data.name.split(' ')[1],
 //       email: data.email

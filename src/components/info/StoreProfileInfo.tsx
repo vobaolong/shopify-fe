@@ -1,11 +1,18 @@
 import { useTranslation } from 'react-i18next'
 import StoreEditProfileItem from '../item/StoreEditProfileItem'
+import { StoreType } from '../../@types/entity.types'
+
+interface StoreProfileInfoProps {
+  store?: Partial<StoreType>
+  isEditable?: boolean
+  showProfile?: boolean
+}
 
 const StoreProfileInfo = ({
   store = {},
   isEditable = false,
   showProfile = true
-}) => {
+}: StoreProfileInfoProps) => {
   const { t } = useTranslation()
 
   return (
@@ -20,7 +27,7 @@ const StoreProfileInfo = ({
               <span className='text-dark-emphasis fw-bolder'>
                 {t('storeDetail.storeName')}
               </span>
-              : {store.name}
+              : {store?.name || '-'}
             </p>
           )}
           <p className='text-justify fs-9'>
@@ -28,7 +35,7 @@ const StoreProfileInfo = ({
             <span className='text-dark-emphasis fw-bolder'>
               {t('storeDetail.bio')}
             </span>
-            : {store.bio}
+            : {store?.bio || '-'}
           </p>
           {showProfile && (
             <p className='text-justify fs-9'>
@@ -36,7 +43,7 @@ const StoreProfileInfo = ({
               <span className='text-dark-emphasis fw-bolder'>
                 {t('storeDetail.pickupAddress')}
               </span>
-              : {store.address}
+              : {store?.address || '-'}
             </p>
           )}
         </div>
@@ -58,21 +65,19 @@ const StoreProfileInfo = ({
               </span>
               : {store.commissionId?.name}
             </p>
-
             <p className='text-justify fs-9'>
               <i className='fa-solid fa-shield-halved text-muted me-1'></i>
               <span className='text-dark-emphasis fw-bolder'>
                 {t('storeDetail.point')}
               </span>
               : {store.point}
-            </p>
-
+            </p>{' '}
             <p className='text-justify fs-9'>
               <i className='fa-solid fa-location-dot text-muted me-1'></i>
               <span className='text-dark-emphasis fw-bolder'>
                 {t('storeDetail.contactPerson')}
               </span>
-              : {store.ownerId?.email}
+              : {typeof store.ownerId === 'object' ? store.ownerId?.email : '-'}
             </p>
           </div>
         </div>

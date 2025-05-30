@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { connect } from 'react-redux'
-import { addStore } from '../../store/actions/store'
 import { getToken } from '../../apis/auth.api'
 import { getStore } from '../../apis/store.api'
 import { getStoreLevel } from '../../apis/level.api'
@@ -13,6 +12,7 @@ import {
 import Error from '../ui/Error'
 import Loading from '../ui/Loading'
 import defaultImage from '../../assets/default.webp'
+import { addStore } from '../../store/slices/storeSlice'
 
 interface StoreInitProps {
   store: any

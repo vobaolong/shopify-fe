@@ -12,6 +12,7 @@ import CategorySelector from '../../selector/CategorySelector'
 import { useTranslation } from 'react-i18next'
 import { Form, Input, Button, notification } from 'antd'
 import { useMutation } from '@tanstack/react-query'
+import { AxiosError } from 'axios'
 
 interface Props {
   categoryId?: string
@@ -35,7 +36,7 @@ const AdminUpsertCategoryForm = ({ categoryId, onSuccess }: Props) => {
       isEdit && categoryId
         ? updateCategory(categoryId, formData)
         : createCategory(formData),
-    onSuccess: (res) => {
+    onSuccess: (res: any) => {
       notification.success({
         message: t(
           isEdit
@@ -43,11 +44,28 @@ const AdminUpsertCategoryForm = ({ categoryId, onSuccess }: Props) => {
             : 'toastSuccess.category.create'
         )
       })
+      console.log(
+        'Create Category Success Response - Category Data:',
+        res.data.category
+      )
+      console.log(
+        'Update/Create Category Success Response - Category Data:',
+        res.data.category
+      )
+      if (isEdit && res?.data?.category?.image) {
+        setDefaultSrc(res.data.category.image)
+      }
       if (onSuccess) onSuccess()
       else navigate('/admin/categories')
     },
-    onError: () => {
-      notification.error({ message: 'Server Error' })
+    onError: (error: AxiosError<any>) => {
+      console.error('Update/Create Category Error:', error)
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        'Server Error'
+      notification.error({ message: errorMessage })
     }
   })
 
@@ -65,7 +83,7 @@ const AdminUpsertCategoryForm = ({ categoryId, onSuccess }: Props) => {
             image: category.image
           })
           setDefaultSrc(category.image)
-          console.log('categoryId:', category.categoryId)
+          console.log('categoryId fetched:', category.categoryId)
         }
         setIsLoading(false)
       })
@@ -92,10 +110,31 @@ const AdminUpsertCategoryForm = ({ categoryId, onSuccess }: Props) => {
   const handleConfirmSubmit = () => {
     const values = form.getFieldsValue()
     const formData = new FormData()
+
     formData.set('name', values.name)
-    if (values.categoryId && values.categoryId._id)
+
+    // Handle parent category ID
+    // Only set categoryId if a parent is selected AND it's not the current category itself
+    if (
+      values.categoryId &&
+      values.categoryId._id &&
+      values.categoryId._id !== categoryId
+    ) {
       formData.set('categoryId', values.categoryId._id)
-    if (file) formData.set('image', file)
+    } else if (isEdit && (!values.categoryId || !values.categoryId._id)) {
+      // If in edit mode and no valid parent is selected, omit the field or set to null based on backend API
+      // Assuming backend handles omitting the field to unset or requires categoryId: null
+      // If backend explicitly requires categoryId: null to unset parent, uncomment and adjust the line below:
+      // formData.set('categoryId', ''); // Or 'null' or null
+    }
+
+    // Handle image file: ONLY set image if a new file is selected
+    if (file) {
+      formData.set('image', file)
+    }
+    // If in edit mode and no new file is selected, DO NOT set the image field.
+    // Rely on backend to keep the existing image.
+
     mutation.mutate(formData)
     setIsConfirming(false)
   }
