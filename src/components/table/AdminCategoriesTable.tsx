@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import {
   listCategories,
   removeCategory,
@@ -13,7 +12,6 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import CategorySelector from '../selector/CategorySelector'
 import { humanReadableDate } from '../../helper/humanReadable'
-import Error from '../ui/Error'
 import {
   Table,
   Button,
@@ -22,17 +20,19 @@ import {
   Avatar,
   Tooltip,
   Drawer,
-  Divider
+  Divider,
+  notification
 } from 'antd'
 import { useQuery } from '@tanstack/react-query'
 import { CategoryType } from '../../@types/entity.types'
 import CustomModal from '../ui/Modal'
 import { ColumnsType } from 'antd/es/table'
-import { Pen, PencilLine, Plus } from 'lucide-react'
+import { Pen, Plus } from 'lucide-react'
 import AdminUpsertCategoryForm from '../item/form/AdminUpsertCategoryForm'
 
 const AdminCategoriesTable = () => {
   const { t } = useTranslation()
+  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
   const [isConfirming, setIsConfirming] = useState(false)
   const [isConfirmingRestore, setIsConfirmingRestore] = useState(false)
   const [run, setRun] = useState(false)
@@ -47,7 +47,7 @@ const AdminCategoriesTable = () => {
     categoryId: '',
     sortBy: 'categoryId',
     order: 'asc',
-    limit: 10,
+    limit: 5,
     page: 1
   })
   const [pendingFilter, setPendingFilter] = useState(filter)
@@ -110,29 +110,85 @@ const AdminCategoriesTable = () => {
     setLoadingDelete(true)
     try {
       await removeCategory(deletedCategory._id)
-      toast.success(t('toastSuccess.category.delete'))
+      notification.success({ message: t('toastSuccess.category.delete') })
       setRun((r) => !r)
     } catch (err: any) {
-      toast.error(err?.message || 'Server Error')
+      notification.error({ message: t('toastError.category.delete') })
     } finally {
       setIsConfirming(false)
       setLoadingDelete(false)
     }
   }
-
   const onSubmitRestore = async () => {
     if (!restoredCategory) return
     setLoadingRestore(true)
     try {
       await restoreCategory(restoredCategory._id)
-      toast.success(t('toastSuccess.category.restore'))
+      notification.success({ message: t('toastSuccess.category.restore') })
       setRun((r) => !r)
     } catch (err: any) {
-      toast.error(err?.message || 'Server Error')
+      notification.error({ message: t('toastError.category.restore') })
     } finally {
       setIsConfirmingRestore(false)
       setLoadingRestore(false)
     }
+  }
+
+  const handleBulkDelete = () => {
+    if (selectedRowKeys.length === 0) return
+
+    Modal.confirm({
+      title: t('categoryDetail.delete'),
+      content: t('message.bulkDelete', { count: selectedRowKeys.length }),
+      onOk: async () => {
+        setLoadingDelete(true)
+        try {
+          await Promise.all(
+            selectedRowKeys.map((categoryId) => removeCategory(categoryId))
+          )
+          notification.success({
+            message: t('toastSuccess.category.bulkDelete')
+          })
+          setSelectedRowKeys([])
+          setRun((r) => !r)
+        } catch (err: any) {
+          notification.error({ message: t('toastError.category.bulkDelete') })
+        } finally {
+          setLoadingDelete(false)
+        }
+      },
+      okText: t('button.delete'),
+      cancelText: t('button.cancel'),
+      okType: 'danger'
+    })
+  }
+
+  const handleBulkRestore = () => {
+    if (selectedRowKeys.length === 0) return
+
+    Modal.confirm({
+      title: t('categoryDetail.restore'),
+      content: t('message.bulkRestore', { count: selectedRowKeys.length }),
+      onOk: async () => {
+        setLoadingRestore(true)
+        try {
+          await Promise.all(
+            selectedRowKeys.map((categoryId) => restoreCategory(categoryId))
+          )
+          notification.success({
+            message: t('toastSuccess.category.bulkRestore')
+          })
+          setSelectedRowKeys([])
+          setRun((r) => !r)
+        } catch (err: any) {
+          notification.error({ message: t('toastError.category.bulkRestore') })
+        } finally {
+          setLoadingRestore(false)
+        }
+      },
+      okText: t('button.restore'),
+      cancelText: t('button.cancel')
+    })
   }
 
   const columns: ColumnsType<CategoryType> = [
@@ -237,6 +293,21 @@ const AdminCategoriesTable = () => {
     }
   ]
 
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (selectedKeys: React.Key[]) => {
+      setSelectedRowKeys(selectedKeys as string[])
+    }
+  }
+
+  const hasSelected = selectedRowKeys.length > 0
+  const hasDeletedSelected = categories
+    .filter((category) => selectedRowKeys.includes(category._id))
+    .some((category) => category.isDeleted)
+  const hasActiveSelected = categories
+    .filter((category) => selectedRowKeys.includes(category._id))
+    .some((category) => !category.isDeleted)
+
   return (
     <div>
       {error && <Alert message={error.message} type='error' />}
@@ -280,7 +351,6 @@ const AdminCategoriesTable = () => {
             onSearch={handleSearch}
             loading={isLoading}
           />
-
           <div className='d-flex gap-1'>
             <div className='align-items-center d-flex justify-content-end'>
               <div className='position-relative d-inline-block'>
@@ -320,15 +390,50 @@ const AdminCategoriesTable = () => {
             >
               <span className='res-hide'>{t('categoryDetail.add')}</span>
             </Button>
-          </div>
+          </div>{' '}
         </div>
         <Divider />
+
+        {/* Bulk Actions */}
+        {hasSelected && (
+          <div className='flex items-center gap-4 mb-4 p-3 bg-blue-50 rounded-lg'>
+            <span className='text-sm text-gray-600'>
+              {t('table.selectedCount', { count: selectedRowKeys.length })}
+            </span>
+            <div className='flex gap-2'>
+              {hasActiveSelected && (
+                <Button
+                  size='small'
+                  danger
+                  onClick={handleBulkDelete}
+                  loading={loadingDelete}
+                  icon={<i className='fa-solid fa-trash-alt' />}
+                >
+                  {t('button.bulkDelete')}
+                </Button>
+              )}
+              {hasDeletedSelected && (
+                <Button
+                  size='small'
+                  onClick={handleBulkRestore}
+                  loading={loadingRestore}
+                  icon={<i className='fa-solid fa-trash-can-arrow-up' />}
+                  className='text-green-600 border-green-600 hover:text-green-700 hover:border-green-700'
+                >
+                  {t('button.bulkRestore')}
+                </Button>
+              )}
+            </div>{' '}
+          </div>
+        )}
+
         <Table
           columns={columns}
           dataSource={categories.map((category: CategoryType, idx: number) => ({
             ...category,
             key: category._id || idx
           }))}
+          rowSelection={rowSelection}
           loading={isLoading}
           pagination={{
             current: pagination.pageCurrent,
@@ -351,7 +456,7 @@ const AdminCategoriesTable = () => {
         }
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        width={900}
+        width={700}
         destroyOnHidden
       >
         <AdminUpsertCategoryForm

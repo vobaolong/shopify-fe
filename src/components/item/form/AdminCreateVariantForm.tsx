@@ -106,14 +106,15 @@ const AdminCreateVariantForm = () => {
               name='categoryIds'
               rules={[{ required: true, message: t('variantDetail.required') }]}
             >
+              {' '}
               <MultiCategorySelector
                 label={t('chosenCategory')}
                 isActive={false}
                 isRequired={true}
                 defaultValue={selectedCategories}
                 onSet={(categories) => {
-                  const ids = categories ? categories.map((cat) => cat._id) : []
-                  setSelectedCategories(categories || [])
+                  const ids = categories.map((cat) => cat._id)
+                  setSelectedCategories(categories)
                   form.setFieldsValue({ categoryIds: ids })
                 }}
               />

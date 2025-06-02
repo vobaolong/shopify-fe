@@ -358,7 +358,7 @@ const AdminOrdersTable = ({ status = '' }: { status?: string }) => {
           </Button>
           <Button
             onClick={() => refetch()}
-            className='!h-10 !w-10 flex items-center justify-center'
+            className='!w-10 flex items-center justify-center'
             type='default'
             loading={isLoading}
             icon={<SyncOutlined spin={isLoading} />}

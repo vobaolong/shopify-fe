@@ -1,5 +1,4 @@
 import { Typography, Row, Col } from 'antd'
-import EmailActiveButton from '../button/EmailActiveButton'
 import PhoneActiveButton from '../button/PhoneActiveButton'
 import UserEditProfileItem from '../item/UserEditProfileItem'
 import UserEditPasswordItem from '../item/UserEditPasswordItem'
@@ -26,7 +25,7 @@ const UserProfileInfo = ({
           <Paragraph>
             <Text strong>
               <i className='fa-light fa-user me-2 text-secondary'></i>
-              {t('userDetail.username')}:
+              {t('userDetail.userName')}:
             </Text>{' '}
             {user.userName || '-'}
           </Paragraph>
@@ -47,13 +46,6 @@ const UserProfileInfo = ({
               Email:
             </Text>{' '}
             {user.email || '-'}
-            {isEditable && (
-              <EmailActiveButton
-                email={user.email}
-                isEmailActive={user.isEmailActive}
-                googleId={user.googleId}
-              />
-            )}
           </Paragraph>
         </Col>
         <Col span={24}>

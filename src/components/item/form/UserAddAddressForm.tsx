@@ -11,7 +11,7 @@ import Error from '../../ui/Error'
 import { addAddress } from '../../../apis/user.api'
 import { useMutation } from '@tanstack/react-query'
 import { AxiosResponse } from 'axios'
-import { notification } from 'antd'
+import { useAntdApp } from '../../../hooks/useAntdApp'
 import {
   getDistrict,
   getProvince,
@@ -56,6 +56,7 @@ interface AddressState {
 
 const UserAddAddressForm = () => {
   const { t } = useTranslation()
+  const { notification } = useAntdApp()
   const [isConfirming, setIsConfirming] = useState(false)
   const [address, setAddress] = useState<AddressState>({
     province: '',

@@ -1,35 +1,41 @@
+import { useState } from 'react'
+import { Button, Drawer } from 'antd'
 import { useTranslation } from 'react-i18next'
-import Modal from '../ui/Modal'
-import AdminCreateStoreLevelForm from './form/AdminCreateStoreLevelForm'
+import AdminStoreLevelForm from './form/AdminStoreLevelForm'
+import useInvalidate from '../../hooks/useInvalidate'
 
-interface AdminCreateStoreLevelItemProps {
-  onRun?: () => void
-}
-
-const AdminCreateStoreLevelItem = ({
-  onRun = () => {}
-}: AdminCreateStoreLevelItemProps) => {
+const AdminCreateStoreLevelItem = () => {
   const { t } = useTranslation()
-  return (
-    <div className='d-inline-block'>
-      <button
-        type='button'
-        className='btn btn-primary ripple text-nowrap rounded-1'
-        data-bs-toggle='modal'
-        data-bs-target='#admin-create-level-form'
-      >
-        <i className='fa-light fa-plus'></i>
-        <span className='ms-2 res-hide'>{t('button.addLevel')}</span>
-      </button>
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const invalidate = useInvalidate()
 
-      <Modal
-        id='admin-create-level-form'
-        hasCloseBtn={false}
-        title={t('dialog.createLevel')}
+  const handleSuccess = () => {
+    invalidate({ queryKey: ['storeLevels'] })
+    setDrawerOpen(false)
+  }
+
+  return (
+    <>
+      <Button
+        type='primary'
+        icon={<i className='fa-light fa-plus' />}
+        onClick={() => setDrawerOpen(true)}
+        className='flex items-center'
       >
-        <AdminCreateStoreLevelForm onRun={onRun} />
-      </Modal>
-    </div>
+        <span className='ml-2'>{t('button.addLevel')}</span>
+      </Button>
+
+      <Drawer
+        title={t('dialog.createLevel')}
+        placement='right'
+        onClose={() => setDrawerOpen(false)}
+        open={drawerOpen}
+        width={400}
+      >
+        <AdminStoreLevelForm mode='create' onRun={handleSuccess} />
+      </Drawer>
+    </>
   )
 }
+
 export default AdminCreateStoreLevelItem

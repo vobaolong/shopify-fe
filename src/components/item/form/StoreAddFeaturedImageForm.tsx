@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { useMutation } from '@tanstack/react-query'
 import { AxiosResponse } from 'axios'
-import { notification } from 'antd'
+import { useAntdApp } from '../../../hooks/useAntdApp'
 
 interface FeaturedImageState {
   image: string | File
@@ -19,6 +19,7 @@ interface FeaturedImageState {
 
 const StoreAddFeaturedImageForm = ({ storeId = '' }) => {
   const { t } = useTranslation()
+  const { notification } = useAntdApp()
   const [error, setError] = useState('')
   const [isConfirming, setIsConfirming] = useState(false)
   const [updateDispatch] = useUpdateDispatch()

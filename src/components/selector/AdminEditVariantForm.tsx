@@ -154,6 +154,7 @@ const AdminEditVariantForm = ({ variantId = '' }: { variantId?: string }) => {
         </div>
 
         <div className='col-12 mt-4 px-4'>
+          {' '}
           <MultiCategorySelector
             label={t('categoryDetail.chosenParentCategory')}
             isActive={false}
@@ -162,12 +163,7 @@ const AdminEditVariantForm = ({ variantId = '' }: { variantId?: string }) => {
             onSet={(categories) =>
               setNewVariant({
                 ...newVariant,
-                categoryIds:
-                  categories && Array.isArray(categories)
-                    ? (categories as CategoryType[]).map(
-                        (category) => category._id
-                      )
-                    : ''
+                categoryIds: categories.map((category) => category._id)
               })
             }
           />

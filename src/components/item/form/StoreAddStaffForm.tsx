@@ -13,7 +13,7 @@ import { toast } from 'react-toastify'
 import Error from '../../ui/Error'
 import { useMutation } from '@tanstack/react-query'
 import { AxiosResponse } from 'axios'
-import { notification } from 'antd'
+import { useAntdApp } from '../../../hooks/useAntdApp'
 
 interface StoreAddStaffFormProps {
   storeId?: string
@@ -27,13 +27,14 @@ const StoreAddStaffForm = ({
   staff = []
 }: StoreAddStaffFormProps) => {
   const [isConfirming, setIsConfirming] = useState(false)
+  const { t } = useTranslation()
+  const { notification } = useAntdApp()
   const [filter, setFilter] = useState<any>({})
   const [pagination, setPagination] = useState<any>({})
   const [listUsers, setListUsers] = useState<any[]>([])
   const [listLeft, setListLeft] = useState<any[]>([])
   const [listRight, setListRight] = useState<any[]>([])
   const [updateDispatch] = useUpdateDispatch()
-  const { t } = useTranslation()
   const { _id } = getToken()
 
   const addStaffMutation = useMutation({

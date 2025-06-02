@@ -12,6 +12,7 @@ const StoreSearchPage = React.lazy(() => import('./core/StoreSearchPage'))
 const UserSearchPage = React.lazy(() => import('./core/UserSearchPage'))
 const CategoryPage = React.lazy(() => import('./core/CategoryPage'))
 //admin
+const AdminProfilePage = React.lazy(() => import('./admin/ProfilePage'))
 const AdminDashboardPage = React.lazy(() => import('./admin/DashboardPage'))
 const AdminLevelPage = React.lazy(() => import('./admin/LevelPage'))
 const AdminCommissionPage = React.lazy(() => import('./admin/CommissionPage'))
@@ -34,7 +35,7 @@ const AdminVariantValuesPage = React.lazy(
 )
 const AdminBrandPage = React.lazy(() => import('./admin/BrandPage'))
 const AdminCreateBrandPage = React.lazy(() => import('./admin/CreateBrandPage'))
-const AdminEditBrandPage = React.lazy(() => import('./admin/EditBrandPage'))
+
 const AdminProductPage = React.lazy(() => import('./admin/ProductPage'))
 const AdminOrderPage = React.lazy(() => import('./admin/OrderPage'))
 const AdminOrderDetailPage = React.lazy(() => import('./admin/OrderDetailPage'))
@@ -52,9 +53,6 @@ const AccountStoreManagerPage = React.lazy(
 )
 const AccountCreateStorePage = React.lazy(
   () => import('./account/CreateStorePage')
-)
-const AccountVerifyEmailPage = React.lazy(
-  () => import('./account/VerifyEmailPage')
 )
 const AccountChangePasswordPage = React.lazy(
   () => import('./account/ChangePasswordPage')
@@ -81,6 +79,9 @@ const SellerCreateProductPage = React.lazy(
 const SellerEditProductPage = React.lazy(
   () => import('./seller/EditProductPage')
 )
+//auth
+const SignupPage = React.lazy(() => import('./auth/SignupPage'))
+const SignInPage = React.lazy(() => import('./auth/SignInPage'))
 //user
 const UserHomePage = React.lazy(() => import('./user/UserHomePage'))
 const UserAboutPage = React.lazy(() => import('./user/UserAboutPage'))
@@ -106,9 +107,10 @@ const Routers = () => {
           <Route path='/products/search' element={<ProductSearchPage />} />
           <Route path='/stores/search' element={<StoreSearchPage />} />
           <Route path='/users/search' element={<UserSearchPage />} />
-          <Route path='/category/:categoryId' element={<CategoryPage />} />
+          <Route path='/category/:categoryId' element={<CategoryPage />} />{' '}
           <Route path='/legal/privacy' element={<Policy />} />
-
+          <Route path='/signup' element={<SignupPage />} />
+          <Route path='/signin' element={<SignInPage />} />
           {/* admin */}
           <Route
             path='/admin/dashboard'
@@ -142,7 +144,6 @@ const Routers = () => {
               </AdminRoute>
             }
           />
-
           <Route
             path='/admin/users'
             element={
@@ -239,15 +240,7 @@ const Routers = () => {
                 <AdminCreateBrandPage />
               </AdminRoute>
             }
-          />
-          <Route
-            path='/admin/brand/edit/:brandId'
-            element={
-              <AdminRoute>
-                <AdminEditBrandPage />
-              </AdminRoute>
-            }
-          />
+          />{' '}
           {/*  */}
           <Route
             path='/admin/products'
@@ -281,7 +274,14 @@ const Routers = () => {
               </AdminRoute>
             }
           />
-
+          <Route
+            path='/admin/profile'
+            element={
+              <AdminRoute>
+                <AdminProfilePage />
+              </AdminRoute>
+            }
+          />
           {/* account */}
           <Route
             path='/account/profile'
@@ -354,16 +354,11 @@ const Routers = () => {
                 <AccountCartPage />
               </PrivateRoute>
             }
-          />
-          <Route
-            path='/verify/email/:emailCode'
-            element={<AccountVerifyEmailPage />}
-          />
+          />{' '}
           <Route
             path='/change/password/:passwordCode'
             element={<AccountChangePasswordPage />}
           />
-
           {/* seller */}
           <Route
             path='/seller/:storeId'
@@ -460,7 +455,6 @@ const Routers = () => {
           {/* user */}
           <Route path='/user/:userId' element={<UserHomePage />} />
           <Route path='/user/about/:userId' element={<UserAboutPage />} />
-
           {/* store */}
           <Route path='/store/:storeId' element={<StoreHomePage />} />
           <Route
@@ -472,7 +466,6 @@ const Routers = () => {
             element={<StoreReviewAndRatingPage />}
           />
           <Route path='/store/about/:storeId' element={<StoreAboutPage />} />
-
           {/* product */}
           <Route path='/product/:productId' element={<ProductDetailPage />} />
           {/* Route 404 */}

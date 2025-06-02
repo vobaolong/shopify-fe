@@ -8,8 +8,11 @@ const UserEditPasswordItem = () => {
   const [open, setOpen] = useState(false)
   return (
     <div className='relative inline-block'>
-      <Button type='primary' onClick={() => setOpen(true)}>
-        <i className='fa-solid fa-lock me-2'></i>
+      <Button
+        icon={<i className='fa-solid fa-lock' />}
+        type='primary'
+        onClick={() => setOpen(true)}
+      >
         {t('userDetail.changePassword')}
       </Button>
       <Modal

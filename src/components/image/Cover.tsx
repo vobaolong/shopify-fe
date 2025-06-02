@@ -8,11 +8,11 @@ const Cover = ({
   alt = 'cover',
   isEditStore = false
 }) => (
-  <div className='!h-[110px] relative pb-[25%]'>
+  <div className='!h-[110px] relative rounded-t-lg pb-[25%]'>
     <img
       loading='lazy'
       src={cover ? cover : defaultCover}
-      className='cus-cover-img'
+      className='w-full h-full absolute top-0 left-0 rounded-t-lg object-cover'
       alt={alt}
     />
     <div className='position-absolute overlay'></div>

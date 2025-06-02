@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react'
 import { getToken } from '../../../apis/auth.api'
 import { updateReview } from '../../../apis/review.api'
 import { numberTest, regexTest } from '../../../helper/test'
-import Loading from '../../ui/Loading'
 import TextArea from '../../ui/TextArea'
 import RatingInput from '../../ui/RatingInput'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { useMutation } from '@tanstack/react-query'
-import { notification } from 'antd'
+import { useAntdApp } from '../../../hooks/useAntdApp'
+import { Spin } from 'antd'
 
 interface ReviewType {
   rating: number
@@ -23,6 +23,7 @@ interface EditReviewFormProps {
 
 const EditReviewForm = ({ oldReview, onRun }: EditReviewFormProps) => {
   const { t } = useTranslation()
+  const { notification } = useAntdApp()
   const [newReview, setNewReview] = useState({
     rating: 1,
     content: '',
@@ -96,8 +97,8 @@ const EditReviewForm = ({ oldReview, onRun }: EditReviewFormProps) => {
   }
 
   return (
-    <div className='position-relative'>
-      {updateReviewMutation.isPending && <Loading />}
+    <div className='relative'>
+      {updateReviewMutation.isPending && <Spin />}
 
       <form className='row mb-2' onSubmit={handleSubmit}>
         <div className='col-12'>

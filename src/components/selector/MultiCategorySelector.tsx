@@ -10,15 +10,17 @@ import { Spin } from 'antd'
 
 interface MultiCategorySelectorProps {
   defaultValue?: CategoryType[]
+  value?: CategoryType[] // Add controlled value prop
   isActive?: boolean
   isRequired?: boolean
   label?: string
-  onSet?: (categories: CategoryType[] | '') => void
+  onSet?: (categories: CategoryType[]) => void
   isSelected?: boolean
 }
 
 const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
   defaultValue = [],
+  value, // Add value prop
   isActive = false,
   isRequired = false,
   label = 'Chosen category',
@@ -50,10 +52,16 @@ const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
     limit: 100,
     page: 1
   })
+  const [selectedCategories, setSelectedCategories] = useState<CategoryType[]>(
+    value || defaultValue || []
+  )
 
-  const [selectedCategories, setSelectedCategories] = useState<
-    CategoryType[] | ''
-  >(defaultValue)
+  // Update selectedCategories when value prop changes (controlled mode)
+  useEffect(() => {
+    if (value !== undefined) {
+      setSelectedCategories(value)
+    }
+  }, [value])
 
   const {
     data: lv1Categories = [],
@@ -104,9 +112,12 @@ const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
     enabled: !!lv3Filter.categoryId
   })
 
+  // Initialize selectedCategories based on mode
   useEffect(() => {
-    setSelectedCategories(defaultValue)
-  }, [defaultValue])
+    if (value === undefined && defaultValue) {
+      setSelectedCategories(defaultValue)
+    }
+  }, [defaultValue, value])
 
   const handleChangeKeyword = (keyword: string) => {
     setLv1Filter({
@@ -124,7 +135,6 @@ const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
       categoryId: ''
     })
   }
-
   const handleClick = (
     filter: CategoryFilter | null,
     setFilter: React.Dispatch<React.SetStateAction<CategoryFilter>> | null,
@@ -143,33 +153,25 @@ const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
       })
 
     if (isSelected && filter === null) {
-      if (Array.isArray(selectedCategories)) {
-        const temp = selectedCategories.map((cat) => cat._id)
-        if (temp.indexOf(category._id) === -1) {
-          const newSelected = [...selectedCategories, category]
+      const temp = selectedCategories.map((cat) => cat._id)
+      if (temp.indexOf(category._id) === -1) {
+        const newSelected = [...selectedCategories, category]
+        // Update state only if not in controlled mode
+        if (value === undefined) {
           setSelectedCategories(newSelected)
-          if (onSet) onSet(newSelected)
         }
-      } else {
-        setSelectedCategories([category])
-        if (onSet) onSet([category])
+        if (onSet) onSet(newSelected)
       }
     }
   }
-
   const handleRemove = (index: number) => {
-    if (Array.isArray(selectedCategories)) {
-      const newArray = [...selectedCategories]
-      newArray.splice(index, 1)
-
-      if (newArray.length !== 0) {
-        setSelectedCategories(newArray)
-        if (onSet) onSet(newArray)
-      } else {
-        setSelectedCategories('')
-        if (onSet) onSet('')
-      }
+    const newArray = [...selectedCategories]
+    newArray.splice(index, 1)
+    // Update state only if not in controlled mode
+    if (value === undefined) {
+      setSelectedCategories(newArray)
     }
+    if (onSet) onSet(newArray)
   }
 
   return (
@@ -193,10 +195,10 @@ const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
               height: '250px'
             }}
           >
+            {' '}
             {lv1Categories?.map((category: CategoryType, index: number) => (
-              <div>
+              <div key={category._id || index}>
                 <button
-                  key={index}
                   type='button'
                   className={`list-group-item ripple list-group-item-action d-flex justify-content-between align-items-center ${
                     category._id === lv2Filter.categoryId && 'active'
@@ -218,10 +220,10 @@ const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
               height: '250px'
             }}
           >
+            {' '}
             {lv2Categories?.map((category: CategoryType, index: number) => (
-              <div>
+              <div key={category._id || index}>
                 <button
-                  key={index}
                   type='button'
                   className={`list-group-item ripple list-group-item-action d-flex justify-content-between align-items-center  ${
                     category._id === lv3Filter.categoryId && 'active'
@@ -243,10 +245,10 @@ const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
               height: '250px'
             }}
           >
+            {' '}
             {lv3Categories?.map((category: CategoryType, index: number) => (
-              <div>
+              <div key={category._id || index}>
                 <button
-                  key={index}
                   type='button'
                   className={`list-group-item ripple list-group-item-action ${
                     selectedCategories &&

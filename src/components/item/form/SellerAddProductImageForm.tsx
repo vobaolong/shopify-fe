@@ -6,7 +6,7 @@ import Loading from '../../ui/Loading'
 import ConfirmDialog from '../../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
 import Error from '../../ui/Error'
-import { notification } from 'antd'
+import { useAntdApp } from '../../../hooks/useAntdApp'
 
 interface SellerAddProductImageFormProps {
   productId: string
@@ -20,6 +20,7 @@ const SellerAddProductImageForm = ({
   onRun
 }: SellerAddProductImageFormProps) => {
   const { t } = useTranslation()
+  const { notification } = useAntdApp()
   const [isLoading, setIsLoading] = useState(false)
   const [newImage, setNewImages] = useState({
     image: '',

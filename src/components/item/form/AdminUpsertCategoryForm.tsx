@@ -1,36 +1,53 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import {
   createCategory,
   updateCategory,
   getCategoryById
 } from '../../../apis/category.api'
-import InputFile from '../../ui/InputFile'
-import Loading from '../../ui/Loading'
-import ConfirmDialog from '../../ui/ConfirmDialog'
 import CategorySelector from '../../selector/CategorySelector'
 import { useTranslation } from 'react-i18next'
-import { Form, Input, Button, notification } from 'antd'
+import {
+  Form,
+  Input,
+  Button,
+  notification,
+  Modal,
+  Row,
+  Col,
+  Upload,
+  UploadProps,
+  Spin,
+  Image
+} from 'antd'
+import { UploadOutlined } from '@ant-design/icons'
 import { useMutation } from '@tanstack/react-query'
-import { AxiosError } from 'axios'
+import type { UploadFile } from 'antd/es/upload/interface'
+import UploadFileComponent from '../../image/UploadFile'
 
 interface Props {
   categoryId?: string
   onSuccess?: () => void
 }
 
+const getBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = (error) => reject(error)
+  })
+
 const AdminUpsertCategoryForm = ({ categoryId, onSuccess }: Props) => {
+  const [form] = Form.useForm()
   const { t } = useTranslation()
   const [isLoading, setIsLoading] = useState(false)
-  const [isConfirming, setIsConfirming] = useState(false)
-  const [isConfirmingBack, setIsConfirmingBack] = useState(false)
-  const [form] = Form.useForm()
   const navigate = useNavigate()
-  const [file, setFile] = useState<File | null>(null)
-  const [defaultSrc, setDefaultSrc] = useState('')
+  const [fileList, setFileList] = useState<UploadFile[]>([])
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [previewImage, setPreviewImage] = useState('')
   const isEdit = !!categoryId
 
-  // Mutation
   const mutation = useMutation({
     mutationFn: (formData: FormData) =>
       isEdit && categoryId
@@ -44,32 +61,14 @@ const AdminUpsertCategoryForm = ({ categoryId, onSuccess }: Props) => {
             : 'toastSuccess.category.create'
         )
       })
-      console.log(
-        'Create Category Success Response - Category Data:',
-        res.data.category
-      )
-      console.log(
-        'Update/Create Category Success Response - Category Data:',
-        res.data.category
-      )
-      if (isEdit && res?.data?.category?.image) {
-        setDefaultSrc(res.data.category.image)
-      }
       if (onSuccess) onSuccess()
       else navigate('/admin/categories')
     },
-    onError: (error: AxiosError<any>) => {
-      console.error('Update/Create Category Error:', error)
-      const errorMessage =
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        error.message ||
-        'Server Error'
-      notification.error({ message: errorMessage })
+    onError: () => {
+      notification.error({ message: 'Server Error' })
     }
   })
 
-  // Fetch data for edit
   useEffect(() => {
     if (!isEdit) return
     setIsLoading(true)
@@ -79,11 +78,18 @@ const AdminUpsertCategoryForm = ({ categoryId, onSuccess }: Props) => {
         if (category) {
           form.setFieldsValue({
             name: category.name,
-            categoryId: category.categoryId || null,
-            image: category.image
+            categoryId: category.categoryId || null
           })
-          setDefaultSrc(category.image)
-          console.log('categoryId fetched:', category.categoryId)
+          if (category.image) {
+            setFileList([
+              {
+                uid: '-1',
+                name: 'image.png',
+                status: 'done',
+                url: category.image
+              }
+            ])
+          }
         }
         setIsLoading(false)
       })
@@ -93,85 +99,82 @@ const AdminUpsertCategoryForm = ({ categoryId, onSuccess }: Props) => {
       })
   }, [categoryId, form])
 
-  const handleBackClick = (e?: React.MouseEvent<HTMLAnchorElement>) => {
-    if (e) e.preventDefault()
-    setIsConfirmingBack(true)
-  }
-
-  const handleConfirmBack = () => {
-    setIsConfirmingBack(false)
-    navigate('/admin/categories')
-  }
-
   const handleFinish = () => {
-    setIsConfirming(true)
+    Modal.confirm({
+      title: t(isEdit ? 'dialog.updateCategory' : 'categoryDetail.add'),
+      content: t(isEdit ? 'message.edit' : 'confirmDialog'),
+      okText: t('button.confirm'),
+      cancelText: t('button.cancel'),
+      onOk: handleConfirmSubmit
+    })
   }
 
   const handleConfirmSubmit = () => {
     const values = form.getFieldsValue()
     const formData = new FormData()
-
     formData.set('name', values.name)
 
-    // Handle parent category ID
-    // Only set categoryId if a parent is selected AND it's not the current category itself
     if (
       values.categoryId &&
       values.categoryId._id &&
       values.categoryId._id !== categoryId
     ) {
       formData.set('categoryId', values.categoryId._id)
-    } else if (isEdit && (!values.categoryId || !values.categoryId._id)) {
-      // If in edit mode and no valid parent is selected, omit the field or set to null based on backend API
-      // Assuming backend handles omitting the field to unset or requires categoryId: null
-      // If backend explicitly requires categoryId: null to unset parent, uncomment and adjust the line below:
-      // formData.set('categoryId', ''); // Or 'null' or null
     }
-
-    // Handle image file: ONLY set image if a new file is selected
-    if (file) {
-      formData.set('image', file)
+    if (fileList.length > 0 && fileList[0].originFileObj) {
+      formData.set('image', fileList[0].originFileObj)
     }
-    // If in edit mode and no new file is selected, DO NOT set the image field.
-    // Rely on backend to keep the existing image.
-
     mutation.mutate(formData)
-    setIsConfirming(false)
+  }
+  const handlePreview = async (file: UploadFile) => {
+    if (!file.url && !file.preview) {
+      file.preview = await getBase64(file.originFileObj as File)
+    }
+    setPreviewImage(file.url || (file.preview as string))
+    setPreviewOpen(true)
+  }
+  const uploadProps: UploadProps = {
+    fileList,
+    onPreview: handlePreview,
+    beforeUpload: (file) => {
+      const isImage = file.type.startsWith('image/')
+      if (!isImage) {
+        notification.error({ message: 'You can only upload image files!' })
+        return false
+      }
+      const isLt2M = file.size / 1024 / 1024 < 2
+      if (!isLt2M) {
+        notification.error({ message: 'Image must smaller than 2MB!' })
+        return false
+      }
+      return false
+    },
+    onChange: ({ fileList: newFileList }) => {
+      setFileList(newFileList.slice(-1))
+    },
+    onRemove: () => {
+      setFileList([])
+    },
+    maxCount: 1,
+    listType: 'picture',
+    showUploadList: {
+      showPreviewIcon: true,
+      showRemoveIcon: true,
+      showDownloadIcon: false
+    }
   }
 
   return (
-    <div className='container-fluid position-relative'>
-      {(isLoading || mutation.isPending) && <Loading />}
-      {isConfirming && (
-        <ConfirmDialog
-          title={t(isEdit ? 'dialog.updateCategory' : 'categoryDetail.add')}
-          onSubmit={handleConfirmSubmit}
-          onClose={() => setIsConfirming(false)}
-          message={t(isEdit ? 'message.edit' : 'confirmDialog')}
-        />
-      )}
-      {isConfirmingBack && (
-        <ConfirmDialog
-          title={t(isEdit ? 'dialog.cancelUpdate' : 'dialog.cancelCreate')}
-          onSubmit={handleConfirmBack}
-          onClose={() => setIsConfirmingBack(false)}
-          message={t('confirmDialog')}
-        />
-      )}
+    <div className='relative'>
+      {(isLoading || mutation.isPending) && <Spin />}
       <Form
         form={form}
         layout='vertical'
         onFinish={handleFinish}
         initialValues={{ name: '' }}
       >
-        <div className='row box-shadow bg-body rounded-1'>
-          <div className='col-12 bg-primary p-3 rounded-top-2'>
-            <span className='text-white fs-5 m-0'>
-              {t(isEdit ? 'categoryDetail.edit' : 'categoryDetail.add')}
-            </span>
-          </div>
-
-          <div className='col-12 px-4 mt-4'>
+        <Row gutter={[4, 4]}>
+          <Col span={24}>
             <Form.Item name='categoryId'>
               <CategorySelector
                 label={t('categoryDetail.chosenParentCategory')}
@@ -179,9 +182,8 @@ const AdminUpsertCategoryForm = ({ categoryId, onSuccess }: Props) => {
                 isActive={false}
               />
             </Form.Item>
-          </div>
-
-          <div className='col-12 px-4 mt-4'>
+          </Col>
+          <Col span={24}>
             <Form.Item
               name='name'
               label={t('categoryDetail.name')}
@@ -191,49 +193,36 @@ const AdminUpsertCategoryForm = ({ categoryId, onSuccess }: Props) => {
             >
               <Input placeholder={t('categoryDetail.name')} />
             </Form.Item>
-          </div>
-
-          <span className='col-12 px-4 mt-4 fs-9'>
-            {t('categoryDetail.img')} <sup className='text-danger'>*</sup>
-          </span>
-          <div className='col-12 px-4 mb-3'>
-            <Form.Item name='image'>
-              <InputFile
+          </Col>
+          <Col span={24}>
+            <Form.Item label={t('categoryDetail.img')} required>
+              <UploadFileComponent
+                fileList={fileList}
+                setFileList={setFileList}
+                maxCount={1}
                 label={t('categoryDetail.img')}
-                size='avatar'
-                noRadius={true}
-                defaultSrc={defaultSrc}
-                onChange={(value) => {
-                  if (value instanceof File) setFile(value)
-                  else setFile(null)
-                }}
+                required
               />
             </Form.Item>
-          </div>
-        </div>
-        <div
-          className={`bg-body shadow rounded-1 row px-4 my-3 p-3`}
-          style={{ position: 'sticky', bottom: '0' }}
-        >
-          <div className='d-flex justify-content-between align-items-center'>
-            <Link
-              to='/admin/categories'
-              className='text-decoration-none cus-link-hover res-w-100-md my-2'
-              onClick={handleBackClick}
-            >
-              <i className='fa-solid fa-angle-left'></i> {t('button.back')}
-            </Link>
-            <Button
-              type='primary'
-              htmlType='submit'
-              className='btn btn-primary ripple res-w-100-md rounded-1'
-              style={{ width: '200px', maxWidth: '100%' }}
-            >
+          </Col>
+          <Col span={24} className='text-right'>
+            <Button className='min-w-[200px]' type='primary' htmlType='submit'>
               {t('button.save')}
             </Button>
-          </div>
-        </div>
+          </Col>
+        </Row>
       </Form>
+      {previewImage && (
+        <Image
+          wrapperStyle={{ display: 'none' }}
+          preview={{
+            visible: previewOpen,
+            onVisibleChange: (visible) => setPreviewOpen(visible),
+            afterOpenChange: (visible) => !visible && setPreviewImage('')
+          }}
+          src={previewImage}
+        />
+      )}
     </div>
   )
 }

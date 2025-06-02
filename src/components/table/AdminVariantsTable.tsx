@@ -1,330 +1,421 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { useQuery, useMutation } from '@tanstack/react-query'
+import {
+  Table,
+  Button,
+  Space,
+  Tooltip,
+  Alert,
+  Select,
+  Modal,
+  Spin,
+  Tag,
+  Divider
+} from 'antd'
+import { SyncOutlined } from '@ant-design/icons'
 import { getToken } from '../../apis/auth.api'
 import {
   listVariants,
   removeVariant,
   restoreVariant
 } from '../../apis/variant.api'
-import Pagination from '../ui/Pagination'
+import useInvalidate from '../../hooks/useInvalidate'
+import { useAntdApp } from '../../hooks/useAntdApp'
+import { PaginationType } from '../../@types/pagination.type'
 import SearchInput from '../ui/SearchInput'
-import SortByButton from './sub/SortByButton'
 import DeletedLabel from '../label/DeletedLabel'
-import Loading from '../ui/Loading'
-import ConfirmDialog from '../ui/ConfirmDialog'
-import CategorySmallCard from '../card/CategorySmallCard'
 import ActiveLabel from '../label/ActiveLabel'
-import { useTranslation } from 'react-i18next'
-import ShowResult from '../ui/ShowResult'
-import { toast } from 'react-toastify'
-import Error from '../ui/Error'
+import CategorySmallCard from '../card/CategorySmallCard'
 import { humanReadableDate } from '../../helper/humanReadable'
+import { ColumnsType } from 'antd/es/table'
+
+interface VariantsResponse {
+  variants: any[]
+  size: number
+  filter: { pageCurrent: number; pageCount: number }
+}
+
+interface FilterState {
+  search: string
+  sortBy: string
+  order: 'asc' | 'desc'
+  limit: number
+  page: number
+  status?: string
+}
+
+const defaultFilter: FilterState = {
+  search: '',
+  sortBy: 'name',
+  order: 'asc',
+  limit: 8,
+  page: 1,
+  status: 'all'
+}
 
 const AdminVariantsTable = ({ heading = false }) => {
   const { t } = useTranslation()
-  const [isLoading, setIsLoading] = useState(false)
-  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
-  const [isConfirmingRestore, setIsConfirmingRestore] = useState(false)
-  const [run, setRun] = useState(false)
-  const [error, setError] = useState('')
-  const [deletedVariant, setDeletedVariant] = useState({})
-  const [restoredVariant, setRestoredVariant] = useState({})
-  const [variants, setVariants] = useState([])
-  
-	const [pagination, setPagination] = useState({
-    size: 0
-  })
-  const [filter, setFilter] = useState({
-    search: '',
-    sortBy: 'name',
-    categoryId: '',
-    order: 'asc',
-    limit: 8,
-    page: 1
+  const { notification } = useAntdApp()
+  const invalidate = useInvalidate()
+  const { _id: userId } = getToken()
+  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
+  const [filter, setFilter] = useState(defaultFilter)
+  const [pendingFilter, setPendingFilter] = useState(defaultFilter)
+
+  const fetchVariants = async (filter: any): Promise<VariantsResponse> => {
+    const res = await listVariants(userId, filter)
+    return res.data || res
+  }
+
+  const { data, isLoading, error } = useQuery<VariantsResponse, Error>({
+    queryKey: ['variants', filter],
+    queryFn: () => fetchVariants(filter),
+    enabled: !!userId
   })
 
-  const { _id } = getToken()
+  const deleteMutation = useMutation({
+    mutationFn: (variantId: string) => removeVariant(userId, variantId),
+    onSuccess: () => {
+      notification.success({ message: t('toastSuccess.variant.delete') })
+      invalidate({ queryKey: ['variants'] })
+    },
+    onError: (error: any) => {
+      const errorMessage =
+        error?.response?.data?.error || t('toastError.variant.delete')
+      notification.error({ message: errorMessage })
+    }
+  })
 
-  useEffect(() => {
-    let isMounted = true
-    setIsLoading(true)
-    listVariants(_id, filter)
-      .then((data) => {
-        if (data.error) setError(data.error)
-        else {
-          setVariants(data.variants)
-          setPagination({
-            size: data.size,
-            pageCurrent: data.filter.pageCurrent,
-            pageCount: data.filter.pageCount
-          })
-        }
-        if (isMounted) setIsLoading(false)
-      })
-      .catch(() => {
-        setError('Server Error')
-        if (isMounted) setIsLoading(false)
-      })
-  }, [filter, run])
-
-  const handleChangeKeyword = (keyword) => {
-    setFilter({
-      ...filter,
-      search: keyword,
+  const restoreMutation = useMutation({
+    mutationFn: (variantId: string) => restoreVariant(userId, variantId),
+    onSuccess: () => {
+      notification.success({ message: t('toastSuccess.variant.restore') })
+      invalidate({ queryKey: ['variants'] })
+    },
+    onError: (error: any) => {
+      const errorMessage =
+        error?.response?.data?.error || t('toastError.variant.restore')
+      notification.error({ message: errorMessage })
+    }
+  })
+  const handleFilterChange = (updates: Partial<FilterState>) => {
+    setPendingFilter((prev) => ({
+      ...prev,
+      ...updates,
       page: 1
+    }))
+  }
+
+  const handleSearch = () => {
+    setFilter({ ...pendingFilter })
+  }
+
+  const handleChangePage = (page: number, pageSize: number) => {
+    setFilter((prev) => ({ ...prev, page, limit: pageSize }))
+  }
+
+  const handleFilterReset = () => {
+    setFilter(defaultFilter)
+    setPendingFilter(defaultFilter)
+  }
+
+  const handleDelete = (variantId: string) => {
+    Modal.confirm({
+      title: t('variantDetail.del'),
+      content: t('message.delete'),
+      onOk: () => deleteMutation.mutate(variantId),
+      okText: t('button.delete'),
+      cancelText: t('button.cancel'),
+      okType: 'danger'
     })
   }
 
-  const handleChangePage = (newPage) => {
-    setFilter({
-      ...filter,
-      page: newPage
+  const handleRestore = (variantId: string) => {
+    Modal.confirm({
+      title: t('variantDetail.res'),
+      content: t('message.restore'),
+      onOk: () => restoreMutation.mutate(variantId),
+      okText: t('button.restore'),
+      cancelText: t('button.cancel')
     })
   }
 
-  const handleSetSortBy = (order, sortBy) => {
-    setFilter({
-      ...filter,
-      sortBy,
-      order
+  const handleBulkDelete = () => {
+    if (selectedRowKeys.length === 0) return
+
+    Modal.confirm({
+      title: t('variantDetail.del'),
+      content: t('message.bulkDelete', { count: selectedRowKeys.length }),
+      onOk: () => {
+        selectedRowKeys.forEach((variantId) => deleteMutation.mutate(variantId))
+        setSelectedRowKeys([])
+      },
+      okText: t('button.delete'),
+      cancelText: t('button.cancel'),
+      okType: 'danger'
     })
   }
 
-  const handleDelete = (variant) => {
-    setDeletedVariant(variant)
-    setIsConfirmingDelete(true)
+  const handleBulkRestore = () => {
+    if (selectedRowKeys.length === 0) return
+
+    Modal.confirm({
+      title: t('variantDetail.res'),
+      content: t('message.bulkRestore', { count: selectedRowKeys.length }),
+      onOk: () => {
+        selectedRowKeys.forEach((variantId) =>
+          restoreMutation.mutate(variantId)
+        )
+        setSelectedRowKeys([])
+      },
+      okText: t('button.restore'),
+      cancelText: t('button.cancel')
+    })
+  }
+  const columns: ColumnsType<any> = [
+    {
+      title: '#',
+      dataIndex: 'index',
+      key: 'index',
+      align: 'center' as const,
+      fixed: 'left',
+      render: (_: any, __: any, idx: number) =>
+        (pagination.pageCurrent - 1) * filter.limit + idx + 1,
+      width: 60
+    },
+    {
+      title: t('variantDetail.name'),
+      dataIndex: 'name',
+      key: 'name',
+      render: (name: string) => <span className='font-medium'>{name}</span>,
+      width: 150
+    },
+    {
+      title: t('variantDetail.categories'),
+      dataIndex: 'categoryIds',
+      key: 'categoryIds',
+      render: (categoryIds: any[]) => (
+        <div className='flex flex-col gap-1 max-h-32 overflow-auto'>
+          {categoryIds.map((category, index) => (
+            <Tag key={index} className='text-xs'>
+              <CategorySmallCard category={category} />
+            </Tag>
+          ))}
+        </div>
+      ),
+      width: 300
+    },
+    {
+      title: t('status.status'),
+      dataIndex: 'isDeleted',
+      key: 'isDeleted',
+      width: 100,
+      align: 'center' as const,
+      render: (isDeleted: boolean) =>
+        isDeleted ? <DeletedLabel /> : <ActiveLabel />
+    },
+    {
+      title: t('variantDetail.createdAt'),
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      sorter: true,
+      align: 'right' as const,
+      width: 140,
+      render: (createdAt: string) => humanReadableDate(createdAt)
+    },
+    {
+      title: t('action'),
+      key: 'action',
+      width: 120,
+      render: (_: any, record: any) => (
+        <Space size='small'>
+          <Tooltip title={t('button.detail')}>
+            <Link to={`/admin/variant/values/${record._id}`}>
+              <Button
+                type='default'
+                size='small'
+                icon={<i className='fa-solid fa-circle-info' />}
+              />
+            </Link>
+          </Tooltip>
+          <Tooltip title={t('button.edit')}>
+            <Link to={`/admin/variant/edit/${record._id}`}>
+              <Button
+                type='primary'
+                size='small'
+                icon={<i className='fa-duotone fa-pen-to-square' />}
+              />
+            </Link>
+          </Tooltip>
+          {record.isDeleted ? (
+            <Tooltip title={t('button.restore')}>
+              <Button
+                type='default'
+                size='small'
+                icon={<i className='fa-solid fa-trash-can-arrow-up' />}
+                onClick={() => handleRestore(record._id)}
+                loading={restoreMutation.isPending}
+                className='text-green-600 border-green-600 hover:text-green-700 hover:border-green-700'
+              />
+            </Tooltip>
+          ) : (
+            <Tooltip title={t('button.delete')}>
+              <Button
+                type='default'
+                danger
+                size='small'
+                icon={<i className='fa-solid fa-trash-alt' />}
+                onClick={() => handleDelete(record._id)}
+                loading={deleteMutation.isPending}
+              />
+            </Tooltip>
+          )}
+        </Space>
+      )
+    }
+  ]
+
+  const variants = data?.variants || []
+  const pagination: PaginationType = {
+    size: data?.size || 0,
+    pageCurrent: data?.filter?.pageCurrent || filter.page,
+    pageCount: data?.filter?.pageCount || 1
   }
 
-  const handleRestore = (variant) => {
-    setRestoredVariant(variant)
-    setIsConfirmingRestore(true)
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (selectedKeys: React.Key[]) => {
+      setSelectedRowKeys(selectedKeys as string[])
+    }
   }
 
-  const onSubmitDelete = () => {
-    setIsLoading(true)
-    removeVariant(_id, deletedVariant._id)
-      .then((data) => {
-        if (data.error) setError(data.error)
-        else {
-          toast.success(t('toastSuccess.variant.delete'))
-          setRun(!run)
-        }
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
-      .catch(() => {
-        setError('Server Error')
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
-  }
+  const hasSelected = selectedRowKeys.length > 0
+  const hasDeletedSelected = variants
+    .filter((variant) => selectedRowKeys.includes(variant._id))
+    .some((variant) => variant.isDeleted)
+  const hasActiveSelected = variants
+    .filter((variant) => selectedRowKeys.includes(variant._id))
+    .some((variant) => !variant.isDeleted)
 
-  const onSubmitRestore = () => {
-    setIsLoading(true)
-    restoreVariant(_id, restoredVariant._id)
-      .then((data) => {
-        if (data.error) setError(data.error)
-        else {
-          toast.success(t('toastSuccess.variant.restore'))
-          setRun(!run)
-        }
-        setIsLoading(false)
-      })
-      .catch(() => {
-        setError('Server Error')
-        setIsLoading(false)
-      })
-  }
+  // Filter options
+  const statusFilterOptions = [
+    { label: t('filters.all'), value: 'all' },
+    { label: t('status.active'), value: 'active' },
+    { label: t('status.deleted'), value: 'deleted' }
+  ]
 
   return (
-    <div className='position-relative'>
-      {isLoading && <Loading />}
-      {error && <Error msg={error} />}
-      {isConfirmingDelete && (
-        <ConfirmDialog
-          title={t('variantDetail.del')}
-          color='danger'
-          onSubmit={onSubmitDelete}
-          onClose={() => setIsConfirmingDelete(false)}
-        />
+    <div className='w-full'>
+      {error && (
+        <Alert message={error.message} type='error' className='mb-4' showIcon />
       )}
-      {isConfirmingRestore && (
-        <ConfirmDialog
-          title={t('variantDetail.res')}
-          onSubmit={onSubmitRestore}
-          onClose={() => setIsConfirmingRestore(false)}
-        />
-      )}
-
-      {heading && <h5 className='text-start'>{t('title.productVariants')}</h5>}
-      {isLoading && <Loading />}
-      <div className='p-3 bg-white rounded-md'>
-        <div className='flex gap-3 items-center flex-wrap'>
-          <SearchInput onChange={handleChangeKeyword} />
-          <Link
-            type='button'
-            className='btn btn-primary ripple text-nowrap rounded-1'
-            to='/admin/variant/create'
-          >
-            <i className='fa-light fa-plus'></i>
-            <span className='ms-2 res-hide'>{t('variantDetail.add')}</span>
-          </Link>
-        </div>
-
-        <div className='table-scroll my-2'>
-          <table className='table align-middle table-hover table-sm text-start'>
-            <thead>
-              <tr>
-                <th scope='col' className='text-center'></th>
-                <th scope='col'>
-                  <SortByButton
-                    currentOrder={filter.order}
-                    currentSortBy={filter.sortBy}
-                    title={t('variantDetail.name')}
-                    sortBy='name'
-                    onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
-                  />
-                </th>
-                <th scope='col'>
-                  <SortByButton
-                    currentOrder={filter.order}
-                    currentSortBy={filter.sortBy}
-                    title={t('variantDetail.categories')}
-                    sortBy='categoryIds '
-                    onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
-                  />
-                </th>
-                <th scope='col'>
-                  <SortByButton
-                    currentOrder={filter.order}
-                    currentSortBy={filter.sortBy}
-                    title={t('status.status')}
-                    sortBy='isDeleted'
-                    onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
-                  />
-                </th>
-                <th scope='col'>
-                  <SortByButton
-                    currentOrder={filter.order}
-                    currentSortBy={filter.sortBy}
-                    title={t('variantDetail.createdAt')}
-                    sortBy='createdAt'
-                    onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
-                  />
-                </th>
-                <th scope='col'>
-                  <span>{t('action')}</span>
-                </th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {variants.map((variant, index) => (
-                <tr key={index}>
-                  <th scope='row' className='text-center'>
-                    {index + 1 + (filter.page - 1) * filter.limit}
-                  </th>
-                  <td>
-                    <span>{variant.name}</span>
-                  </td>
-                  <td>
-                    <div
-                      style={{
-                        height: '100%',
-                        maxHeight: '200px',
-                        overflow: 'auto'
-                      }}
-                      className='d-flex flex-column gap-2 my-2'
-                    >
-                      {variant.categoryIds.map((category, index) => (
-                        <div
-                          className='hidden-avatar fs-9 badge bg-value text-dark-emphasis border rounded-1 fw-normal text-start'
-                          key={index}
-                        >
-                          <CategorySmallCard category={category} />
-                        </div>
-                      ))}
-                    </div>
-                  </td>
-
-                  <td>
-                    {variant.isDeleted ? <DeletedLabel /> : <ActiveLabel />}
-                  </td>
-                  <td>{humanReadableDate(variant.createdAt)}</td>
-                  <td className='text-nowrap my-1'>
-                    <div className='position-relative d-inline-block'>
-                      <Link
-                        type='button'
-                        className='btn btn-sm btn-outline-secondary ripple me-2 cus-tooltip'
-                        to={`/admin/variant/values/${variant._id}`}
-                      >
-                        <i className='fa-solid fa-circle-info'></i>
-                      </Link>
-                      <span className='cus-tooltip-msg'>
-                        {t('button.detail')}
-                      </span>
-                    </div>
-                    <div className='position-relative d-inline-block'>
-                      <Link
-                        type='button'
-                        className='btn btn-sm btn-outline-primary ripple me-2 rounded-1 cus-tooltip'
-                        to={`/admin/variant/edit/${variant._id}`}
-                      >
-                        <i className='fa-duotone fa-pen-to-square'></i>
-                      </Link>
-                      <span className='cus-tooltip-msg'>
-                        {t('button.edit')}
-                      </span>
-                    </div>
-                    <div className='position-relative d-inline-block'>
-                      {!variant.isDeleted ? (
-                        <button
-                          type='button'
-                          className='btn btn-sm btn-outline-danger ripple rounded-1 cus-tooltip'
-                          onClick={() => handleDelete(variant)}
-                        >
-                          <i className='fa-solid fa-trash-alt'></i>
-                        </button>
-                      ) : (
-                        <button
-                          type='button'
-                          className='btn btn-sm btn-outline-success ripple rounded-1 cus-tooltip'
-                          onClick={() => handleRestore(variant)}
-                        >
-                          <i className='fa-solid fa-trash-can-arrow-up'></i>
-                        </button>
-                      )}{' '}
-                      <span className=' cus-tooltip-msg'>
-                        {!variant.isDeleted
-                          ? t('button.delete')
-                          : t('button.restore')}
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className='d-flex justify-content-between align-items-center px-4'>
-          <ShowResult
-            limit={filter.limit}
-            size={pagination.size}
-            pageCurrent={pagination.pageCurrent}
-          />
-          {pagination.size !== 0 && (
-            <Pagination
-              pagination={pagination}
-              onChangePage={handleChangePage}
+      <Spin spinning={isLoading} tip={t('loading')} size='large'>
+        <div className='p-3 bg-white rounded-md'>
+          <div className='flex gap-3 items-center flex-wrap mb-3'>
+            <SearchInput
+              value={pendingFilter.search || ''}
+              onChange={(keyword) => handleFilterChange({ search: keyword })}
+              onSearch={handleSearch}
+              loading={isLoading}
             />
-          )}
+            <Select
+              style={{ minWidth: 140 }}
+              value={pendingFilter.status}
+              onChange={(value) => handleFilterChange({ status: value })}
+              options={statusFilterOptions}
+              placeholder={t('status.status')}
+              allowClear
+            />
+            <Button type='primary' onClick={handleSearch}>
+              {t('search')}
+            </Button>
+            <Button onClick={handleFilterReset} type='default'>
+              {t('button.reset')}
+            </Button>
+            <Button
+              onClick={() => invalidate({ queryKey: ['variants'] })}
+              className='!w-10 flex items-center justify-center'
+              type='default'
+              loading={isLoading}
+              icon={<SyncOutlined spin={isLoading} />}
+            />
+            <Link to='/admin/variant/create'>
+              <Button type='primary' icon={<i className='fa-light fa-plus' />}>
+                <span className='hidden sm:inline'>
+                  {t('variantDetail.add')}
+                </span>
+              </Button>
+            </Link>
+          </div>
+
+          <div>
+            {/* Bulk Actions */}
+            {hasSelected && (
+              <div className='flex items-center gap-4 mb-4 p-3 bg-blue-50 rounded-lg'>
+                <span className='text-sm text-gray-600'>
+                  {t('table.selectedCount', { count: selectedRowKeys.length })}
+                </span>
+                <div className='flex gap-2'>
+                  {hasActiveSelected && (
+                    <Button
+                      size='small'
+                      danger
+                      onClick={handleBulkDelete}
+                      loading={deleteMutation.isPending}
+                      icon={<i className='fa-solid fa-trash-alt' />}
+                    >
+                      {t('button.bulkDelete')}
+                    </Button>
+                  )}
+                  {hasDeletedSelected && (
+                    <Button
+                      size='small'
+                      onClick={handleBulkRestore}
+                      loading={restoreMutation.isPending}
+                      icon={<i className='fa-solid fa-trash-can-arrow-up' />}
+                      className='text-green-600 border-green-600 hover:text-green-700 hover:border-green-700'
+                    >
+                      {t('button.bulkRestore')}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+            <Divider />
+            <Table
+              rowKey='_id'
+              columns={columns}
+              dataSource={variants}
+              rowSelection={rowSelection}
+              loading={false}
+              pagination={{
+                current: pagination.pageCurrent,
+                pageSize: filter.limit,
+                total: pagination.size,
+                onChange: handleChangePage,
+                showTotal: (total, range) =>
+                  `${range[0]}-${range[1]} ${t('of')} ${total} ${t('result')}`,
+                pageSizeOptions: [5, 10, 20, 50],
+                showSizeChanger: true
+              }}
+              onChange={(_, __, sorter: any) => {
+                if (!Array.isArray(sorter) && sorter.field) {
+                  setFilter((prev) => ({
+                    ...prev,
+                    sortBy: sorter.field as string,
+                    order: sorter.order === 'ascend' ? 'asc' : 'desc'
+                  }))
+                }
+              }}
+              scroll={{ x: 'max-content' }}
+              className='overflow-hidden'
+              bordered
+            />
+          </div>
         </div>
-      </div>
+      </Spin>
     </div>
   )
 }

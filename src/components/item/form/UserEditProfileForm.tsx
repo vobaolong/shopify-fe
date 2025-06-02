@@ -3,8 +3,9 @@ import { getToken } from '../../../apis/auth.api'
 import { updateProfile } from '../../../apis/user.api'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from '@tanstack/react-query'
-import { Form, Input, Button, notification, Spin, Modal } from 'antd'
+import { Form, Input, Button, Spin, Modal } from 'antd'
 import useInvalidate from '../../../hooks/useInvalidate'
+import { useAntdApp } from '../../../hooks/useAntdApp'
 import { UserType } from '../../../@types/entity.types'
 
 interface UserEditProfileFormProps {
@@ -25,6 +26,7 @@ const UserEditProfileForm = ({
   googleId = false
 }: UserEditProfileFormProps) => {
   const { t } = useTranslation()
+  const { notification } = useAntdApp()
   const [form] = Form.useForm()
   const { _id } = getToken()
   const invalidate = useInvalidate()
@@ -32,7 +34,10 @@ const UserEditProfileForm = ({
   const updateProfileMutation = useMutation({
     mutationFn: (user: UserType) => updateProfile(_id, user),
     onSuccess: () => {
-      invalidate({ queryKey: ['userProfile', _id] })
+      // Invalidate all query keys để đảm bảo cache được cập nhật
+      invalidate({ queryKey: ['userProfilePage', _id] })
+      invalidate({ queryKey: ['userAccountInit', _id] })
+      invalidate({ queryKey: ['adminProfilePage', _id] })
       notification.success({
         message: t('toastSuccess.userDetail.updateProfile')
       })

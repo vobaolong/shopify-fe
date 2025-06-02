@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { notification } from 'antd'
+import { useAntdApp } from '../../hooks/useAntdApp'
 import { getListStores } from '../../apis/store.api'
 import Loading from '../ui/Loading'
 import StoreCard from '../card/StoreCard'
@@ -7,6 +7,7 @@ import Slider from 'react-slick'
 import Error from '../ui/Error'
 
 const ListHotStores = ({ heading = '' }) => {
+  const { notification } = useAntdApp()
   const settings = {
     className: 'center',
     infinite: false,

@@ -1553,7 +1553,6 @@ header {
 	top: 0;
 	left: 0;
 	object-fit: cover;
-	border-radius: 0.25rem !important;
 }
 
 .cus-cover-img.cus-cover-img--input-file {

@@ -9,10 +9,11 @@ import StarRating from '../label/StarRating'
 import { useTranslation } from 'react-i18next'
 import boxImg from '../../assets/box.svg'
 import { useQuery } from '@tanstack/react-query'
-import { notification } from 'antd'
+import { useAntdApp } from '../../hooks/useAntdApp'
 
 const ListReviews = ({ productId = '', storeId = '', userId = '' }) => {
   const { t } = useTranslation()
+  const { notification } = useAntdApp()
   const [run, setRun] = useState(true)
   const [filter, setFilter] = useState({
     productId,

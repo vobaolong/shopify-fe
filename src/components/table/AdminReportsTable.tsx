@@ -11,18 +11,18 @@ import {
   Tooltip,
   Select,
   DatePicker,
-  notification
+  notification,
+  Typography
 } from 'antd'
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import SearchInput from '../ui/SearchInput'
 import { humanReadableDate } from '../../helper/humanReadable'
-import { Link } from 'react-router-dom'
 import { PaginationType } from '../../@types/pagination.type'
 import { ReportType } from '../../@types/entity.types'
-import { Trash } from 'lucide-react'
-import dayjs, { Dayjs } from 'dayjs'
+import { Dayjs } from 'dayjs'
 import { ColumnType } from 'antd/es/table'
+import { CopyOutlined } from '@ant-design/icons'
 
 const tabOptions = [
   { labelKey: 'title.listReportShop', value: 'stores' },
@@ -51,6 +51,8 @@ type Filter = {
   createdAtTo?: string
 }
 
+const { Text } = Typography
+
 const AdminReportsTable = () => {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('stores')
@@ -74,8 +76,9 @@ const AdminReportsTable = () => {
   })
   const [pendingFilter, setPendingFilter] = useState<Filter>(filter)
   const [error, setError] = useState('')
+  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
+  const [isProcessingBulkDelete, setIsProcessingBulkDelete] = useState(false)
 
-  // Data fetching
   const { data, isLoading, refetch, isSuccess } = useQuery({
     queryKey: ['admin-reports', filter],
     queryFn: async () => {
@@ -105,21 +108,32 @@ const AdminReportsTable = () => {
       {
         title: t('reportDetail.id'),
         dataIndex: '_id',
-        key: '_id'
+        key: '_id',
+        render: (id: string) => (
+          <Text
+            className='uppercase'
+            copyable={{ text: id.toUpperCase(), icon: <CopyOutlined /> }}
+          >
+            #{id.slice(-10).toUpperCase()}
+          </Text>
+        )
       },
       {
         title: t('reportDetail.objectId'),
         dataIndex: ['objectId', '_id'],
         key: 'objectId',
-        render: (_: any, record: ReportType) => record.objectId?._id || '-'
+        render: (_: any, record: ReportType) => (
+          <Text
+            className='uppercase'
+            copyable={{
+              text: record.objectId?._id || '-',
+              icon: <CopyOutlined />
+            }}
+          >
+            #{record.objectId?._id.slice(-10).toUpperCase()}
+          </Text>
+        )
       },
-      // {
-      //   title: t('reportDetail.objectName'),
-      //   dataIndex: ['objectId', 'name'],
-      //   key: 'objectName',
-      //   render: (_: any, record: ReportType) =>
-      //     record.objectId?.name || record.objectId?.content || '-'
-      // },
       {
         title: t('reportDetail.userId'),
         dataIndex: ['reportBy', 'email'],
@@ -247,6 +261,76 @@ const AdminReportsTable = () => {
     })
   }
 
+  // Handle bulk delete
+  const handleBulkDelete = () => {
+    if (selectedRowKeys.length === 0) {
+      notification.warning({
+        message: t('warning.noItemSelected'),
+        duration: 1.5
+      })
+      return
+    }
+
+    Modal.confirm({
+      title: t('reportDetail.bulkDelete'),
+      content: t('confirmDialog.bulkDelete', { count: selectedRowKeys.length }),
+      okText: t('button.confirm'),
+      cancelText: t('button.cancel'),
+      onOk: async () => {
+        setIsProcessingBulkDelete(true)
+        try {
+          // Delete reports one by one (or implement batch delete API if available)
+          for (const reportId of selectedRowKeys) {
+            await deleteMutation.mutateAsync(reportId as any)
+          }
+          notification.success({
+            message: t('toastSuccess.report.bulkDelete', {
+              count: selectedRowKeys.length
+            }),
+            duration: 1.5
+          })
+          setSelectedRowKeys([])
+          refetch()
+        } catch (err: any) {
+          setError(err?.message)
+        } finally {
+          setIsProcessingBulkDelete(false)
+        }
+      }
+    })
+  }
+
+  // Handle selection change
+  const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
+    setSelectedRowKeys(newSelectedRowKeys as string[])
+  }
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: onSelectChange,
+    onSelectAll: (
+      selected: boolean,
+      selectedRows: ReportType[],
+      changeRows: ReportType[]
+    ) => {
+      if (selected) {
+        const newSelectedKeys = [
+          ...selectedRowKeys,
+          ...changeRows.map((row) => row._id)
+        ]
+        setSelectedRowKeys([...new Set(newSelectedKeys)])
+      } else {
+        const changeRowKeys = changeRows.map((row) => row._id)
+        setSelectedRowKeys(
+          selectedRowKeys.filter((key) => !changeRowKeys.includes(key))
+        )
+      }
+    },
+    getCheckboxProps: (record: ReportType) => ({
+      name: record._id
+    })
+  }
+
   // Handle tab change
   const handleTabChange = (key: string) => {
     setActiveTab(key)
@@ -303,16 +387,47 @@ const AdminReportsTable = () => {
           <Button type='primary' onClick={handleSearch} loading={isLoading}>
             {t('search')}
           </Button>
-        </div>
-
+        </div>{' '}
         <Divider />
-
+        {/* Bulk Actions */}
+        {selectedRowKeys.length > 0 && (
+          <div className='mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg'>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-2'>
+                <Text strong>
+                  {t('bulkSelection.selected', {
+                    count: selectedRowKeys.length
+                  })}
+                </Text>
+                <Button
+                  size='small'
+                  type='link'
+                  onClick={() => setSelectedRowKeys([])}
+                >
+                  {t('button.clearSelection')}
+                </Button>
+              </div>
+              <div className='flex gap-2'>
+                <Button
+                  type='primary'
+                  danger
+                  icon={<i className='fa-solid fa-trash-alt'></i>}
+                  loading={isProcessingBulkDelete}
+                  onClick={handleBulkDelete}
+                >
+                  {t('button.bulkDelete')}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
         <Table
           columns={columns}
           dataSource={reports}
           rowKey='_id'
           loading={isLoading}
           bordered
+          rowSelection={rowSelection}
           pagination={{
             current: pagination.pageCurrent,
             pageSize: filter.limit,

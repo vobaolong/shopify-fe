@@ -3,9 +3,10 @@ import Loading from '../ui/Loading'
 import Error from '../ui/Error'
 import CategoryCard from '../card/CategoryCard'
 import Slider from 'react-slick'
-import { notification } from 'antd'
+import { useAntdApp } from '../../hooks/useAntdApp'
 
 const ListCategories = ({ heading = '', categoryId = null }) => {
+  const { notification } = useAntdApp()
   // Use the custom hook instead of direct API call
   const { data, isLoading, error } = useActiveCategories({
     search: '',
@@ -21,13 +22,8 @@ const ListCategories = ({ heading = '', categoryId = null }) => {
   }
 
   let categories: any[] = []
-  if (data) {
-    if ('data' in data && data.data) {
-      categories = data.data.categories || []
-    } else {
-      categories = (data as any).categories || []
-    }
-  }
+
+  categories = data?.categories || []
 
   const settings = {
     className: 'center',

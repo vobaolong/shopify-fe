@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from 'react-redux'
 import { useCallback } from 'react'
-import { notification } from 'antd'
+import { useAntdApp } from './useAntdApp'
 import { addAccount } from '../store/slices/accountSlice'
 import { addSeller } from '../store/slices/sellerSlice'
 import { addUser } from '../store/slices/userSlice'
@@ -46,6 +46,7 @@ const useUpdateDispatch = (): [
   const { _id } = getToken() || { _id: '' }
 
   const dispatch = useDispatch()
+  const { notification } = useAntdApp()
 
   const mergeUser = (oldUser: any, newUser: any) => {
     return {

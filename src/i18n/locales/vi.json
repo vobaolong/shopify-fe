@@ -14,7 +14,6 @@
     "Shipped": "Chờ giao",
     "Delivered": "Hoàn thành",
     "Cancelled": "Đã huỷ",
-    "Pending": "Chưa giải quyết",
     "Rejected": "Từ chối",
     "Approved": "Phê duyệt",
     "Returned": "Trả hàng"
@@ -71,7 +70,8 @@
   },
   "toastSuccess": {
     "report": {
-      "delete": "Xoá báo cáo thành công"
+      "delete": "Xoá báo cáo thành công",
+      "bulkDelete": "Xoá báo cáo thành công"
     },
     "variant": {
       "create": "Thêm phân loại thành công",
@@ -83,6 +83,7 @@
       "create": "Thêm thương hiệu thành công",
       "update": "Chỉnh sửa thương hiệu thành công",
       "delete": "Xoá thương hiệu thành công",
+      "restore": "Khôi phục thương hiệu thành công",
       "none": "Ngành hàng này chưa có thương hiệu"
     },
     "review": {
@@ -179,7 +180,10 @@
       "create": "Thêm ngành hàng thành công",
       "update": "Cập nhật ngành hàng thành công",
       "delete": "Xoá ngành hàng thành công",
-      "restore": "Khôi phục ngành hàng thành công"
+      "restore": "Khôi phục ngành hàng thành công",
+      "bulkDelete": "Xoá ngành hàng thành công",
+      "bulkRestore": "Khôi phục ngành hàng thành công",
+      "none": "Chưa có ngành hàng nào"
     }
   },
   "toastError": {
@@ -336,16 +340,6 @@
   "product": "Sản Phẩm",
   "similarProducts": "Sản Phẩm Tương Tự",
   "sameShop": "Các Sản Phẩm Khác Của Shop",
-  "reportDetail": {
-    "none": "Chưa có báo cáo",
-    "userId": "Email người báo cáo",
-    "objectName": "Tên đối tượng",
-    "objectId": "Mã đối tượng",
-    "reason": "Lý do",
-    "createAt": "Ngày tạo",
-    "id": "Mã báo cáo",
-    "delete": "Xóa báo cáo"
-  },
   "review": "Đánh giá",
   "productDetail": {
     "chooseBrand": "Thương hiệu",
@@ -564,7 +558,6 @@
     "5": "5 Sao",
     "approved": "Phê duyệt",
     "rejected": "Từ chối",
-    "pending": "Chưa giải quyết",
     "returned": "Trả hàng/Hoàn tiền",
     "infringing": "Vi phạm",
     "success": "Hoàn thành",
@@ -710,7 +703,26 @@
   "dropHere": "Thả ảnh vào đây...",
   "dragNDrop": "Kéo/Thả ảnh vào đây hoặc nhấn để chọn",
   "confirmDialog": "Bạn có chắc chắn về điều này không?",
+  "confirmDelete": "Bạn có chắc chắn muốn xoá ",
+  "bulkSelection": {
+    "selected": "đã chọn"
+  },
+  "warning": {
+    "noItemSelected": "Vui lòng chọn ít nhất một mục để xóa"
+  },
+  "reportDetail": {
+    "none": "Chưa có báo cáo",
+    "userId": "Email người báo cáo",
+    "objectName": "Tên đối tượng",
+    "objectId": "Mã đối tượng",
+    "reason": "Lý do",
+    "createAt": "Ngày tạo",
+    "id": "Mã báo cáo",
+    "delete": "Xóa báo cáo",
+    "bulkDelete": "Bạn có chắc chắn muốn xóa các báo cáo đã chọn? Hành động này không thể hoàn tác."
+  },
   "button": {
+    "reset": "Đặt lại",
     "refresh": "Làm mới",
     "complaint": "Khiếu nại",
     "approve": "Phê duyệt",
@@ -742,7 +754,20 @@
     "clickToOpen": "Nhấn để mở shop",
     "addFeaturedImg": "Thêm hình ảnh nổi bật",
     "addLevel": "Thêm hạng mức",
-    "add": "Thêm"
+    "add": "Thêm",
+    "clearSelection": "Xóa lựa chọn",
+    "bulkDelete": "Xóa hàng loạt"
+  },
+  "signUpForm": {
+    "enterOTP": "Nhập mã OTP",
+    "enter6DigitCode": "Nhập mã 6 chữ số chúng tôi đã gửi đến email của bạn để tiếp tục",
+    "enterEmail": "Nhập địa chỉ Email",
+    "youWillReceive": "Bạn sẽ nhận được một email xác thực để đăng nhập vào tài khoản của mình.",
+    "userName": "Tên đăng nhập",
+    "name": "Họ và tên",
+    "password": "Mật khẩu",
+    "passwordConfirm": "Xác nhận mật khẩu",
+    "phone": "Số điện thoại"
   },
   "signInForm": {
     "comeBack": "Chào mừng đã quay lại!",

@@ -9,10 +9,13 @@ const UserAvatarUpload = () => {
   const { t } = useTranslation()
   const { _id } = getToken()
   const invalidate = useInvalidate()
+
   const avatarMutation = useMutation({
     mutationFn: (formData: FormData) => updateAvatar(_id, formData),
     onSuccess: () => {
-      invalidate({ queryKey: ['userProfile', _id] })
+      invalidate({ queryKey: ['userProfilePage', _id] })
+      invalidate({ queryKey: ['userAccountInit', _id] })
+      invalidate({ queryKey: ['adminProfilePage', _id] })
       notification.success({ message: t('toastSuccess.addAvatar') })
     },
     onError: (error) => {
@@ -27,11 +30,6 @@ const UserAvatarUpload = () => {
     avatarMutation.mutate(formData)
   }
 
-  const error =
-    avatarMutation.error?.message ||
-    (avatarMutation.data &&
-      (avatarMutation.data.data || avatarMutation.data).error) ||
-    ''
   const isLoading = avatarMutation.isPending
 
   return (

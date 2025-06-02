@@ -13,9 +13,14 @@ const UserEditProfileItem = ({ user }: UserEditProfileItemProps) => {
   const [open, setOpen] = useState(false)
   return (
     <div className='relative inline-block'>
-      <Button type='primary' onClick={() => setOpen(true)}>
-        <i className='fa-duotone fa-pen-to-square' />
-        <span className='ms-2 res-hide'>{t('userDetail.editProfile')}</span>
+      <Button
+        icon={<i className='fa-duotone fa-pen-to-square' />}
+        type='default'
+        variant='outlined'
+        color='blue'
+        onClick={() => setOpen(true)}
+      >
+        <span className='res-hide'>{t('userDetail.editProfile')}</span>
       </Button>
       <Modal
         open={open}

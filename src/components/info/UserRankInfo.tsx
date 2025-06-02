@@ -28,7 +28,7 @@ const determineRank = (points: number) => {
   }
 }
 
-const UserRankInfo: React.FC<UserRankInfoProps> = ({ user, border = true }) => {
+const UserRankInfo: React.FC<UserRankInfoProps> = ({ user }) => {
   const { t } = useTranslation()
   const { nextRank, nextRankPoints } = determineRank(user.point || 0)
   const previousRankPoints =
@@ -48,11 +48,11 @@ const UserRankInfo: React.FC<UserRankInfoProps> = ({ user, border = true }) => {
 
   return (
     <div className={`bg-[${user.level?.color || '#fff'}]`}>
-      <div className='flex flex-col text-white'>
+      {/* <div className='flex flex-col'>
         <h4 className='uppercase mb-0'>{t(`${user.level?.name || ''}`)}</h4>
         <span>{`${user.userName || ''} ${user.name || ''}`}</span>
-      </div>
-      <div className='rounded-lg bg-white p-3 mt-2 grid gap-2'>
+      </div> */}
+      <div className='rounded-lg bg-white grid gap-2'>
         {user.point < 1000 && (
           <span className='text-blue-600'>
             Để nâng cấp thứ hạng thẻ tiếp theo

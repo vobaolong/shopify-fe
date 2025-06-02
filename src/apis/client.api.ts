@@ -52,4 +52,14 @@ axiosClient.interceptors.response.use(
   }
 )
 
+axiosClientImg.interceptors.response.use(
+  (response) => {
+    return response.data
+  },
+  (error) => {
+    console.error('API error:', error)
+    return Promise.reject(error)
+  }
+)
+
 export default axiosClient

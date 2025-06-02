@@ -59,6 +59,18 @@
     "wallet": "E-Wallet"
   },
   "toastSuccess": {
+    "transaction": {
+      "create": "Create transaction successfully",
+      "update": "Update transaction successfully",
+      "delete": "Delete transaction successfully"
+    },
+    "brand": {
+      "create": "Create brand successfully",
+      "update": "Update brand successfully",
+      "delete": "Delete brand successfully",
+      "restore": "Restore brand successfully",
+      "none": "This category does not have brands"
+    },
     "variant": {
       "create": "Create variant successfully",
       "update": "Update variant successfully",
@@ -155,7 +167,13 @@
       "create": "Create category successfully",
       "update": "Update category successfully",
       "delete": "Delete category successfully",
-      "restore": "Restore category successfully"
+      "restore": "Restore category successfully",
+      "bulkDelete": "Bulk delete categories successfully",
+      "bulkRestore": "Bulk restore categories successfully"
+    },
+    "report": {
+      "delete": "Delete report successfully",
+      "bulkDelete": "Reports deleted successfully"
     }
   },
   "toastError": {
@@ -455,8 +473,8 @@
     "date": "Created At",
     "total": "Total",
     "userName": "First Name",
-    "name": "Last Name",
-    "name": "Full name",
+    "lastName": "Last Name",
+    "fullName": "Full name",
     "phone": "Phone",
     "validFirstName": "Please provide a valid First Name!",
     "validLastName": "Please provide a valid Last Name!",
@@ -632,7 +650,18 @@
   "myBalance": "My Balance",
   "dropHere": "Drop the files here...",
   "dragNDrop": "Drag your photo here or Browse from device",
-  "confirmDialog": "Are you sure about that?",
+  "bulkSelection": {
+    "selected": "selected"
+  },
+  "warning": {
+    "noItemSelected": "Please select at least one item to delete"
+  },
+  "reportDetail": {
+    "bulkDelete": "Are you sure you want to delete selected reports? This action cannot be undone."
+  },
+  "confirmDialog": {
+    "bulkDelete": "Are you sure you want to delete selected reports? This action cannot be undone."
+  },
   "button": {
     "refresh": "Refresh",
     "detail": "Detail",
@@ -662,7 +691,9 @@
     "clickToOpen": "Click to open store",
     "addFeaturedImg": "Add Featured Image",
     "addLevel": "Add Level",
-    "add": "Add"
+    "add": "Add",
+    "clearSelection": "Clear Selection",
+    "bulkDelete": "Bulk Delete"
   },
   "signInForm": {
     "comeBack": "Welcome back!",

@@ -13,7 +13,7 @@ import { getAddress } from '../../../apis/address.api'
 import Error from '../../ui/Error'
 import { useMutation } from '@tanstack/react-query'
 import { AxiosResponse } from 'axios'
-import { notification } from 'antd'
+import { useAntdApp } from '../../../hooks/useAntdApp'
 
 interface StoreEditProfileFormProps {
   name?: string
@@ -37,6 +37,7 @@ const StoreEditProfileForm = ({
   address = '',
   storeId = ''
 }: StoreEditProfileFormProps) => {
+  const { notification } = useAntdApp()
   const [isConfirming, setIsConfirming] = useState(false)
   const [profile, setProfile] = useState<ProfileState>({
     name: '',

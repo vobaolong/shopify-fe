@@ -9,7 +9,7 @@ import ConfirmDialog from '../../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import Error from '../../ui/Error'
-import { notification } from 'antd'
+import { useAntdApp } from '../../../hooks/useAntdApp'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 interface Address {
@@ -31,6 +31,7 @@ const UserEditAddressForm = ({
   index?: number | null
 }) => {
   const { t } = useTranslation()
+  const { notification } = useAntdApp()
   const [isConfirming, setIsConfirming] = useState(false)
   const [address, setAddress] = useState<Address>({
     street: oldAddress.split(', ')[0] || '',

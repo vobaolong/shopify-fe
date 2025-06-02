@@ -1,4 +1,4 @@
-import { ConfigProvider } from 'antd'
+import { ConfigProvider, App } from 'antd'
 import locale from 'antd/locale/en_US'
 import dayjs from 'dayjs'
 import 'dayjs/locale/en'
@@ -50,7 +50,7 @@ export default function AntdConfigProvider({
         }
       }}
     >
-      {children}
+      <App>{children}</App>
     </ConfigProvider>
   )
 }

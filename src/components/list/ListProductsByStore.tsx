@@ -4,13 +4,14 @@ import ProductCard from '../card/ProductCard'
 import Slider from 'react-slick'
 import Error from '../ui/Error'
 import { useQuery } from '@tanstack/react-query'
-import { notification } from 'antd'
+import { useAntdApp } from '../../hooks/useAntdApp'
 
 const ListProductsByStore = ({
   heading = '',
   storeId = '',
   sortBy = 'sold'
 }) => {
+  const { notification } = useAntdApp()
   const settings = {
     className: 'center',
     infinite: false,

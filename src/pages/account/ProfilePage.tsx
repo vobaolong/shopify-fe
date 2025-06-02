@@ -10,8 +10,9 @@ import { getUserProfile } from '../../apis/user.api'
 import { getUserLevel } from '../../apis/level.api'
 import { getToken } from '../../apis/auth.api'
 import AccountLayout from '../../components/layout/AccountLayout'
+import { Role } from '../../enums/OrderStatus.enum'
 
-const NewProfilePage = () => {
+const ProfilePage = () => {
   const { t } = useTranslation()
   const token = getToken()
   const _id = token._id
@@ -39,16 +40,51 @@ const NewProfilePage = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false
   })
-
-  console.log('user: ', user)
-  if (isLoading) return <Spin size='large' />
-  if (error)
+  if (isLoading) {
     return (
-      <Alert type='error' message={t('error')} description={error.message} />
+      <AccountLayout user={user} paths={paths}>
+        <div className='flex justify-center items-center h-64'>
+          <Spin size='large' />
+        </div>
+      </AccountLayout>
     )
+  }
+
+  if (error) {
+    return (
+      <AccountLayout user={user} paths={paths}>
+        <div className='mt-8'>
+          <Alert
+            message='Error'
+            description={
+              error instanceof Error ? error.message : 'Failed to load profile'
+            }
+            type='error'
+            showIcon
+          />
+        </div>
+      </AccountLayout>
+    )
+  }
+
+  if (!user) {
+    return (
+      <AccountLayout user={user} paths={paths}>
+        <div className='mt-8'>
+          <Alert
+            message='No Data'
+            description='Profile data not found'
+            type='warning'
+            showIcon
+          />
+        </div>
+      </AccountLayout>
+    )
+  }
+
   return (
     <AccountLayout user={user} paths={paths}>
-      <div className='mx-auto mt-8 bg-white rounded-lg shadow-lg p-6 grid gap-10'>
+      <div className='mt-8 bg-white rounded-lg shadow-lg p-6 grid gap-10 w-4/5'>
         <div className='relative mb-8'>
           <Cover cover={user.cover} alt={user.userName} isEditStore={false} />
           <div className='absolute left-10 -bottom-12'>
@@ -61,9 +97,9 @@ const NewProfilePage = () => {
         </div>
         <div className='mt-20 grid grid-cols-1 md:grid-cols-2 gap-2'>
           <UserProfileInfo user={user} isEditable={true} />
-          <div className='flex flex-col gap-4'>
+          <div className='flex flex-col gap-2 p-4'>
             <UserLevelInfo user={user} />
-            <UserRankInfo user={user} />
+            {user.role !== Role.ADMIN && <UserRankInfo user={user} />}
           </div>
         </div>
       </div>
@@ -71,4 +107,4 @@ const NewProfilePage = () => {
   )
 }
 
-export default NewProfilePage
+export default ProfilePage

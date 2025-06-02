@@ -11,3 +11,8 @@ export enum ReturnStatus {
   APPROVED = 'Approved',
   REJECTED = 'Rejected'
 }
+
+export enum Role {
+  USER = 'user',
+  ADMIN = 'admin'
+}

@@ -20,7 +20,7 @@ import { useSelector } from 'react-redux'
 import { socketId } from '../../../socket'
 import { useMutation } from '@tanstack/react-query'
 import { AxiosResponse } from 'axios'
-import { notification } from 'antd'
+import { useAntdApp } from '../../../hooks/useAntdApp'
 
 interface StoreState {
   name: string
@@ -38,6 +38,7 @@ interface StoreState {
 
 const UserCreateStoreForm = () => {
   const { t } = useTranslation()
+  const { notification } = useAntdApp()
   const [isConfirming, setIsConfirming] = useState(false)
   const [error1, setError1] = useState('')
   const [error, setError] = useState('')

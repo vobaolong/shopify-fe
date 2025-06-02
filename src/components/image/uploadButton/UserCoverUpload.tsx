@@ -13,7 +13,10 @@ const UserCoverUpload = () => {
   const coverMutation = useMutation({
     mutationFn: (formData: FormData) => updateCover(_id, formData),
     onSuccess: () => {
-      invalidate({ queryKey: ['userProfile', _id] })
+      // Invalidate all query keys để đảm bảo cache được cập nhật
+      invalidate({ queryKey: ['userProfilePage', _id] })
+      invalidate({ queryKey: ['userAccountInit', _id] })
+      invalidate({ queryKey: ['adminProfilePage', _id] })
       notification.success({
         message: t('toastSuccess.userDetail.updateCover')
       })

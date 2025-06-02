@@ -66,12 +66,12 @@ const AdminCreateBrandForm = ({
   const handleFinish = (values: { name: string; categoryIds: string[] }) => {
     setIsConfirming(true)
   }
-
   const handleConfirmSubmit = () => {
     const values = form.getFieldsValue()
     const formData = new FormData()
     formData.append('name', values.name)
-    formData.append('categoryIds', JSON.stringify(values.categoryIds))
+    // categoryIds đã là array, chỉ cần stringify một lần
+    formData.append('categoryIds', JSON.stringify(categoryIds))
     if (values.logo && values.logo[0]?.originFileObj) {
       formData.append('logo', values.logo[0].originFileObj)
     }
@@ -124,15 +124,16 @@ const AdminCreateBrandForm = ({
               name='categoryIds'
               rules={[{ required: true, message: t('variantDetail.required') }]}
             >
+              {' '}
               <MultiCategorySelector
                 label={t('chosenCategory')}
                 isActive={false}
                 isRequired={true}
                 defaultValue={selectedCategories}
                 onSet={(categories) => {
-                  const ids = categories ? categories.map((cat) => cat._id) : []
+                  const ids = categories.map((cat) => cat._id)
                   setCategoryIds(ids)
-                  setSelectedCategories(categories || [])
+                  setSelectedCategories(categories)
                   form.setFieldsValue({ categoryIds: ids })
                 }}
               />

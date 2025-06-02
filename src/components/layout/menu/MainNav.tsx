@@ -5,7 +5,6 @@ import { getToken, signout } from '../../../apis/auth.api'
 import Logo from './Logo'
 import SearchBar from './SearchBar'
 import Language from '../../ui/Language'
-import SigninItem from '../../item/SigninItem'
 import SellerInit from '../../init/SellerInit'
 import AccountInit from '../../init/AccountInit'
 import UserSmallCard from '../../card/UserSmallCard'
@@ -71,22 +70,23 @@ const MainNav = ({ navFor = 'user' }: MainNavProps) => {
             <Logo width='150px' navFor={navFor} />
           )}
         </Link>
-
         {navFor === 'user' && <SearchBar />}
-
         {navFor !== 'user' && (
           <h2 className='text-uppercase m-0'>{navFor} dashboard</h2>
         )}
         <span className='res-dis-md d-none footer-links text-end'>
           <BellButton navFor={navFor} />
-        </span>
+        </span>{' '}
         {!getToken() ? (
           <ul className='nav cus-sub-nav ms-1' style={{ minWidth: 'unset' }}>
             <li className='nav-item'>
               <Language />
             </li>
             <li className='nav-item'>
-              <SigninItem title={t('button.signIn')} />
+              <Link to='/signin'>{t('button.signIn')}</Link>
+            </li>
+            <li className='nav-item'>
+              <Link to='/signup'>{t('button.signUp')}</Link>
             </li>
           </ul>
         ) : (

@@ -126,6 +126,7 @@ export interface LevelType {
   discount: { $numberDecimal: number }
   color: string
   minPoint: number
+  isDeleted: boolean
   description?: string
   createdAt?: string
   updatedAt?: string

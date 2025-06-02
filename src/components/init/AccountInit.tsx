@@ -40,18 +40,6 @@ const AccountInit = () => {
       } catch {
         newUser.cartCount = 0
       }
-      try {
-        const [deliveredRes, cancelledRes] = await Promise.all([
-          countOrder(OrderStatus.DELIVERED, _id, ''),
-          countOrder(OrderStatus.CANCELLED, _id, '')
-        ])
-        newUser.numberOfSuccessfulOrders = deliveredRes.data.count
-        newUser.numberOfFailedOrders = cancelledRes.data.count
-      } catch {
-        newUser.numberOfSuccessfulOrders = 0
-        newUser.numberOfFailedOrders = 0
-      }
-
       return newUser
     },
     staleTime: 5 * 60 * 1000, // 5 minutes

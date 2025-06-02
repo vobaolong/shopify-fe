@@ -15,6 +15,7 @@ import {
   WarningOutlined,
   CommentOutlined,
   FontColorsOutlined,
+  UserOutlined,
   MenuUnfoldOutlined,
   MenuFoldOutlined
 } from '@ant-design/icons'
@@ -137,6 +138,15 @@ const menuItems = (t: (key: string) => string) => [
     label: (
       <Link to='/admin/brands' className='!no-underline'>
         {t('admin.brands')}
+      </Link>
+    )
+  },
+  {
+    key: 'profile',
+    icon: <UserOutlined />,
+    label: (
+      <Link to='/admin/profile' className='!no-underline'>
+        {t('admin.profile')}
       </Link>
     )
   }

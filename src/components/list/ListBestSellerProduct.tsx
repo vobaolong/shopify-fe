@@ -4,7 +4,7 @@ import Loading from '../ui/Loading'
 import ProductCard from '../card/ProductCard'
 import Slider from 'react-slick'
 import { useQuery } from '@tanstack/react-query'
-import { notification } from 'antd'
+import { useAntdApp } from '../../hooks/useAntdApp'
 
 const ProductCardMemo = memo(ProductCard)
 const settings = {
@@ -55,6 +55,7 @@ const ListBestSellerProduct = ({
   heading?: string
   categoryId?: string
 }) => {
+  const { notification } = useAntdApp()
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['bestSellerProducts', categoryId, sortBy],
     queryFn: async () =>

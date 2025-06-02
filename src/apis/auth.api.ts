@@ -74,14 +74,6 @@ export const authSocial = async (user: any) => {
   return await axiosClient.post('/auth/social', user)
 }
 
-export const sendConfirmationEmail = async (userId: string) => {
-  return await axiosClient.get(`/auth/confirm-email/${userId}`)
-}
-
-export const verifyEmail = async (emailCode: string) => {
-  return await axiosClient.get(`/auth/verify-email/${emailCode}`)
-}
-
 export const forgotPassword = async (username: string) => {
   return await axiosClient.post('/auth/forgot-password', username)
 }
@@ -94,4 +86,24 @@ export const changePassword = async (
     `/auth/change-password/${passwordCode}`,
     newPassword
   )
+}
+
+// Kiểm tra email đã tồn tại chưa
+export const checkEmailExists = async (email: string): Promise<boolean> => {
+  console.log('API: Checking email exists for:', email)
+  const res = await axiosClient.post('/auth/check-email', { email })
+  console.log('API: checkEmailExists response (after interceptor):', res)
+  console.log('API: checkEmailExists response.exists:', res?.exists)
+  // Since axios interceptor returns response.data, res is already the data object
+  return res?.exists || false
+}
+
+// Gửi OTP về email
+export const sendOtpToEmail = async (email: string): Promise<any> => {
+  return await axiosClient.post('/auth/send-otp', { email })
+}
+
+// Xác thực OTP
+export const verifyOtp = async (email: string, otp: string): Promise<any> => {
+  return await axiosClient.post('/auth/verify-otp', { email, otp })
 }

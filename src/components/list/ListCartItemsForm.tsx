@@ -23,7 +23,7 @@ import HotSaleLabel from '../label/HotSale'
 import { calcPercent } from '../../helper/calcPercent'
 import { toast } from 'react-toastify'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { notification } from 'antd'
+import { useAntdApp } from '../../hooks/useAntdApp'
 
 const ListCartItems = ({
   cartId = '',
@@ -39,6 +39,7 @@ const ListCartItems = ({
   onRun?: () => void
 }) => {
   const { t } = useTranslation()
+  const { notification } = useAntdApp()
   const [run, setRun] = useState(false)
   const [isConfirming, setIsConfirming] = useState(false)
   const [showCheckoutFlag, toggleShowCheckoutFlag] = useToggle(false)
