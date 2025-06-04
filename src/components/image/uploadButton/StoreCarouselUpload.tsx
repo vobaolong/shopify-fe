@@ -5,11 +5,10 @@ import {
   removeFeaturedImage
 } from '../../../apis/store.api'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
-import Loading from '../../ui/Loading'
+import { Spin, Alert } from 'antd'
 import ConfirmDialog from '../../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
-import Error from '../../ui/Error'
 import { useMutation } from '@tanstack/react-query'
 
 interface StoreCarouselUploadProps {
@@ -76,10 +75,13 @@ const StoreCarouselUpload = ({
       (removeMutation.data.data || removeMutation.data).error) ||
     ''
   const isLoading = updateMutation.isPending || removeMutation.isPending
-
   return (
     <>
-      {isLoading && <Loading />}
+      {isLoading && (
+        <div className='d-flex justify-content-center p-2'>
+          <Spin />
+        </div>
+      )}
       {isConfirming && (
         <ConfirmDialog
           title={t('dialog.removeFeatured')}
@@ -97,7 +99,7 @@ const StoreCarouselUpload = ({
               htmlFor={`uploadFeaturedImage-${index}`}
               className='cus-carousel-icon me-2'
             >
-              <i className='fa-solid fa-camera'></i>
+              <i className='fa-solid fa-camera' />
               <span className='ms-2 res-hide-md'>{t('button.edit')}</span>
               <input
                 id={`uploadFeaturedImage-${index}`}
@@ -112,14 +114,13 @@ const StoreCarouselUpload = ({
               className='cus-carousel-icon cus-carousel-icon--rm'
               onClick={() => handleRemove()}
             >
-              <i className='fa-solid fa-trash-alt'></i>
+              <i className='fa-solid fa-trash-alt' />
               <span className='ms-2 res-hide-md'>{t('button.delete')}</span>
             </label>
-          </div>
-
+          </div>{' '}
           {error && (
             <div className='bg-body mt-1 px-1 rounded'>
-              <Error msg={error} />
+              <Alert message={error} type='error' showIcon />
             </div>
           )}
         </div>

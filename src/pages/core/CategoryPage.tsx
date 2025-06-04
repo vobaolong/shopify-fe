@@ -6,8 +6,7 @@ import { listActiveProducts } from '../../apis/product.api'
 import MainLayout from '../../components/layout/MainLayout'
 import ProductCard from '../../components/card/ProductCard'
 import Pagination from '../../components/ui/Pagination'
-import Loading from '../../components/ui/Loading'
-import Error from '../../components/ui/Error'
+import { Spin, Alert } from 'antd'
 import ProductFilter from '../../components/filter/ProductFilter'
 import ListCategories from '../../components/list/ListCategories'
 import { useTranslation } from 'react-i18next'
@@ -93,9 +92,10 @@ const CategoryPage = () => {
   return (
     <MainLayout>
       <div className='position-relative pt-4'>
-        {isLoading && <Loading />}
-        {error && <Error msg={error} />}
-        <MetaData title={`${category.name} | Buynow Việt Nam`} />
+        {' '}
+        {isLoading && <Spin size='large' />}
+        {error && <Alert message={error} type='error' />}
+        <MetaData title={`${category.name} | ShopBase Việt Nam`} />
         <nav aria-label='breadcrumb'>
           <ol className='breadcrumb'>
             <Link to='/' className='breadcrumb-item text-decoration-none'>
@@ -130,15 +130,12 @@ const CategoryPage = () => {
             )}
           </ol>
         </nav>
-
         <div className='mb-4'>
           <ListCategories categoryId={categoryId} heading={false} />
         </div>
-
         <div className='d-flex justify-content-between align-items-end'>
           <ProductFilter filter={filter} setFilter={setFilter} />
         </div>
-
         <div className='product-search-list row mt-3'>
           {listProducts?.map((product, index) => (
             <div
@@ -149,7 +146,6 @@ const CategoryPage = () => {
             </div>
           ))}
         </div>
-
         {pagination.size !== 0 && (
           <Pagination pagination={pagination} onChangePage={handleChangePage} />
         )}

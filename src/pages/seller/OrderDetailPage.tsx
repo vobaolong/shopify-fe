@@ -32,7 +32,7 @@ const OrderDetailPage = () => {
             to={`/seller/orders/${storeId}`}
             className='text-decoration-none link-hover'
           >
-            <i className='fa-solid fa-chevron-left me-2'></i>
+            <i className='fa-solid fa-chevron-left me-2' />
             {t('button.back')}
           </Link>
         </div>

@@ -6,8 +6,7 @@ import useUpdateEffect from '../../hooks/useUpdateEffect'
 import MainLayout from '../../components/layout/MainLayout'
 import StoreCard from '../../components/card/StoreCard'
 import Pagination from '../../components/ui/Pagination'
-import Loading from '../../components/ui/Loading'
-import Error from '../../components/ui/Error'
+import { Spin, Alert } from 'antd'
 import { useTranslation } from 'react-i18next'
 
 const StoreSearchPage = () => {
@@ -73,9 +72,9 @@ const StoreSearchPage = () => {
   return (
     <MainLayout>
       <div className='position-relative pt-4'>
-        {isLoading && <Loading />}
-        {error && <Error msg={error} />}
-
+        {' '}
+        {isLoading && <Spin size='large' />}
+        {error && <Alert message={error} type='error' />}
         <div className='d-flex justify-content-end'>
           <small className='text-nowrap res-hide'>
             {t('showing')}{' '}
@@ -88,7 +87,6 @@ const StoreSearchPage = () => {
             {t('of')} {pagination.size} {t('result')}
           </small>
         </div>
-
         <div className='row mt-3'>
           {listStores &&
             listStores.map((store, index) => (
@@ -100,7 +98,6 @@ const StoreSearchPage = () => {
               </div>
             ))}
         </div>
-
         {pagination.size !== 0 && (
           <Pagination pagination={pagination} onChangePage={handleChangePage} />
         )}

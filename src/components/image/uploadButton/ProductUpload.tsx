@@ -1,11 +1,10 @@
 import { useState, Fragment } from 'react'
 import { getToken } from '../../../apis/auth.api'
 import { updateListImages, removeListImages } from '../../../apis/product.api'
-import Loading from '../../ui/Loading'
 import ConfirmDialog from '../../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
-import Error from '../../ui/Error'
 import { useMutation } from '@tanstack/react-query'
+import { Alert, Spin } from 'antd'
 
 interface ProductUploadProps {
   storeId?: string
@@ -24,7 +23,6 @@ const ProductUpload = ({
   const { t } = useTranslation()
   const { _id } = getToken()
 
-  // Mutation for updating image
   const updateImageMutation = useMutation({
     mutationFn: (formData: FormData) =>
       updateListImages(_id, formData, index, productId, storeId),
@@ -34,7 +32,6 @@ const ProductUpload = ({
     }
   })
 
-  // Mutation for removing image
   const removeImageMutation = useMutation({
     mutationFn: () => removeListImages(_id, index, productId, storeId),
     onSuccess: (res) => {
@@ -72,7 +69,8 @@ const ProductUpload = ({
 
   return (
     <Fragment>
-      {isLoading && <Loading />}
+      {error && <Alert type='error' message={error} className='mb-2' />}
+      {isLoading && <Spin />}
       {isConfirming && (
         <div className='text-start'>
           <ConfirmDialog
@@ -90,17 +88,12 @@ const ProductUpload = ({
           className='cus-avatar-icon cus-avatar-icon--rm'
           onClick={handleRemove}
         >
-          <i className='fa-solid fa-times'></i>
+          <i className='fa-solid fa-times' />
         </label>
       )}
 
       <label className='cus-avatar-icon'>
-        <i className='fa-solid fa-camera'></i>
-        {error && (
-          <span>
-            <Error msg={error} />
-          </span>
-        )}
+        <i className='fa-solid fa-camera' />
         <input
           className='visually-hidden'
           type='file'

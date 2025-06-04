@@ -1,10 +1,10 @@
 import { memo } from 'react'
 import { listActiveProducts } from '../../apis/product.api'
-import Loading from '../ui/Loading'
 import ProductCard from '../card/ProductCard'
 import Slider from 'react-slick'
 import { useQuery } from '@tanstack/react-query'
 import { useAntdApp } from '../../hooks/useAntdApp'
+import { Spin } from 'antd'
 
 const ProductCardMemo = memo(ProductCard)
 const settings = {
@@ -56,41 +56,57 @@ const ListBestSellerProduct = ({
   categoryId?: string
 }) => {
   const { notification } = useAntdApp()
-  const { data, isLoading, isError, error } = useQuery({
+
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['bestSellerProducts', categoryId, sortBy],
-    queryFn: async () =>
-      listActiveProducts({
-        search: '',
-        rating: '',
-        categoryId,
-        minPrice: '',
-        maxPrice: '',
-        sortBy: sortBy,
-        order: 'desc',
-        limit: 20,
-        page: 1
-      })
-        .then((res) => res.data)
-        .catch((err) => {
-          notification.error({ message: err?.message || 'Server Error' })
-          return {}
+    queryFn: async () => {
+      try {
+        const res = await listActiveProducts({
+          search: '',
+          rating: '',
+          categoryId,
+          minPrice: '',
+          maxPrice: '',
+          sortBy: sortBy,
+          order: 'desc',
+          limit: 20,
+          page: 1
         })
+        return res || { products: [] }
+      } catch (err: any) {
+        notification.error({ message: err?.message || 'Server Error' })
+        throw err
+      }
+    },
+    retry: 1,
+    staleTime: 5 * 60 * 1000 // 5 minutes
   })
+
   const products: any[] = data?.products || []
 
   return (
     <div className='position-relative bg-body box-shadow rounded-2 p-3'>
       {heading && <h5 className='text-dark-emphasis'>{heading}</h5>}
-      {isLoading && <Loading />}
-      <div className='slider-container'>
-        <Slider {...settings}>
-          {products?.map((product: any, index: number) => (
-            <div className='my-2' key={index}>
-              <ProductCardMemo product={product} />
-            </div>
-          ))}
-        </Slider>
-      </div>
+
+      {isLoading && <Spin />}
+
+      {!isLoading && !isError && products.length > 0 && (
+        <div className='slider-container'>
+          <Slider {...settings}>
+            {products.map((product: any, index: number) => (
+              <div className='my-2' key={product.id || index}>
+                <ProductCardMemo product={product} />
+              </div>
+            ))}
+          </Slider>
+        </div>
+      )}
+
+      {!isLoading && (!products || products.length === 0) && (
+        <div style={{ textAlign: 'center', padding: '20px', color: '#999' }}>
+          No products found
+        </div>
+      )}
     </div>
   )
 }

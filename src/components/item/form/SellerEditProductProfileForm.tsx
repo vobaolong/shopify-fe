@@ -3,12 +3,10 @@ import { getToken } from '../../../apis/auth.api'
 import { updateProduct } from '../../../apis/product.api'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { notification, Form, Input, Button } from 'antd'
-import Loading from '../../ui/Loading'
+import { notification, Form, Input, Button, Spin } from 'antd'
 import CategorySelector from '../../selector/CategorySelector'
 import VariantSelector from '../../selector/VariantSelector'
 import DropDownMenu from '../../ui/DropDownMenu'
-import TextArea from '../../ui/TextArea'
 import { listBrandByCategory } from '../../../apis/brand.api'
 import { useNavigate } from 'react-router-dom'
 
@@ -119,10 +117,13 @@ const SellerEditProductProfileForm = ({
     }
     updateProductMutation.mutate(values)
   }
-
   return (
     <div className='position-relative'>
-      {updateProductMutation.isPending && <Loading />}
+      {updateProductMutation.isPending && (
+        <div className='d-flex justify-content-center p-4'>
+          <Spin size='large' />
+        </div>
+      )}
       <Form
         form={form}
         layout='vertical'
@@ -189,7 +190,10 @@ const SellerEditProductProfileForm = ({
                 { required: true, message: t('productValid.validDescription') }
               ]}
             >
-              <TextArea placeholder={t('productDetail.description')} />
+              <Input.TextArea
+                rows={4}
+                placeholder={t('productDetail.description')}
+              />
             </Form.Item>
           </div>
           <div className='col-md-6 col-sm-12 mt-3'>
@@ -257,7 +261,7 @@ const SellerEditProductProfileForm = ({
               onClick={() => navigate(`/seller/products/${storeId}`)}
               style={{ maxWidth: '200px', width: '100%' }}
             >
-              <i className='fa-solid fa-angle-left'></i> {t('button.back')}
+              <i className='fa-solid fa-angle-left' /> {t('button.back')}
             </Button>
             <Button
               type='primary'

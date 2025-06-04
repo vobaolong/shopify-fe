@@ -1,9 +1,8 @@
 import { useActiveCategories } from '../../hooks/useCategory'
-import Loading from '../ui/Loading'
-import Error from '../ui/Error'
 import CategoryCard from '../card/CategoryCard'
 import Slider from 'react-slick'
 import { useAntdApp } from '../../hooks/useAntdApp'
+import { Alert, Spin } from 'antd'
 
 const ListCategories = ({ heading = '', categoryId = null }) => {
   const { notification } = useAntdApp()
@@ -59,11 +58,13 @@ const ListCategories = ({ heading = '', categoryId = null }) => {
 
   return (
     <>
+      {error && (
+        <Alert message={error?.message || 'Server Error'} type='error' />
+      )}
       {categories.length > 0 && (
         <div className='bg-body box-shadow rounded-3 p-3'>
           {heading && <h5>{heading}</h5>}
-          {isLoading && <Loading />}
-          {error && <Error msg={error?.message || 'Server Error'} />}
+          {isLoading && <Spin />}
           <div className='slider-container'>
             <Slider {...settings}>
               {categories?.map((category: any, index: number) => (

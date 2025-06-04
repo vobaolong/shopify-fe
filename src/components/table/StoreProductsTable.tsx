@@ -13,29 +13,32 @@ import SearchInput from '../ui/SearchInput'
 import SortByButton from './sub/SortByButton'
 import CategorySmallCard from '../card/CategorySmallCard'
 import ProductActiveLabel from '../label/ProductActiveLabel'
-import Loading from '../ui/Loading'
 import ConfirmDialog from '../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
 import ProductSmallCard from '../card/ProductSmallCard'
 import { toast } from 'react-toastify'
 import ShowResult from '../ui/ShowResult'
-import Error from '../ui/Error'
-import Alert from '../ui/Alert'
 import boxImg from '../../assets/box.svg'
 import * as XLSX from 'xlsx'
+import {
+  ProductFilterState,
+  defaultProductFilter
+} from '../../@types/filter.type'
 
 const StoreProductsTable = ({ storeId = '', selectedOption = 'all' }) => {
   const { t } = useTranslation()
-  const [run, setRun] = useState('')
+  const [run, setRun] = useState(false)
   const [error, setError] = useState('')
   const { _id } = getToken()
-  const [products, setProducts] = useState([])
-  const [allProducts, setAllProducts] = useState([])
+  const [products, setProducts] = useState<any[]>([])
+  const [allProducts, setAllProducts] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isConfirming, setIsConfirming] = useState(false)
-  const [sellingProduct, setSellingProduct] = useState({})
+  const [sellingProduct, setSellingProduct] = useState<any>({})
   const [pagination, setPagination] = useState({
-    size: 0
+    size: 0,
+    pageCurrent: 1,
+    pageCount: 1
   })
   const [alerts, setAlerts] = useState({
     isAllAlert: true,
@@ -44,16 +47,9 @@ const StoreProductsTable = ({ storeId = '', selectedOption = 'all' }) => {
     isOutOfStockAlert: true,
     isInfringingAlert: true
   })
-
-  const [filter, setFilter] = useState({
-    search: '',
-    sortBy: 'sold',
-    order: 'desc',
-    limit: 8,
-    quantity: -1,
-    page: 1
-  })
-
+  const [filter, setFilter] = useState<ProductFilterState>(defaultProductFilter)
+  const [pendingFilter, setPendingFilter] =
+    useState<ProductFilterState>(defaultProductFilter)
   const init = () => {
     setError('')
     setIsLoading(true)
@@ -76,13 +72,14 @@ const StoreProductsTable = ({ storeId = '', selectedOption = 'all' }) => {
     }
     listProductsForManager(_id, filterCopy, storeId)
       .then((data) => {
-        if (data.error) setError(data.error)
+        const response = data.data || data
+        if (response.error) setError(response.error)
         else {
-          setProducts(data.products)
+          setProducts(response.products || [])
           setPagination({
-            size: data.size,
-            pageCurrent: data.filter.pageCurrent,
-            pageCount: data.filter.pageCount
+            size: response.size || 0,
+            pageCurrent: response.filter?.pageCurrent || 1,
+            pageCount: response.filter?.pageCount || 1
           })
         }
         setIsLoading(false)
@@ -104,31 +101,30 @@ const StoreProductsTable = ({ storeId = '', selectedOption = 'all' }) => {
       ...filter
     })
   }, [])
-
-  const handleChangeKeyword = (keyword) => {
-    setFilter({
-      ...filter,
-      search: keyword,
+  const handleFilterChange = (updates: Partial<ProductFilterState>) => {
+    setPendingFilter((prev) => ({
+      ...prev,
+      ...updates,
       page: 1
-    })
+    }))
   }
 
-  const handleChangePage = (newPage) => {
-    setFilter({
-      ...filter,
-      page: newPage
-    })
+  const handleSearch = () => {
+    setFilter({ ...pendingFilter })
   }
 
-  const handleSetSortBy = (order, sortBy) => {
-    setFilter({
-      ...filter,
-      sortBy,
-      order
-    })
+  const handleChangeKeyword = (keyword: string) => {
+    handleFilterChange({ search: keyword })
   }
 
-  const handleSellingProduct = (product) => {
+  const handleChangePage = (newPage: number) => {
+    setFilter((prev) => ({ ...prev, page: newPage }))
+  }
+
+  const handleSetSortBy = (order: string, sortBy: string) => {
+    setFilter((prev) => ({ ...prev, order: order as 'asc' | 'desc', sortBy }))
+  }
+  const handleSellingProduct = (product: any) => {
     setSellingProduct(product)
     setIsConfirming(true)
   }
@@ -141,11 +137,12 @@ const StoreProductsTable = ({ storeId = '', selectedOption = 'all' }) => {
     const action = sellingProduct.isSelling ? 'hide' : 'show'
     showOrHide(_id, value, storeId, sellingProduct._id)
       .then((data) => {
-        if (data.error) {
-          setError(data.error)
+        const response = data.data || data
+        if (response.error) {
+          setError(response.error)
         } else {
           toast.success(t(`toastSuccess.product.${action}`))
-          setRun(!run)
+          setRun((prev) => !prev)
         }
         setTimeout(() => {
           setError('')
@@ -171,7 +168,7 @@ const StoreProductsTable = ({ storeId = '', selectedOption = 'all' }) => {
       Sold: product.sold,
       Category: product.categoryId?.name,
       VariantValue: product.variantValueIds
-        .map((value) => value.name)
+        .map((value: any) => value.name)
         .join(', '),
       Rating: product.rating,
       Active: product.isActive,
@@ -184,67 +181,82 @@ const StoreProductsTable = ({ storeId = '', selectedOption = 'all' }) => {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Products')
     XLSX.writeFile(workbook, 'Products.xlsx')
   }
-
   return (
     <div className='position-relative'>
       {alerts.isSellingAlert && selectedOption === 'all' ? (
-        <Alert
-          icon={<i className='text-primary fa-solid fa-circle-info'></i>}
-          msg1='Tất cả'
-          alert='Mục này chứa '
-          msg2='tất cả sản phẩm'
-          onClose={() =>
-            setAlerts((prev) => ({ ...prev, isSellingAlert: false }))
-          }
-        />
+        <div className='alert alert-info'>
+          <i className='text-primary fa-solid fa-circle-info' /> Tất cả - Mục
+          này chứa tất cả sản phẩm
+          <button
+            className='btn-close'
+            onClick={() =>
+              setAlerts((prev) => ({ ...prev, isSellingAlert: false }))
+            }
+          />
+        </div>
       ) : null}
 
       {alerts.isAllAlert && selectedOption === 'selling' ? (
-        <Alert
-          icon={<i className='text-primary fa-solid fa-circle-info'></i>}
-          msg1='Đang bán'
-          alert=' Mục này chứa các'
-          msg2='sản phẩm có thể bán.'
-          onClose={() => setAlerts((prev) => ({ ...prev, isAllAlert: false }))}
-        />
+        <div className='alert alert-info'>
+          <i className='text-primary fa-solid fa-circle-info' /> Đang bán - Mục
+          này chứa các sản phẩm có thể bán.
+          <button
+            className='btn-close'
+            onClick={() =>
+              setAlerts((prev) => ({ ...prev, isAllAlert: false }))
+            }
+          />
+        </div>
       ) : null}
 
       {alerts.isHiddenAlert && selectedOption === 'hidden' ? (
-        <Alert
-          icon={<i className='text-primary fa-solid fa-circle-info'></i>}
-          msg1='Đã ẩn'
-          alert='Mục này chứa các sản phẩm mà Nhà bán đã tắt toàn bộ lựa chọn'
-          msg2='Khách hàng không thể xem và đặt hàng.'
-          onClose={() =>
-            setAlerts((prev) => ({ ...prev, isHiddenAlert: false }))
-          }
-        />
+        <div className='alert alert-info'>
+          <i className='text-primary fa-solid fa-circle-info' /> Đã ẩn - Mục này
+          chứa các sản phẩm mà Nhà bán đã tắt toàn bộ lựa chọn. Khách hàng không
+          thể xem và đặt hàng.
+          <button
+            className='btn-close'
+            onClick={() =>
+              setAlerts((prev) => ({ ...prev, isHiddenAlert: false }))
+            }
+          />
+        </div>
       ) : null}
 
       {alerts.isOutOfStockAlert && selectedOption === 'outOfStock' ? (
-        <Alert
-          icon={<i className='text-primary fa-solid fa-circle-info'></i>}
-          msg1='Hết hàng'
-          alert='Mục này chứa các sản phẩm đã hết hàng'
-          msg2='Khách hàng không thể xem và đặt hàng.'
-          onClose={() =>
-            setAlerts((prev) => ({ ...prev, isOutOfStockAlert: false }))
-          }
-        />
+        <div className='alert alert-info'>
+          <i className='text-primary fa-solid fa-circle-info' /> Hết hàng - Mục
+          này chứa các sản phẩm đã hết hàng. Khách hàng không thể xem và đặt
+          hàng.
+          <button
+            className='btn-close'
+            onClick={() =>
+              setAlerts((prev) => ({ ...prev, isOutOfStockAlert: false }))
+            }
+          />
+        </div>
       ) : null}
+
       {alerts.isInfringingAlert && selectedOption === 'infringing' ? (
-        <Alert
-          icon={<i className='text-primary fa-solid fa-circle-info'></i>}
-          msg1='Vi phạm'
-          alert='Mục này chứa các sản phẩm bị tạm khoá'
-          msg2='Khách hàng không thể xem và đặt hàng.'
-          onClose={() =>
-            setAlerts((prev) => ({ ...prev, isInfringingAlert: false }))
-          }
-        />
+        <div className='alert alert-info'>
+          <i className='text-primary fa-solid fa-circle-info' /> Vi phạm - Mục
+          này chứa các sản phẩm bị tạm khoá. Khách hàng không thể xem và đặt
+          hàng.
+          <button
+            className='btn-close'
+            onClick={() =>
+              setAlerts((prev) => ({ ...prev, isInfringingAlert: false }))
+            }
+          />
+        </div>
       ) : null}
-      {isLoading && <Loading />}
-      {error && <Error msg={error} />}
+
+      {isLoading && (
+        <div className='d-flex justify-content-center p-3'>
+          <div className='spinner-border' />
+        </div>
+      )}
+      {error && <div className='alert alert-danger'>{error}</div>}
       {isConfirming && (
         <ConfirmDialog
           title={
@@ -259,14 +271,18 @@ const StoreProductsTable = ({ storeId = '', selectedOption = 'all' }) => {
 
       <div className='p-3 box-shadow bg-body rounded-2'>
         <div className='mb-3 d-flex justify-content-between'>
-          <SearchInput onChange={handleChangeKeyword} />
+          <SearchInput
+            value={pendingFilter.search || ''}
+            onChange={handleChangeKeyword}
+            onSearch={handleSearch}
+          />
           {selectedOption === 'all' && (
             <button
               type='button'
               className='btn btn-sm btn-success ripple'
               onClick={exportToXLSX}
             >
-              <i className='fa-solid fa-file-excel me-2'></i>
+              <i className='fa-solid fa-file-excel me-2' />
               {t('productDetail.export')}
             </button>
           )}
@@ -421,10 +437,12 @@ const StoreProductsTable = ({ storeId = '', selectedOption = 'all' }) => {
                 <tbody>
                   {products.map((product, index) => (
                     <tr key={index}>
+                      {' '}
                       <th scope='row'>
-                        {index + 1 + (filter.page - 1) * filter.limit}
+                        {index +
+                          1 +
+                          ((filter.page || 1) - 1) * (filter.limit || 8)}
                       </th>
-
                       <td
                         style={{
                           whiteSpace: 'normal',
@@ -436,7 +454,6 @@ const StoreProductsTable = ({ storeId = '', selectedOption = 'all' }) => {
                           <ProductSmallCard product={product} />
                         </small>
                       </td>
-
                       <td>
                         <small className='badge border rounded-1 bg-value text-dark-emphasis'>
                           <CategorySmallCard
@@ -446,21 +463,16 @@ const StoreProductsTable = ({ storeId = '', selectedOption = 'all' }) => {
                         </small>
                       </td>
                       <td>{product.brandId?.name}</td>
-
                       <td className='text-end'>
                         {formatPrice(product.price?.$numberDecimal)}
                         <sup>₫</sup>
                       </td>
-
                       <td className='text-end'>
                         {formatPrice(product.salePrice?.$numberDecimal)}
                         <sup>₫</sup>
                       </td>
-
                       <td>{product.quantity}</td>
-
                       <td>{product.sold}</td>
-
                       <td style={{ whiteSpace: 'normal' }}>
                         <div
                           className='d-flex flex-wrap justify-content-start align-items-center gap-1'
@@ -471,8 +483,11 @@ const StoreProductsTable = ({ storeId = '', selectedOption = 'all' }) => {
                           }}
                         >
                           {product.variantValueIds?.length > 0 ? (
-                            product.variantValueIds?.map((value) => (
-                              <small className='badge rounded-1 text-dark-emphasis bg-value me-1'>
+                            product.variantValueIds?.map((value: any) => (
+                              <small
+                                key={value._id}
+                                className='badge rounded-1 text-dark-emphasis bg-value me-1'
+                              >
                                 {value.name}
                               </small>
                             ))
@@ -481,24 +496,20 @@ const StoreProductsTable = ({ storeId = '', selectedOption = 'all' }) => {
                           )}
                         </div>
                       </td>
-
                       <td>
                         <small>
-                          <i className='fa-solid fa-star text-warning me-1'></i>
+                          <i className='fa-solid fa-star text-warning me-1' />
                           {product.rating}
                         </small>
                       </td>
-
                       <td>
                         <span style={{ fontSize: '0.9rem' }}>
                           <ProductActiveLabel isActive={product.isActive} />
                         </span>
                       </td>
-
                       <td>
                         <small>{humanReadableDate(product.createdAt)}</small>
                       </td>
-
                       <td>
                         <div className='d-flex justify-content-start align-items-center'>
                           <div className='position-relative d-inline-block'>
@@ -507,7 +518,7 @@ const StoreProductsTable = ({ storeId = '', selectedOption = 'all' }) => {
                               className='btn btn-sm btn-outline-primary ripple rounded-1 cus-tooltip'
                               to={`/seller/products/edit/${product._id}/${storeId}`}
                             >
-                              <i className='fa-duotone fa-pen-to-square'></i>
+                              <i className='fa-duotone fa-pen-to-square' />
                             </Link>
                             <span className='cus-tooltip-msg'>
                               {t('button.edit')}
@@ -525,7 +536,7 @@ const StoreProductsTable = ({ storeId = '', selectedOption = 'all' }) => {
                                 className={`fa-solid ${
                                   !product.isSelling ? 'fa-box' : 'fa-archive'
                                 }`}
-                              ></i>
+                              />
                             </button>
                             <span className='cus-tooltip-msg'>
                               {!product.isSelling

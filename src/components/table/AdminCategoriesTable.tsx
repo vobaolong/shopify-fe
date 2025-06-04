@@ -25,7 +25,6 @@ import {
 } from 'antd'
 import { useQuery } from '@tanstack/react-query'
 import { CategoryType } from '../../@types/entity.types'
-import CustomModal from '../ui/Modal'
 import { ColumnsType } from 'antd/es/table'
 import { Pen, Plus } from 'lucide-react'
 import AdminUpsertCategoryForm from '../item/form/AdminUpsertCategoryForm'
@@ -35,6 +34,7 @@ const AdminCategoriesTable = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
   const [isConfirming, setIsConfirming] = useState(false)
   const [isConfirmingRestore, setIsConfirmingRestore] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false)
   const [run, setRun] = useState(false)
   const [deletedCategory, setDeletedCategory] = useState<CategoryType | null>(
     null
@@ -370,15 +370,16 @@ const AdminCategoriesTable = () => {
                   {t('categoryDetail.tree')}
                 </small>
               </div>
-            </div>
-            <CustomModal
-              id='admin-category-tree'
-              hasCloseBtn={false}
+            </div>{' '}
+            <Modal
               title={t('categoryDetail.tree')}
-              style={{ maxWidth: '1000px', width: '100%', margin: 'auto' }}
+              open={modalOpen}
+              onCancel={() => setModalOpen(false)}
+              footer={null}
+              width={1000}
             >
               <CategorySelector isActive={true} isSelected={false} />
-            </CustomModal>
+            </Modal>
             <Button
               type='primary'
               onClick={(e) => {

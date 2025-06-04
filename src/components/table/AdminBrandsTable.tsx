@@ -28,6 +28,7 @@ import AdminEditBrandForm from '../item/form/AdminEditBrandForm'
 import AdminCreateBrandForm from '../item/form/AdminCreateBrandForm'
 import { humanReadableDate } from '../../helper/humanReadable'
 import { ColumnsType } from 'antd/es/table'
+import { BrandFilterState, defaultBrandFilter } from '../../@types/filter.type'
 
 interface BrandsResponse {
   brands: BrandType[]
@@ -40,35 +41,14 @@ const fetchBrands = async (filter: any): Promise<BrandsResponse> => {
   return res.data || res
 }
 
-interface FilterState {
-  search: string
-  sortBy: string
-  categoryId: string
-  order: 'asc' | 'desc'
-  limit: number
-  page: number
-  createdAtFrom?: string
-  createdAtTo?: string
-}
-
-const defaultFilter: FilterState = {
-  search: '',
-  sortBy: 'name',
-  categoryId: '',
-  order: 'asc',
-  limit: 8,
-  page: 1,
-  createdAtFrom: undefined,
-  createdAtTo: undefined
-}
-
 const AdminBrandsTable = () => {
   const { t } = useTranslation()
   const { notification } = useAntdApp()
   const invalidate = useInvalidate()
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
-  const [filter, setFilter] = useState(defaultFilter)
-  const [pendingFilter, setPendingFilter] = useState(defaultFilter)
+  const [filter, setFilter] = useState<BrandFilterState>(defaultBrandFilter)
+  const [pendingFilter, setPendingFilter] =
+    useState<BrandFilterState>(defaultBrandFilter)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [editingBrandId, setEditingBrandId] = useState<string | null>(null)
 
@@ -366,10 +346,11 @@ const AdminBrandsTable = () => {
   return (
     <div>
       {error && <Alert message={error.message} type='error' showIcon />}
-      <Spin spinning={isLoading} tip={t('loading')} size='large'>
+      <Spin spinning={isLoading} size='large'>
         <div className='p-3 bg-white rounded-md'>
           <div className='flex justify-between items-center'>
             <div className='flex gap-3 items-center flex-wrap'>
+              {' '}
               <SearchInput
                 value={pendingFilter.search}
                 onChange={(keyword) =>
@@ -379,6 +360,7 @@ const AdminBrandsTable = () => {
                     page: 1
                   }))
                 }
+                onSearch={handleSearch}
               />
               <DatePicker.RangePicker
                 value={

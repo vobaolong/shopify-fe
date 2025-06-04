@@ -107,7 +107,7 @@ const MainNav = ({ navFor = 'user' }: MainNavProps) => {
                       className='btn lang rounded-circle ripple cus-tooltip rounded-1 inherit'
                       to='/cart'
                     >
-                      <i className='fa-solid fa-bag-shopping'></i>
+                      <i className='fa-solid fa-bag-shopping' />
                     </Link>
                     {cartCount > 0 && (
                       <span
@@ -131,7 +131,7 @@ const MainNav = ({ navFor = 'user' }: MainNavProps) => {
                     className='btn lang rounded-circle ripple cus-tooltip rounded-1 inherit'
                     to='/admin/dashboard'
                   >
-                    <i className='fa-light fa-chart-line'></i>
+                    <i className='fa-light fa-chart-line' />
                   </Link>
                   <small className='cus-tooltip-msg'>
                     {t('admin.adDashboard.dashboard')}
@@ -150,7 +150,7 @@ const MainNav = ({ navFor = 'user' }: MainNavProps) => {
               data-bs-target='#offcanvasNavbarMainNav'
               aria-controls='offcanvasNavbarMainNav'
             >
-              <i className='fa-light fa-bars'></i>
+              <i className='fa-light fa-bars' />
             </button>
 
             <div
@@ -215,7 +215,7 @@ const MainNav = ({ navFor = 'user' }: MainNavProps) => {
                 <ul className='navbar-nav justify-content-end flex-grow-1 gap-2 mt-2'>
                   <li className='nav-item bg-value rounded-1 p-2'>
                     <Link className='link-hover link-dark d-block' to='/'>
-                      <i className='text-primary fs-9 fa-light fa-home me-2'></i>
+                      <i className='text-primary fs-9 fa-light fa-home me-2' />
                       {t('home')}
                     </Link>
                   </li>
@@ -226,7 +226,7 @@ const MainNav = ({ navFor = 'user' }: MainNavProps) => {
                         className='link-hover link-dark d-block'
                         to='/account/store'
                       >
-                        <i className='text-primary fs-9 fa-light fa-store me-2'></i>
+                        <i className='text-primary fs-9 fa-light fa-store me-2' />
                         {t('myStore')}
                       </Link>
                     </li>
@@ -238,7 +238,7 @@ const MainNav = ({ navFor = 'user' }: MainNavProps) => {
                         className='link-hover link-dark d-block '
                         to='/cart'
                       >
-                        <i className='text-primary fs-9 fa-light fa-bag-shopping me-2'></i>
+                        <i className='text-primary fs-9 fa-light fa-bag-shopping me-2' />
                         {t('cart')}
                         <sup className='ms-1 text-danger'>
                           ({cartCount > 0 ? cartCount : '0'})
@@ -253,7 +253,7 @@ const MainNav = ({ navFor = 'user' }: MainNavProps) => {
                         className='link-hover link-dark d-block'
                         to='/admin/dashboard'
                       >
-                        <i className='text-primary fs-9 fa-light fa-chart-line me-2'></i>
+                        <i className='text-primary fs-9 fa-light fa-chart-line me-2' />
                         {t('admin.adDashboard.dashboard')}
                       </Link>
                     </li>
@@ -263,7 +263,7 @@ const MainNav = ({ navFor = 'user' }: MainNavProps) => {
                     className='nav-item bg-value rounded-1 p-2 link-hover link-dark'
                     onClick={handleSignout}
                   >
-                    <i className='text-primary fs-9 fa-light fa-sign-out-alt me-2'></i>
+                    <i className='text-primary fs-9 fa-light fa-sign-out-alt me-2' />
                     <span className='text-danger'>{t('button.logout')}</span>
                   </li>
                   <hr className='my-1' />

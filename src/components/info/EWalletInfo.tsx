@@ -25,9 +25,9 @@ const EWalletInfo = ({ eWallet = 0 }: EWalletInfoProps) => {
         onClick={handleHide}
       >
         {hide ? (
-          <i className='fa-solid fa-eye'></i>
+          <i className='fa-solid fa-eye' />
         ) : (
-          <i className='fa-solid fa-eye-slash'></i>
+          <i className='fa-solid fa-eye-slash' />
         )}
       </span>
     </div>

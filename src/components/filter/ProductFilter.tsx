@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import StarRating from '../label/StarRating'
-import Input from '../ui/Input'
+import { Input } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { getProvinces } from '../../apis/address.api'
@@ -161,7 +161,7 @@ const ProductFilter: React.FC<ProductFilterProps> = ({ filter, setFilter }) => {
           data-bs-target='#offcanvasFilter'
           aria-controls='offcanvasFilter'
         >
-          <i className='fa-light fa-filter'></i>
+          <i className='fa-light fa-filter' />
           <span className='ms-2'>{t('filters.filter')}</span>
         </button>
         <select
@@ -192,7 +192,7 @@ const ProductFilter: React.FC<ProductFilterProps> = ({ filter, setFilter }) => {
         aria-labelledby='offcanvasFilterLabel'
       >
         <div className='offcanvas-header'>
-          <i className='fa-light fa-filter me-2'></i>
+          <i className='fa-light fa-filter me-2' />
           <h5
             className='offcanvas-title text-uppercase fw-bold'
             id='offcanvasFilterLabel'

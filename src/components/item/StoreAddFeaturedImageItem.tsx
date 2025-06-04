@@ -1,37 +1,51 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import Modal from '../ui/Modal'
 import StoreAddFeaturedImageForm from './form/StoreAddFeaturedImageForm'
+import { Button, Modal, Tooltip } from 'antd'
+import { PlusOutlined } from '@ant-design/icons'
 
 const StoreAddFeaturedImageItem = ({ count = 6, storeId = '' }) => {
   const { t } = useTranslation()
-  return (
-    <div className='position-relative d-inline-block'>
-      <div className='cus-tooltip'>
-        <button
-          type='button'
-          disabled={count >= 6 ? true : false}
-          className='btn btn-primary ripple text-nowrap rounded-1 btn-sm'
-          data-bs-toggle='modal'
-          data-bs-target='#add-featured-image-form'
-        >
-          <i className='fa-light fa-plus'></i>
-          <span className='ms-2 res-hide'>{t('button.addFeaturedImg')}</span>
-        </button>
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
-        {count < 6 && (
-          <Modal
-            id='add-featured-image-form'
-            hasCloseBtn={false}
-            title={t('storeDetail.addFeaturedImg')}
-          >
-            <StoreAddFeaturedImageForm storeId={storeId} />
-          </Modal>
-        )}
-      </div>
-      {count >= 6 && (
-        <small className='cus-tooltip-msg'>
-          {t('storeDetail.limitFeatured')}
-        </small>
+  const showModal = () => {
+    setIsModalOpen(true)
+  }
+
+  const handleCancel = () => {
+    setIsModalOpen(false)
+  }
+
+  return (
+    <div className='relative inline-block'>
+      <Tooltip
+        title={count >= 6 ? t('storeDetail.limitFeatured') : ''}
+        placement='top'
+      >
+        <Button
+          type='primary'
+          icon={<PlusOutlined />}
+          disabled={count >= 6}
+          className='text-nowrap rounded'
+          size='small'
+          onClick={showModal}
+        >
+          <span className='ml-1 hidden sm:inline'>
+            {t('button.addFeaturedImg')}
+          </span>
+        </Button>
+      </Tooltip>
+
+      {count < 6 && (
+        <Modal
+          open={isModalOpen}
+          onCancel={handleCancel}
+          footer={null}
+          title={t('storeDetail.addFeaturedImg')}
+          destroyOnClose
+        >
+          <StoreAddFeaturedImageForm storeId={storeId} />
+        </Modal>
       )}
     </div>
   )

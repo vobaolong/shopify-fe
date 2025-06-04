@@ -9,7 +9,7 @@ const Policy = () => {
 
   return (
     <>
-      <MetaData title={`${t('footer.policy')} | Buynow Việt Nam`} />
+      <MetaData title={`${t('footer.policy')} | ShopBase Việt Nam`} />
 
       <header className='main-nav cus-nav navbar fixed-top navbar-expand-md navbar-dark bg-primary'>
         <div className='container-md d-flex justify-content-start text-white'>
@@ -20,7 +20,7 @@ const Policy = () => {
             <Logo navFor='user' />
           </Link>
           <h5 className='font-weight-light m-0 ms-2 border-start px-3'>
-            Trung tâm trợ giúp Buynow
+            Trung tâm trợ giúp ShopBase
           </h5>
         </div>
       </header>

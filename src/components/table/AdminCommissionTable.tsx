@@ -279,107 +279,94 @@ const AdminCommissionTable = () => {
 
   return (
     <div className='w-full relative'>
-      {(deleteMutation.isPending || restoreMutation.isPending) && (
-        <Spin
-          spinning
-          tip='Processing...'
-          style={{
-            zIndex: 9999,
-            position: 'fixed',
-            inset: 'auto',
-            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-        />
-      )}
-      {error && <Alert message={error.message} type='error' />}
-      <div className='p-3 bg-white rounded-md'>
-        <div className='flex gap-3 items-center flex-wrap justify-between'>
-          <div className='flex gap-4'>
-            <SearchInput
-              onChange={handleChangeKeyword}
-              value={pendingFilter.search}
-            />
-
-            <Select
-              style={{ minWidth: 120 }}
-              value={status}
-              onChange={handleStatusChange}
-              options={[
-                { label: t('filters.all'), value: 'all' },
-                { label: t('status.active'), value: 'active' },
-                { label: t('status.deleted'), value: 'deleted' }
-              ]}
-              placeholder={t('status.status')}
-              allowClear
-            />
-
-            <DatePicker.RangePicker
-              value={dateRange}
-              onChange={handleDateRangeChange}
-              style={{ minWidth: 240 }}
-              allowClear
-              format='DD-MM-YYYY'
-            />
-
-            <Button type='primary' onClick={handleSearch}>
-              {t('search')}
-            </Button>
-
+      <Spin spinning={deleteMutation.isPending || restoreMutation.isPending}>
+        {error && <Alert message={error.message} type='error' />}
+        <div className='p-3 bg-white rounded-md'>
+          <div className='flex gap-3 items-center flex-wrap justify-between'>
+            <div className='flex gap-4'>
+              {' '}
+              <SearchInput
+                onChange={handleChangeKeyword}
+                value={pendingFilter.search}
+                onSearch={handleSearch}
+              />
+              <Select
+                style={{ minWidth: 120 }}
+                value={status}
+                onChange={handleStatusChange}
+                options={[
+                  { label: t('filters.all'), value: 'all' },
+                  { label: t('status.active'), value: 'active' },
+                  { label: t('status.deleted'), value: 'deleted' }
+                ]}
+                placeholder={t('status.status')}
+                allowClear
+              />
+              <DatePicker.RangePicker
+                value={dateRange}
+                onChange={handleDateRangeChange}
+                style={{ minWidth: 240 }}
+                allowClear
+                format='DD-MM-YYYY'
+              />
+              <Button type='primary' onClick={handleSearch}>
+                {t('search')}
+              </Button>
+              <Button
+                onClick={() => refetch()}
+                className='!h-10 !w-10 flex items-center justify-center'
+                type='default'
+                loading={isLoading}
+                icon={<SyncOutlined spin={isLoading} />}
+              />
+            </div>
             <Button
-              onClick={() => refetch()}
-              className='!h-10 !w-10 flex items-center justify-center'
-              type='default'
-              loading={isLoading}
-              icon={<SyncOutlined spin={isLoading} />}
-            />
+              type='primary'
+              onClick={handleAddCommission}
+              className='items-end'
+            >
+              {t('commissionDetail.add')}
+            </Button>
           </div>
-          <Button
-            type='primary'
-            onClick={handleAddCommission}
-            className='items-end'
-          >
-            {t('commissionDetail.add')}
-          </Button>
-        </div>
 
-        <Divider />
+          <Divider />
 
-        <Table
-          columns={columns}
-          dataSource={dataSource}
-          loading={isLoading}
-          rowKey='_id'
-          bordered
-          pagination={{
-            current: data?.filter?.pageCurrent || 1,
-            pageSize: filter.limit,
-            total: data?.size || 0,
-            onChange: handleChangePage,
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} ${t('of')} ${total} ${t('result')}`
-          }}
-          scroll={{ x: 'max-content' }}
-        />
-
-        <Drawer
-          title={isAdd ? t('commissionDetail.add') : t('commissionDetail.edit')}
-          open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
-          width={400}
-          destroyOnHidden
-        >
-          <AdminEditCommissionForm
-            oldCommission={editedCommission || undefined}
-            onRun={() => {
-              queryClient.invalidateQueries({ queryKey: ['commissions'] })
-              setDrawerOpen(false)
+          <Table
+            columns={columns}
+            dataSource={dataSource}
+            loading={isLoading}
+            rowKey='_id'
+            bordered
+            pagination={{
+              current: data?.filter?.pageCurrent || 1,
+              pageSize: filter.limit,
+              total: data?.size || 0,
+              onChange: handleChangePage,
+              showTotal: (total, range) =>
+                `${range[0]}-${range[1]} ${t('of')} ${total} ${t('result')}`
             }}
+            scroll={{ x: 'max-content' }}
           />
-        </Drawer>
-      </div>
+
+          <Drawer
+            title={
+              isAdd ? t('commissionDetail.add') : t('commissionDetail.edit')
+            }
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            width={400}
+            destroyOnHidden
+          >
+            <AdminEditCommissionForm
+              oldCommission={editedCommission || undefined}
+              onRun={() => {
+                queryClient.invalidateQueries({ queryKey: ['commissions'] })
+                setDrawerOpen(false)
+              }}
+            />
+          </Drawer>
+        </div>
+      </Spin>
     </div>
   )
 }

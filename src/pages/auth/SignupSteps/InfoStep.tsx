@@ -1,8 +1,9 @@
-import { Form, Input, Button, InputNumber } from 'antd'
+import { Form, Input, Button } from 'antd'
 import { useMutation } from '@tanstack/react-query'
 import { signup } from '../../../apis/auth.api'
 import { useAntdApp } from '../../../hooks/useAntdApp'
 import { t } from 'i18next'
+import { PHONE_REGEX } from '../../../constants/regex.constant'
 
 interface InfoStepProps {
   email: string
@@ -42,29 +43,29 @@ const InfoStep = ({ email }: InfoStepProps) => {
         rules={[{ required: true, message: 'Vui lòng nhập tên!' }]}
       >
         <Input />
-      </Form.Item>
+      </Form.Item>{' '}
       <Form.Item
         label={t('userDetail.phone')}
         name='phone'
         rules={[
           { required: true, message: 'Vui lòng nhập số điện thoại!' },
           {
-            pattern: /^(\+84|84|0)[3|5|7|8|9][0-9]{8}$/,
+            pattern: PHONE_REGEX,
             message: 'Số điện thoại không hợp lệ!'
           }
         ]}
       >
-        <InputNumber placeholder='Ví dụ: 0987654321' />
+        <Input placeholder='Ví dụ: 0987654321' />
       </Form.Item>
       <Form.Item
-        label={t('signUpForm.password')}
+        label={t('signInForm.passwordLabel')}
         name='password'
         rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
       >
         <Input.Password />
       </Form.Item>
       <Form.Item
-        label={t('signUpForm.passwordConfirm')}
+        label={t('confirmPw')}
         name='passwordConfirm'
         dependencies={['password']}
         rules={[

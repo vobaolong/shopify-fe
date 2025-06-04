@@ -165,7 +165,7 @@ const BellButton = ({ navFor = '' }: BellButtonProps) => {
       >
         <div className='cart-item-wrap position-relative'>
           <span className='rounded-circle btn inherit cus-tooltip ripple mx-2 bell'>
-            <i className='fa-solid fa-bell'></i>
+            <i className='fa-solid fa-bell' />
           </span>
           {notificationCount > 0 && (
             <span

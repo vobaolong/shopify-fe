@@ -6,7 +6,7 @@ import { listOrdersByStore } from '../../apis/order.api'
 import { humanReadableDate } from '../../helper/humanReadable'
 import { formatPrice } from '../../helper/formatPrice'
 import Pagination from '../ui/Pagination'
-import Loading from '../ui/Loading'
+import { Spin, Alert } from 'antd'
 import SortByButton from './sub/SortByButton'
 import OrderStatusLabel from '../label/OrderStatusLabel'
 import OrderPaymentLabel from '../label/OrderPaymentLabel'
@@ -14,8 +14,8 @@ import UserSmallCard from '../card/UserSmallCard'
 import SearchInput from '../ui/SearchInput'
 import { useTranslation } from 'react-i18next'
 import ShowResult from '../ui/ShowResult'
-import Error from '../ui/Error'
 import noItem from '../../assets/noItem.png'
+import { OrderFilterState, defaultOrderFilter } from '../../@types/filter.type'
 
 const SellerOrdersTable = ({
   heading = true,
@@ -27,34 +27,37 @@ const SellerOrdersTable = ({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [displayError, setDisplayError] = useState(false)
-  const [orders, setOrders] = useState([])
+  const [orders, setOrders] = useState<any[]>([])
   const [pagination, setPagination] = useState({
-    size: 0
+    size: 0,
+    pageCurrent: 1,
+    pageCount: 1
   })
-  const [filter, setFilter] = useState({
-    search: '',
-    status,
-    sortBy: 'createdAt',
-    order: 'desc',
-    limit: 7,
-    page: 1
+  const [filter, setFilter] = useState<OrderFilterState>({
+    ...defaultOrderFilter,
+    status
+  })
+  const [pendingFilter, setPendingFilter] = useState<OrderFilterState>({
+    ...defaultOrderFilter,
+    status
   })
 
   const { _id } = getToken()
-
   const init = () => {
     setError('')
     setIsLoading(true)
-    let timerId = null
+    let timerId: NodeJS.Timeout | null = null
     listOrdersByStore(_id, filter, storeId)
       .then((data) => {
         if (data.error) setError(data.error)
         else {
-          setOrders(data.orders)
+          setOrders(data.data?.orders || data.orders || [])
           setPagination({
-            size: data.size,
-            pageCurrent: data.filter.pageCurrent,
-            pageCount: data.filter.pageCount
+            size: data.data?.size || data.size || 0,
+            pageCurrent:
+              data.data?.filter?.pageCurrent || data.filter?.pageCurrent || 1,
+            pageCount:
+              data.data?.filter?.pageCount || data.filter?.pageCount || 1
           })
         }
         setIsLoading(false)
@@ -80,28 +83,28 @@ const SellerOrdersTable = ({
   useEffect(() => {
     init()
   }, [filter, storeId])
-
-  const handleChangeKeyword = (keyword) => {
-    setFilter({
-      ...filter,
-      search: keyword,
+  const handleFilterChange = (updates: Partial<OrderFilterState>) => {
+    setPendingFilter((prev) => ({
+      ...prev,
+      ...updates,
       page: 1
-    })
+    }))
   }
 
-  const handleChangePage = (newPage) => {
-    setFilter({
-      ...filter,
-      page: newPage
-    })
+  const handleSearch = () => {
+    setFilter({ ...pendingFilter })
   }
 
-  const handleSetSortBy = (order, sortBy) => {
-    setFilter({
-      ...filter,
-      sortBy,
-      order
-    })
+  const handleChangeKeyword = (keyword: string) => {
+    handleFilterChange({ search: keyword })
+  }
+
+  const handleChangePage = (newPage: number) => {
+    setFilter((prev) => ({ ...prev, page: newPage }))
+  }
+
+  const handleSetSortBy = (order: string, sortBy: string) => {
+    setFilter((prev) => ({ ...prev, order: order as 'asc' | 'desc', sortBy }))
   }
 
   return (
@@ -132,12 +135,16 @@ const SellerOrdersTable = ({
           )}
         </>
       )}
-      {isLoading && <Loading />}
-      {error && <Error msg={error} />}
-      {displayError && <Error msg={error} />}
+      {isLoading && <Spin size='large' />}
+      {error && <Alert message={error} type='error' />}
+      {displayError && <Alert message={error} type='error' />}
 
       <div className='p-3 box-shadow bg-body rounded-2'>
-        <SearchInput onChange={handleChangeKeyword} />
+        <SearchInput
+          value={pendingFilter.search || ''}
+          onChange={handleChangeKeyword}
+          onSearch={handleSearch}
+        />
         {!isLoading && pagination.size === 0 ? (
           <div className='my-4 text-center'>
             <img className='mb-3' src={noItem} alt='noItem' width={'100px'} />
@@ -258,8 +265,11 @@ const SellerOrdersTable = ({
                 <tbody>
                   {orders.map((order, index) => (
                     <tr key={index}>
+                      {' '}
                       <th scope='row' className='text-center'>
-                        {index + 1 + (filter.page - 1) * filter.limit}
+                        {index +
+                          1 +
+                          ((filter.page || 1) - 1) * (filter.limit || 7)}
                       </th>
                       <td>
                         <small>{order._id}</small>
@@ -317,7 +327,7 @@ const SellerOrdersTable = ({
                             className='btn btn-sm btn-outline-secondary rounded-1 ripple cus-tooltip'
                             to={`/seller/orders/detail/${order._id}/${storeId}`}
                           >
-                            <i className='fa-solid fa-circle-info'></i>
+                            <i className='fa-solid fa-circle-info' />
                           </Link>
                           <span className='cus-tooltip-msg'>
                             {t('button.detail')}

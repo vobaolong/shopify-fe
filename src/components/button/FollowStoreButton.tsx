@@ -1,8 +1,7 @@
 import { useEffect, useCallback } from 'react'
 import { getToken } from '../../apis/auth.api'
 import { useToggleFollowStore } from '../../hooks/useToggleFollowStore'
-import Loading from '../ui/Loading'
-import Error from '../ui/Error'
+import { Spin, Alert } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 
@@ -57,17 +56,21 @@ const FollowStoreButton = ({
       onClick={handleFollowStore}
       disabled={isPending}
     >
-      {isPending && <Loading size='small' />}
+      {isPending && <Spin size='small' />}
       {error ? (
-        <Error msg={error instanceof Error ? error.message : String(error)} />
+        <Alert
+          message={error instanceof Error ? error.message : String(error)}
+          type='error'
+          showIcon
+        />
       ) : isFollowing ? (
         <span>
-          <i className='fa-solid fa-check'></i>
+          <i className='fa-solid fa-check' />
           <span className='ms-2 res-hide-md'>{t('storeDetail.following')}</span>
         </span>
       ) : (
         <span>
-          <i className='fa-light fa-plus'></i>
+          <i className='fa-light fa-plus' />
           <span className='ms-2 res-hide-md'>{t('storeDetail.follow')}</span>
         </span>
       )}

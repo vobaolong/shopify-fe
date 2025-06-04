@@ -90,7 +90,7 @@ const InputFile: React.FC<InputFileProps> = ({
               }`}
               onClick={handleReset}
             >
-              <i className='fa-solid fa-times'></i>
+              <i className='fa-solid fa-times' />
             </label>
           )}
 
@@ -105,11 +105,11 @@ const InputFile: React.FC<InputFileProps> = ({
             >
               {isDragActive ? (
                 <>
-                  <i className='fa-light fa-cloud-check text-secondary'></i>
+                  <i className='fa-light fa-cloud-check text-secondary' />
                 </>
               ) : (
                 <>
-                  <i className='fa-light fa-cloud-arrow-up text-primary-rgba'></i>
+                  <i className='fa-light fa-cloud-arrow-up text-primary-rgba' />
                   <small
                     className='invalid-feedback ms-2 mt-0'
                     style={{ width: 'unset' }}

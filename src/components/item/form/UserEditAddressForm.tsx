@@ -2,52 +2,31 @@ import { useState, useEffect } from 'react'
 import { getToken } from '../../../apis/auth.api'
 import { updateAddress } from '../../../apis/user.api'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
-import { regexTest } from '../../../helper/test'
-import Input from '../../ui/Input'
-import Loading from '../../ui/Loading'
-import ConfirmDialog from '../../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'react-toastify'
-import Error from '../../ui/Error'
 import { useAntdApp } from '../../../hooks/useAntdApp'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { Form, Input, Button, Spin, Alert, Modal } from 'antd'
 
-interface Address {
-  street: string
-  ward: string
-  district: string
-  province: string
-  isValidStreet: boolean
-  isValidWard: boolean
-  isValidDistrict: boolean
-  isValidProvince: boolean
-}
-
-const UserEditAddressForm = ({
-  oldAddress = '',
-  index = null
-}: {
+interface UserEditAddressFormProps {
   oldAddress?: string
   index?: number | null
+  onSuccess?: () => void
+}
+
+const UserEditAddressForm: React.FC<UserEditAddressFormProps> = ({
+  oldAddress = '',
+  index = null,
+  onSuccess
 }) => {
   const { t } = useTranslation()
   const { notification } = useAntdApp()
+  const [form] = Form.useForm()
   const [isConfirming, setIsConfirming] = useState(false)
-  const [address, setAddress] = useState<Address>({
-    street: oldAddress.split(', ')[0] || '',
-    ward: oldAddress.split(', ')[1] || '',
-    district: oldAddress.split(', ')[2] || '',
-    province: oldAddress.split(', ')[3] || '',
-    isValidStreet: true,
-    isValidWard: true,
-    isValidDistrict: true,
-    isValidProvince: true
-  })
+  const [error, setError] = useState('')
 
   const [updateDispatch] = useUpdateDispatch()
   const { _id } = getToken()
   const queryClient = useQueryClient()
-
   const updateAddressMutation = useMutation({
     mutationFn: (addressString: string) =>
       updateAddress(_id, index ?? 0, { address: addressString }),
@@ -57,8 +36,11 @@ const UserEditAddressForm = ({
         notification.error({ message: data.error })
       } else {
         updateDispatch('account', data.user)
-        toast.success(t('toastSuccess.address.update'))
+        notification.success({ message: t('toastSuccess.address.update') })
         queryClient.invalidateQueries({ queryKey: ['user'] })
+        if (onSuccess) {
+          onSuccess()
+        }
       }
     },
     onError: () => {
@@ -67,146 +49,115 @@ const UserEditAddressForm = ({
   })
 
   useEffect(() => {
-    setAddress({
-      street: oldAddress.split(', ')[0] || '',
-      ward: oldAddress.split(', ')[1] || '',
-      district: oldAddress.split(', ')[2] || '',
-      province: oldAddress.split(', ')[3] || '',
-      isValidStreet: true,
-      isValidWard: true,
-      isValidDistrict: true,
-      isValidProvince: true
-    })
-  }, [oldAddress, index])
-
-  const handleChange = (
-    name: keyof Address,
-    isValidName: keyof Address,
-    value: string
-  ) => {
-    setAddress({
-      ...address,
-      [name]: value,
-      [isValidName]: true
-    })
-  }
-
-  const handleValidate = (isValidName: keyof Address, flag: boolean) => {
-    setAddress({
-      ...address,
-      [isValidName]: flag
-    })
-  }
-
-  const handleSubmit = (
-    e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>
-  ) => {
-    e.preventDefault()
-    const { street, ward, district, province } = address
-    if (!street || !ward || !district || !province) {
-      setAddress({
-        ...address,
-        isValidStreet: regexTest('address', street),
-        isValidWard: regexTest('address', ward),
-        isValidDistrict: regexTest('address', district),
-        isValidProvince: regexTest('address', province)
+    if (oldAddress) {
+      const addressParts = oldAddress.split(', ')
+      form.setFieldsValue({
+        street: addressParts[0] || '',
+        ward: addressParts[1] || '',
+        district: addressParts[2] || '',
+        province: addressParts[3] || ''
       })
-      return
     }
-    const { isValidStreet, isValidWard, isValidDistrict, isValidProvince } =
-      address
-    if (!isValidStreet || !isValidWard || !isValidDistrict || !isValidProvince)
-      return
+  }, [oldAddress, index, form])
+
+  const handleFinish = (values: any) => {
     setIsConfirming(true)
   }
 
-  const onSubmit = () => {
-    const addressString = `${address.street}, ${address.ward}, ${address.district}, ${address.province}`
+  const handleConfirmSubmit = () => {
+    const values = form.getFieldsValue()
+    const addressString = `${values.street}, ${values.ward}, ${values.district}, ${values.province}`
     updateAddressMutation.mutate(addressString)
+    setIsConfirming(false)
   }
 
   return (
-    <div className='position-relative'>
-      {updateAddressMutation.isPending && <Loading />}
-
-      {isConfirming && (
-        <ConfirmDialog
-          title={t('userDetail.editAddress')}
-          onSubmit={onSubmit}
-          onClose={() => setIsConfirming(false)}
-        />
-      )}
-
-      <form className='row mb-2 gap-2' onSubmit={handleSubmit}>
-        <div className='col-12'>
-          <Input
-            type='text'
-            label={t('addressForm.street')}
-            required={true}
-            value={address.street}
-            isValid={address.isValidStreet}
-            feedback={t('addressFormValid.streetValid')}
-            validator='address'
-            onChange={(value) => handleChange('street', 'isValidStreet', value)}
-            onValidate={(flag) => handleValidate('isValidStreet', flag)}
+    <div className='w-full'>
+      <Spin spinning={updateAddressMutation.isPending}>
+        {error && (
+          <Alert
+            message={error}
+            type='error'
+            showIcon
+            className='mb-4'
+            closable
+            onClose={() => setError('')}
           />
-        </div>
-        <div className='col-12'>
-          <Input
-            type='text'
-            label={t('addressForm.ward')}
-            required={true}
-            value={address.ward}
-            isValid={address.isValidWard}
-            feedback={t('addressFormValid.wardValid')}
-            validator='address'
-            onChange={(value) => handleChange('ward', 'isValidWard', value)}
-            onValidate={(flag) => handleValidate('isValidWard', flag)}
-          />
-        </div>
-        <div className='col-12'>
-          <Input
-            type='text'
-            label={t('addressForm.district')}
-            required={true}
-            value={address.district}
-            isValid={address.isValidDistrict}
-            feedback={t('addressFormValid.districtValid')}
-            validator='address'
-            onChange={(value) =>
-              handleChange('district', 'isValidDistrict', value)
-            }
-            onValidate={(flag) => handleValidate('isValidDistrict', flag)}
-          />
-        </div>
+        )}
 
-        <div className='col-12'>
-          <Input
-            type='text'
-            label={t('addressForm.province')}
-            required={true}
-            value={address.province}
-            isValid={address.isValidProvince}
-            feedback={t('addressFormValid.provinceValid')}
-            validator='address'
-            onChange={(value) =>
-              handleChange('province', 'isValidProvince', value)
-            }
-            onValidate={(flag) => handleValidate('isValidProvince', flag)}
-          />
-        </div>
-
-        <div className='col-12 d-grid mt-4'>
-          <button
-            type='submit'
-            className='btn btn-primary ripple rounded-1'
-            onClick={handleSubmit}
-            disabled={updateAddressMutation.isPending}
+        {isConfirming && (
+          <Modal
+            title={t('userDetail.editAddress')}
+            open={isConfirming}
+            onOk={handleConfirmSubmit}
+            onCancel={() => setIsConfirming(false)}
+            okText={t('button.save')}
+            cancelText={t('button.cancel')}
           >
-            {t('button.save')}
-          </button>
-        </div>
-      </form>
+            <p>{t('confirmDialog')}</p>
+          </Modal>
+        )}
+
+        <Form form={form} layout='vertical' onFinish={handleFinish}>
+          <Form.Item
+            name='street'
+            label={t('addressForm.street')}
+            rules={[
+              { required: true, message: t('addressFormValid.streetRequired') },
+              { max: 100, message: t('addressFormValid.streetTooLong') }
+            ]}
+          >
+            <Input placeholder='Ví dụ: Số 58 Đường số 1' />
+          </Form.Item>
+
+          <Form.Item
+            name='ward'
+            label={t('addressForm.ward')}
+            rules={[
+              { required: true, message: t('addressFormValid.wardRequired') }
+            ]}
+          >
+            <Input placeholder={t('addressForm.ward')} />
+          </Form.Item>
+
+          <Form.Item
+            name='district'
+            label={t('addressForm.district')}
+            rules={[
+              {
+                required: true,
+                message: t('addressFormValid.districtRequired')
+              }
+            ]}
+          >
+            <Input placeholder={t('addressForm.district')} />
+          </Form.Item>
+
+          <Form.Item
+            name='province'
+            label={t('addressForm.province')}
+            rules={[
+              {
+                required: true,
+                message: t('addressFormValid.provinceRequired')
+              }
+            ]}
+          >
+            <Input placeholder={t('addressForm.province')} />
+          </Form.Item>
+
+          <Form.Item>
+            <Button
+              type='primary'
+              htmlType='submit'
+              loading={updateAddressMutation.isPending}
+              className='w-full'
+            >
+              {t('button.save')}
+            </Button>
+          </Form.Item>
+        </Form>
+      </Spin>
     </div>
   )
 }

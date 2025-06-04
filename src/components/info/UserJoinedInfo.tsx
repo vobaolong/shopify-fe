@@ -29,7 +29,7 @@ const UserJoinedInfo = ({ user = {} }: UserJoinedInfoProps) => {
           <Paragraph
             label={
               <span>
-                <i className='fa-solid fa-user-check me-1 text-secondary'></i>
+                <i className='fa-solid fa-user-check me-1 text-secondary' />
                 {t('joined')}
               </span>
             }

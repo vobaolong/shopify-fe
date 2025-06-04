@@ -1,26 +1,38 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import Modal from '../ui/Modal'
 import StoreAddStaffForm from './form/StoreAddStaffForm'
-import { Button } from 'antd'
+import { Button, Modal } from 'antd'
+import { PlusOutlined } from '@ant-design/icons'
 
 const StoreAddStaffItem = ({ storeId = '', owner = {}, staff = [] }) => {
   const { t } = useTranslation()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const showModal = () => {
+    setIsModalOpen(true)
+  }
+
+  const handleCancel = () => {
+    setIsModalOpen(false)
+  }
+
   return (
-    <div className='d-inline-block'>
+    <div className='inline-block'>
       <Button
         type='primary'
-        className='btn btn-primary ripple text-nowrap rounded-1'
-        data-bs-toggle='modal'
-        data-bs-target='#add-staff-form'
+        icon={<PlusOutlined />}
+        className='text-nowrap rounded'
+        onClick={showModal}
       >
-        <i className='fa-light fa-plus'></i>
-        <span className='ms-2 res-hide'>{t('staffDetail.add')}</span>
+        <span className='ml-1 hidden sm:inline'>{t('staffDetail.add')}</span>
       </Button>
 
       <Modal
-        id='add-staff-form'
-        hasCloseBtn={false}
+        open={isModalOpen}
+        onCancel={handleCancel}
+        footer={null}
         title={t('staffDetail.add')}
+        destroyOnClose
       >
         <StoreAddStaffForm storeId={storeId} owner={owner} staff={staff} />
       </Modal>

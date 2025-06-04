@@ -1,14 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
+import { Form, Input, Button, Rate, Spin } from 'antd'
+import { StarOutlined, EditOutlined } from '@ant-design/icons'
 import { getToken } from '../../../apis/auth.api'
 import { updateReview } from '../../../apis/review.api'
-import { numberTest, regexTest } from '../../../helper/test'
-import TextArea from '../../ui/TextArea'
-import RatingInput from '../../ui/RatingInput'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { useMutation } from '@tanstack/react-query'
 import { useAntdApp } from '../../../hooks/useAntdApp'
-import { Spin } from 'antd'
+
+interface ReviewFormData {
+  rating: number
+  content: string
+}
 
 interface ReviewType {
   rating: number
@@ -24,16 +27,11 @@ interface EditReviewFormProps {
 const EditReviewForm = ({ oldReview, onRun }: EditReviewFormProps) => {
   const { t } = useTranslation()
   const { notification } = useAntdApp()
-  const [newReview, setNewReview] = useState({
-    rating: 1,
-    content: '',
-    isValidRating: true,
-    isValidContent: true
-  })
+  const [form] = Form.useForm()
   const { _id } = getToken()
 
   const updateReviewMutation = useMutation({
-    mutationFn: (review: typeof newReview) =>
+    mutationFn: (review: ReviewFormData) =>
       updateReview(_id, review, oldReview?._id || ''),
     onSuccess: (res: { data: { error?: string } }) => {
       if (res.data.error) {
@@ -52,85 +50,75 @@ const EditReviewForm = ({ oldReview, onRun }: EditReviewFormProps) => {
 
   useEffect(() => {
     if (oldReview) {
-      setNewReview((prev) => ({
-        ...prev,
+      form.setFieldsValue({
         rating: oldReview.rating,
         content: oldReview.content
-      }))
-    }
-  }, [oldReview])
-
-  const handleChange = (
-    name: 'rating' | 'content',
-    isValidName: 'isValidRating' | 'isValidContent',
-    value: any
-  ) => {
-    setNewReview({
-      ...newReview,
-      [name]: value,
-      [isValidName]: true
-    })
-  }
-
-  const handleValidate = (
-    isValidName: 'isValidRating' | 'isValidContent',
-    flag: boolean
-  ) => {
-    setNewReview({
-      ...newReview,
-      [isValidName]: flag
-    })
-  }
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (!newReview.rating) {
-      setNewReview({
-        ...newReview,
-        isValidRating: numberTest('oneTo5', newReview.rating),
-        isValidContent: regexTest('nullable', newReview.content)
       })
-      return
     }
-    if (!newReview.isValidRating || !newReview.isValidContent) return
-    updateReviewMutation.mutate(newReview)
+  }, [oldReview, form])
+
+  const onFinish = (values: ReviewFormData) => {
+    updateReviewMutation.mutate(values)
+  }
+
+  const validateRating = (_: any, value: number) => {
+    if (!value || value < 1 || value > 5) {
+      return Promise.reject(new Error(t('reviewDetail.isValid')))
+    }
+    return Promise.resolve()
   }
 
   return (
     <div className='relative'>
-      {updateReviewMutation.isPending && <Spin />}
-
-      <form className='row mb-2' onSubmit={handleSubmit}>
-        <div className='col-12'>
-          <RatingInput
+      <Spin spinning={updateReviewMutation.isPending}>
+        <Form
+          form={form}
+          layout='vertical'
+          onFinish={onFinish}
+          initialValues={{
+            rating: 1,
+            content: ''
+          }}
+          className='space-y-4'
+        >
+          <Form.Item
+            name='rating'
             label={t('reviewDetail.productQuality')}
-            value={newReview.rating}
-            isValid={newReview.isValidRating}
-            feedback={t('reviewDetail.isValid')}
-            onChange={(value) => handleChange('rating', 'isValidRating', value)}
-          />
-        </div>
+            rules={[{ validator: validateRating }]}
+          >
+            <Rate character={<StarOutlined />} className='text-yellow-400' />
+          </Form.Item>
 
-        <div className='col-12 mt-3'>
-          <TextArea
+          <Form.Item
+            name='content'
             label={t('reviewDetail.content')}
-            value={newReview.content}
-            isValid={newReview.isValidContent}
-            feedback={t('reviewDetail.isValid')}
-            validator='nullable'
-            onChange={(value) =>
-              handleChange('content', 'isValidContent', value)
-            }
-            onValidate={(flag) => handleValidate('isValidContent', flag)}
-          />
-        </div>
+            rules={[
+              {
+                max: 500,
+                message: t('reviewDetail.isValid')
+              }
+            ]}
+          >
+            <Input.TextArea
+              rows={4}
+              placeholder={t('reviewDetail.content')}
+              className='resize-none'
+            />
+          </Form.Item>
 
-        <div className='col-12 d-grid mt-4'>
-          <button type='submit' className='btn btn-primary ripple rounded-1'>
-            {t('button.edit')}
-          </button>
-        </div>
-      </form>
+          <Form.Item className='mb-0'>
+            <Button
+              type='primary'
+              htmlType='submit'
+              loading={updateReviewMutation.isPending}
+              icon={<EditOutlined />}
+              className='w-full h-10 bg-blue-500 hover:bg-blue-600 border-blue-500 hover:border-blue-600'
+            >
+              {t('button.edit')}
+            </Button>
+          </Form.Item>
+        </Form>
+      </Spin>
     </div>
   )
 }

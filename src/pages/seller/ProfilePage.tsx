@@ -85,7 +85,7 @@ const ProfilePage = () => {
             to={`/store/${store._id}`}
             target='_blank'
           >
-            <i className='fa-solid fa-desktop me-2'></i>
+            <i className='fa-solid fa-desktop me-2' />
             <span>{t('storeDetail.viewShop')}</span>
           </Link>
         </div>
@@ -95,7 +95,7 @@ const ProfilePage = () => {
             <div className='d-grid'>
               <span style={{ fontSize: '1.1rem' }}>
                 {t('storeDetail.vacationMode')}{' '}
-                <i className='fa-light fa-moon text-secondary'></i>
+                <i className='fa-light fa-moon text-secondary' />
               </span>
               <small className='text-secondary'>
                 {t('storeDetail.vacationModeContent')}

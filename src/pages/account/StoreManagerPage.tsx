@@ -13,7 +13,7 @@ const StoreManagerPage = () => {
   ]
   return (
     <AccountLayout user={user} paths={paths}>
-      <MetaData title={`${t('helmet.myStore')} | Buynow Việt Nam`} />
+      <MetaData title={`${t('helmet.myStore')} | ShopBase Việt Nam`} />
       <UserStoresTable />
     </AccountLayout>
   )

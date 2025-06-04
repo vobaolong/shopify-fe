@@ -6,7 +6,7 @@ import {
   getFavoriteCount,
   checkFavoriteProduct
 } from '../../apis/favoriteProduct.api'
-import Error from '../../components/ui/Error'
+import { Spin, Alert, Modal, Breadcrumb } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { FacebookShareButton } from 'react-share'
 import Carousel from '../../components/image/Carousel'
@@ -14,7 +14,7 @@ import { formatPrice } from '../../helper/formatPrice'
 import StarRating from '../../components/label/StarRating'
 import MainLayout from '../../components/layout/MainLayout'
 import ListReviews from '../../components/list/ListReviews'
-import SigninButton from '../../components/item/SigninItem'
+// import SigninButton from '../../components/item/SigninItem'
 import StoreSmallCard from '../../components/card/StoreSmallCard'
 import AddToCartForm from '../../components/item/form/AddToCartForm'
 import SalePercentLabel from '../../components/label/SalePercentLabel'
@@ -29,13 +29,10 @@ import returnImg from '../../assets/return.svg'
 import checkImg from '../../assets/package.svg'
 import { formatDate, formatOnlyDate } from '../../helper/humanReadable'
 import Skeleton from 'react-loading-skeleton'
-import Loading from '../../components/ui/Loading'
 import notFound from '../../assets/notFound.png'
-import Modal from '../../components/ui/Modal'
 import ListReport from '../../components/item/form/ListReport'
 import { useSelector } from 'react-redux'
 import { ProductType } from '../../@types/entity.types'
-import { Breadcrumb } from 'antd'
 
 const productReasons = [
   {
@@ -139,16 +136,16 @@ const DetailPage = () => {
   return (
     <MainLayout>
       <div className='position-relative'>
-        {isLoading && <Loading />}
+        {isLoading && <Spin size='large' />}
         {error ? (
           <div className='pt-4 d-flex flex-column align-items-center'>
             <img width={400} src={notFound} alt='product not found' />
-            <Error msg={error} />
+            <Alert message={error} type='error' />
           </div>
         ) : (
           product && (
             <div className='pt-3'>
-              <MetaData title={`${product.name} | Buynow Việt Nam`} />
+              <MetaData title={`${product.name} | ShopBase Việt Nam`} />
               <Breadcrumb style={{ marginBottom: 16 }}>
                 <Breadcrumb.Item>
                   <Link to='/'>{t('home')}</Link>
@@ -206,7 +203,7 @@ const DetailPage = () => {
                             className='btn menu-button'
                             onClick={handleMenuToggle}
                           >
-                            <i className='fa fa-ellipsis-v'></i>
+                            <i className='fa fa-ellipsis-v' />
                           </button>
                           {showMenu && (
                             <div className='menu d-inline-block '>
@@ -216,7 +213,7 @@ const DetailPage = () => {
                                 data-bs-toggle='modal'
                                 className='btn--with-img menu-item text-dark-emphasis'
                               >
-                                <i className='fa-solid fa-circle-info me-2'></i>
+                                <i className='fa-solid fa-circle-info me-2' />
                                 {t('report')}
                               </button>
                               <Modal
@@ -299,24 +296,32 @@ const DetailPage = () => {
                         </>
                       ) : (
                         <>
+                          {' '}
                           {product.storeId &&
                             typeof product.storeId !== 'string' &&
                             product.storeId.isOpen === false && (
-                              <Error msg={t('storeDetail.messageClose')} />
+                              <Alert
+                                message={t('storeDetail.messageClose')}
+                                type='error'
+                              />
                             )}
                           <br />
                           {product.quantity <= 0 ? (
-                            <Error msg={t('productDetail.soldOut')} />
+                            <Alert
+                              message={t('productDetail.soldOut')}
+                              type='error'
+                            />
                           ) : (
                             <small className='text-secondary'>
                               {product.quantity} sản phẩm có sẵn
                             </small>
                           )}
-                          {!getToken() && (
-                            <SigninButton
+                          {!getToken() &&
+                            {
+                              /* <SigninButton
                               title={t('button.signInToShopping')}
-                            />
-                          )}
+                            /> */
+                            }}
                           {product.storeId &&
                             typeof product.storeId !== 'string' &&
                             product.storeId.isOpen &&
@@ -381,7 +386,7 @@ const DetailPage = () => {
                           className='my-3 text-secondary border rounded p-3'
                         >
                           <span className='d-flex align-items-center gap-2'>
-                            <i className='fa-solid fa-truck me-2'></i>
+                            <i className='fa-solid fa-truck me-2' />
                             <span className='d-grid gap-1 fs-9'>
                               <span className='text-dark-emphasis fw-bold'>
                                 {t('productDetail.estimatedDelivery')}
@@ -403,7 +408,7 @@ const DetailPage = () => {
                               <FacebookShareButton
                                 url={window.location.href || ''}
                               >
-                                <i className='fa-brands fa-facebook-f text-secondary'></i>
+                                <i className='fa-brands fa-facebook-f text-secondary' />
                               </FacebookShareButton>
                             </div>
 

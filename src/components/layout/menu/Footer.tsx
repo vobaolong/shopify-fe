@@ -129,7 +129,7 @@ const Footer = () => {
             <span className='copyright-text text-center'>
               Copyright &copy; {new Date().getFullYear()} All Rights Reserved by{' '}
               <Link className='link-hover text-reset' to='#'>
-                Buynow
+                ShopBase
               </Link>
               .
             </span>
@@ -144,12 +144,12 @@ const Footer = () => {
                   target='_blank'
                   rel='noopener noreferrer'
                 >
-                  <i className='fab fa-facebook'></i>
+                  <i className='fab fa-facebook' />
                 </a>
               </li>
               <li>
                 <Link className='social' to='#'>
-                  <i className='fab fa-google'></i>
+                  <i className='fab fa-google' />
                 </Link>
               </li>
               <li>
@@ -159,7 +159,7 @@ const Footer = () => {
                   target='_blank'
                   rel='noopener noreferrer'
                 >
-                  <i className='fab fa-github'></i>
+                  <i className='fab fa-github' />
                 </a>
               </li>
               <li>
@@ -169,7 +169,7 @@ const Footer = () => {
                   target='_blank'
                   rel='noopener noreferrer'
                 >
-                  <i className='fab fa-linkedin'></i>
+                  <i className='fab fa-linkedin' />
                 </a>
               </li>
             </ul>

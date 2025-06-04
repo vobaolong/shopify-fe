@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { connect } from 'react-redux'
-import Loading from '../ui/Loading'
-import Error from '../ui/Error'
+import { Spin, Alert } from 'antd'
 import { getUserLevel } from '../../apis/level.api'
 import { countOrder } from '../../apis/order.api'
 import { getUser } from '../../apis/user.api'
@@ -60,10 +59,9 @@ const UserInit = ({ user, actions }: UserInitProps) => {
   useEffect(() => {
     if (!user || user._id !== userId) init()
   }, [userId])
-
   return isLoading ? (
     <div className='cus-position-relative-loading'>
-      <Loading size='small' />
+      <Spin size='small' />
     </div>
   ) : (
     <div className='your-store-card btn btn-outline-light cus-outline ripple'>
@@ -72,10 +70,10 @@ const UserInit = ({ user, actions }: UserInitProps) => {
         src={user.avatar || defaultImage}
         className='your-store-img'
         alt='avatar'
-      />
+      />{' '}
       <span className='your-store-name unselect'>
         {user.userName}
-        {error && <Error msg={error} />}
+        {error && <Alert message={error} type='error' showIcon />}
       </span>
     </div>
   )

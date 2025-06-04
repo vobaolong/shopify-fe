@@ -43,11 +43,11 @@ const SortByButton = ({
       >
         {title}
         {!flag ? (
-          <i className='fa-solid fa-sort ms-1 text-black-50 cus-sort-btn'></i>
+          <i className='fa-solid fa-sort ms-1 text-black-50 cus-sort-btn' />
         ) : flag === 'asc' ? (
-          <i className='fa-solid fa-arrow-up-wide-short ms-1 text-black-50 cus-sort-btn'></i>
+          <i className='fa-solid fa-arrow-up-wide-short ms-1 text-black-50 cus-sort-btn' />
         ) : (
-          <i className='fa-solid fa-arrow-down-wide-short ms-1 text-black-50 cus-sort-btn'></i>
+          <i className='fa-solid fa-arrow-down-wide-short ms-1 text-black-50 cus-sort-btn' />
         )}
       </span>
     </div>

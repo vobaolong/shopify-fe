@@ -16,7 +16,7 @@ const FollowingPage = () => {
   ]
   return (
     <AccountLayout user={user} paths={paths}>
-      <MetaData title={`${t('helmet.listFavorites')} | Buynow Việt Nam`} />
+      <MetaData title={`${t('helmet.listFavorites')} | ShopBase Việt Nam`} />
       <div className='mb-2 bg-body rounded-top-1 box-shadow'>
         <ul className='nav nav-tabs'>
           <li className='nav-item col-6 text-center pointer'>
@@ -24,9 +24,7 @@ const FollowingPage = () => {
               className={`nav-link ${flag ? 'active' : ''}`}
               onClick={() => toggleFlag(true)}
             >
-              <i
-                className={` ${flag ? 'fa-solid' : 'fa-light'} fa-box me-2`}
-              ></i>
+              <i className={` ${flag ? 'fa-solid' : 'fa-light'} fa-box me-2`} />
               <span className='res-hide'>{t('favProduct')}</span>
             </span>
           </li>
@@ -37,7 +35,7 @@ const FollowingPage = () => {
             >
               <i
                 className={` ${flag ? 'fa-light' : 'fa-solid'} fa-store me-2`}
-              ></i>
+              />
               <span className='res-hide'>{t('favStore')}</span>
             </span>
           </li>

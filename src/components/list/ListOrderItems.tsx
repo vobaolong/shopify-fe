@@ -6,8 +6,7 @@ import {
   listItemsByOrderForAdmin
 } from '../../apis/order.api'
 import { formatPrice } from '../../helper/formatPrice'
-import Loading from '../ui/Loading'
-import Error from '../ui/Error'
+import { Spin, Alert } from 'antd'
 import ReviewItem from '../item/ReviewItem'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
@@ -36,11 +35,12 @@ const ListOrderItems = ({
     enabled: !!orderId
   })
   const items: any[] = data?.items || []
-
   return (
     <div className='list-order-items position-relative py-1'>
-      {isLoading && <Loading />}
-      {isError && <Error msg={error?.message || 'Server Error'} />}
+      {isLoading && <Spin size='large' />}
+      {isError && (
+        <Alert message={error?.message || 'Server Error'} type='error' />
+      )}
       <small className='text-muted d-inline-block'>
         {t('orderDetail.note')}
       </small>
@@ -91,7 +91,6 @@ const ListOrderItems = ({
                     {item.productId?.name}
                   </p>
                 )}
-
                 <div className='mt-1'>
                   {item.variantValueIds?.map((value: any, index: number) => (
                     <p
@@ -103,7 +102,6 @@ const ListOrderItems = ({
                     </p>
                   ))}
                 </div>
-
                 <div className='mt-1 d-flex gap-4'>
                   <p className='text-decoration-line-through text-muted'>
                     {formatPrice(item.productId?.price?.$numberDecimal)}
@@ -115,26 +113,24 @@ const ListOrderItems = ({
                     <sup>₫</sup>{' '}
                     <span className='text-secondary fs-6'>x {item.count}</span>
                   </h4>
-                </div>
-
+                </div>{' '}
                 {item.productId?.isActive && !item.productId?.isSelling && (
-                  <Error msg={t('productDetail.error')} />
+                  <Alert message={t('productDetail.error')} type='error' />
                 )}
-
                 {item.productId?.isActive &&
                   item.productId?.isSelling &&
                   item.productId?.quantity <= 0 && (
-                    <Error msg={t('productDetail.soldOut')} />
-                  )}
-
+                    <Alert message={t('productDetail.soldOut')} type='error' />
+                  )}{' '}
                 {item.productId?.isActive &&
                   item.productId?.isSelling &&
                   item.productId?.quantity > 0 &&
                   item.productId?.quantity < item.count && (
-                    <Error
-                      msg={`${t('productDetail.warning')} ${
+                    <Alert
+                      message={`${t('productDetail.warning')} ${
                         item.productId?.quantity
                       } `}
+                      type='warning'
                     />
                   )}
               </div>

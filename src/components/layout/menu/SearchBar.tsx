@@ -9,12 +9,12 @@ const SearchBar = () => {
     {
       value: 'products',
       label: t('product'),
-      icon: <i className='fa-light fa-box'></i>
+      icon: <i className='fa-light fa-box' />
     },
     {
       value: 'stores',
       label: t('store'),
-      icon: <i className='fa-light fa-store'></i>
+      icon: <i className='fa-light fa-store' />
     }
   ]
   const location = useLocation()
@@ -64,7 +64,7 @@ const SearchBar = () => {
         type='submit'
         onClick={handleFormSubmit}
       >
-        <i className='fa-light fa-search'></i>
+        <i className='fa-light fa-search' />
       </button>
     </form>
   )

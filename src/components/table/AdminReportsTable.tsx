@@ -160,7 +160,7 @@ const AdminReportsTable = () => {
             <Tooltip title={t('button.view')}>
               <Button
                 type='primary'
-                icon={<i className='fa-solid fa-eye'></i>}
+                icon={<i className='fa-solid fa-eye' />}
                 href={getLinkTo(record)}
               />
             </Tooltip>
@@ -169,7 +169,7 @@ const AdminReportsTable = () => {
                 type='default'
                 variant='outlined'
                 danger
-                icon={<i className='fa-solid fa-trash-alt'></i>}
+                icon={<i className='fa-solid fa-trash-alt' />}
                 loading={deleteMutation.isPending}
                 onClick={() => handleDelete(record._id)}
               />
@@ -411,7 +411,7 @@ const AdminReportsTable = () => {
                 <Button
                   type='primary'
                   danger
-                  icon={<i className='fa-solid fa-trash-alt'></i>}
+                  icon={<i className='fa-solid fa-trash-alt' />}
                   loading={isProcessingBulkDelete}
                   onClick={handleBulkDelete}
                 >

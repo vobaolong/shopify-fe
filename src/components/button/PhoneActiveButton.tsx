@@ -7,7 +7,7 @@ const PhoneActiveItem = ({ phone = '', isPhoneActive = false }) => {
       {phone && isPhoneActive && (
         <div className='position-relative d-inline-block'>
           <span className='badge bg-primary cus-tooltip rounded-1'>
-            <i className='fa-regular fa-circle-check me-2'></i>
+            <i className='fa-regular fa-circle-check me-2' />
             {t('verified')}
           </span>
           <small className='cus-tooltip-msg'>Phone number Verified</small>
@@ -22,7 +22,7 @@ const PhoneActiveItem = ({ phone = '', isPhoneActive = false }) => {
               className='btn btn-warning btn-sm text-white cus-tooltip ripple'
               onClick={() => {}}
             >
-              <i className='fa-solid fa-sms me-2'></i>
+              <i className='fa-solid fa-sms me-2' />
               Xác thực ngay
             </button>
             <small className='cus-tooltip-msg'>

@@ -2,12 +2,12 @@
 import { useState, useEffect } from 'react'
 import { getToken } from '../../apis/auth.api'
 import { checkReview } from '../../apis/review.api'
-import Loading from '../ui/Loading'
-import Modal from '../ui/Modal'
 import ReviewForm from './form/ReviewForm'
 import { humanReadableDate } from '../../helper/humanReadable'
 import { calcTime } from '../../helper/calcTime'
 import { useTranslation } from 'react-i18next'
+import { Button, Modal, Spin, Tooltip } from 'antd'
+import { CommentOutlined } from '@ant-design/icons'
 
 interface ReviewItemProps {
   orderId?: string
@@ -19,6 +19,7 @@ interface ReviewItemProps {
   productVariantValue?: string
   detail?: boolean
   date?: string
+  onRun?: () => void
 }
 
 const ReviewItem = ({
@@ -30,7 +31,8 @@ const ReviewItem = ({
   productVariant = '',
   productVariantValue = '',
   detail = true,
-  date = ''
+  date = '',
+  onRun
 }: ReviewItemProps) => {
   const { t } = useTranslation()
   const [isLoading, setIsLoading] = useState(false)
@@ -62,64 +64,85 @@ const ReviewItem = ({
   useEffect(() => {
     init()
   }, [orderId, storeId, productId])
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const showModal = () => {
+    setIsModalOpen(true)
+  }
+
+  const handleCancel = () => {
+    setIsModalOpen(false)
+  }
+
+  const handleReviewSuccess = () => {
+    setIsModalOpen(false)
+    setIsReviewed(true)
+    if (onRun) onRun()
+  }
 
   return (
-    <div className='review-item position-relative d-inline-block'>
-      {isLoading ? (
-        <Loading />
-      ) : (
-        <>
-          <div className='cus-tooltip d-flex justify-content-end'>
-            {calcTime(deliveredDate) > 0}
-            <button
-              type='button'
+    <div className='relative inline-block'>
+      <Spin spinning={isLoading}>
+        <div className='flex justify-end'>
+          <Tooltip
+            title={
+              isReviewed
+                ? t('reviewDetail.reviewed')
+                : calcTime(deliveredDate) > 0
+                  ? `${t('reviewDetail.cannotReview')} ${humanReadableDate(deliveredDate)}.`
+                  : ''
+            }
+          >
+            <Button
+              type='primary'
+              icon={<CommentOutlined />}
               disabled={isReviewed || calcTime(deliveredDate) > 0}
-              className='btn btn-primary ripple text-nowrap rounded-1'
-              data-bs-toggle='modal'
-              data-bs-target='#review-form'
+              className='text-nowrap rounded'
+              onClick={showModal}
             >
-              <i className='fa-solid fa-comment-dots'></i>
               {detail && (
-                <span className='ms-2 res-hide-lg'>{t('filters.rating')}</span>
+                <span className='ml-1 hidden lg:inline'>
+                  {t('filters.rating')}
+                </span>
               )}
-            </button>
-            {!isReviewed && (
-              <Modal
-                id='review-form'
-                hasCloseBtn={false}
-                title={t('productDetail.productReview')}
-              >
-                <ReviewForm
-                  orderId={orderId}
-                  storeId={storeId}
-                  productId={productId}
-                  productName={productName}
-                  productImage={productImage}
-                  productVariant={productVariant}
-                  productVariantValue={productVariantValue}
-                  onRun={() => setIsReviewed(true)}
-                />
-              </Modal>
-            )}
-          </div>
-          {!isReviewed && (
-            <small>
-              {t('reviewDetail.ratingBy')}
-              <u
-                title={`${t('reviewDetail.cannotReview')} ${humanReadableDate(
-                  deliveredDate
-                )}.`}
-                style={{ cursor: 'help' }}
-              >
+            </Button>
+          </Tooltip>
+        </div>
+
+        {!isReviewed && (
+          <div className='mt-1 text-xs text-gray-500'>
+            {t('reviewDetail.ratingBy')}{' '}
+            <Tooltip
+              title={`${t('reviewDetail.cannotReview')} ${humanReadableDate(deliveredDate)}.`}
+            >
+              <span className='underline cursor-help'>
                 {humanReadableDate(deliveredDate)}
-              </u>
-            </small>
-          )}
-          {isReviewed && (
-            <small className='cus-tooltip-msg'>Sản phẩm đã được đánh giá</small>
-          )}
-        </>
-      )}
+              </span>
+            </Tooltip>
+          </div>
+        )}
+
+        {!isReviewed && (
+          <Modal
+            open={isModalOpen}
+            onCancel={handleCancel}
+            footer={null}
+            title={t('productDetail.productReview')}
+            destroyOnClose
+          >
+            <ReviewForm
+              orderId={orderId}
+              storeId={storeId}
+              productId={productId}
+              productName={productName}
+              productImage={productImage}
+              productVariant={productVariant}
+              productVariantValue={productVariantValue}
+              onRun={handleReviewSuccess}
+            />
+          </Modal>
+        )}
+      </Spin>
     </div>
   )
 }

@@ -5,12 +5,10 @@ import { useNavigate } from 'react-router-dom'
 import { getToken } from '../../../apis/auth.api'
 import { createOrder } from '../../../apis/order.api'
 import { getStoreLevel } from '../../../apis/level.api'
-import Loading from '../../ui/Loading'
-import Error from '../../ui/Error'
 import ConfirmDialog from '../../ui/ConfirmDialog'
 import UserAddAddressItem from '../../item/UserAddAddressItem'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
-import { regexTest } from '../../../helper/test'
+import { regexTest } from '../../../constants/regex.constant'
 
 import vnpayImage from '../../../assets/vnpay-seeklogo.svg'
 import {
@@ -20,8 +18,8 @@ import {
 } from '../../../helper/total'
 import { formatPrice } from '../../../helper/formatPrice'
 import Logo from '../../layout/menu/Logo'
-import Input from '../../ui/Input'
 import DropDownMenu from '../../ui/DropDownMenu'
+import { Spin, Alert, Input } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import defaultImg from '../../../assets/default.webp'
@@ -368,10 +366,13 @@ const CheckoutForm = ({
         }, 3000)
       })
   }
-
   return (
     <div className='position-relative'>
-      {isLoading && <Loading />}
+      {isLoading && (
+        <div className='d-flex justify-content-center p-4'>
+          <Spin size='large' />
+        </div>
+      )}
       <div className='container-fluid'>
         <form className='rounded-1 row border' onSubmit={handleSubmit}>
           <div className='col-12 bg-primary rounded-top-1 p-2 px-3'>
@@ -383,45 +384,65 @@ const CheckoutForm = ({
               <span className='fw-semibold col-12 fs-12'>
                 {t('orderDetail.userReceiver')}
               </span>
-              <hr className='my-2' />
+              <hr className='my-2' />{' '}
               <div className='col-6 d-flex justify-content-between align-items-end'>
                 <div className='flex-grow-1'>
-                  <Input
-                    type='text'
-                    label={t('userDetail.userName')}
-                    value={order?.userName || ''}
-                    isValid={order?.isValidFirstName}
-                    feedback={t('userDetail.validFirstName')}
-                    validator='name'
-                    placeholder='Ví dụ: Nguyen Van'
-                    required={true}
-                    onChange={(value) =>
-                      handleChange('userName', 'isValidFirstName', value)
-                    }
-                    onValidate={(flag) =>
-                      handleValidate('isValidFirstName', flag)
-                    }
-                  />
+                  <div className='mb-3'>
+                    <label className='form-label fw-medium'>
+                      {t('userDetail.userName')}{' '}
+                      <span className='text-danger'>*</span>
+                    </label>
+                    <Input
+                      type='text'
+                      placeholder='Ví dụ: Nguyen Van'
+                      value={order?.userName || ''}
+                      status={order?.isValidFirstName === false ? 'error' : ''}
+                      onChange={(e) =>
+                        handleChange(
+                          'userName',
+                          'isValidFirstName',
+                          e.target.value
+                        )
+                      }
+                      onBlur={(e) => {
+                        const isValid = regexTest('name', e.target.value)
+                        handleValidate('isValidFirstName', isValid)
+                      }}
+                    />
+                    {order?.isValidFirstName === false && (
+                      <div className='text-danger mt-1 small'>
+                        {t('userDetail.validFirstName')}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              </div>{' '}
               <div className='col-6 d-flex justify-content-between align-items-end'>
                 <div className='flex-grow-1'>
-                  <Input
-                    type='text'
-                    label={t('userDetail.name')}
-                    value={order?.name || ''}
-                    isValid={order?.isValidLastName}
-                    feedback={t('userDetail.validLastName')}
-                    validator='name'
-                    placeholder='Ví dụ: A'
-                    required={true}
-                    onChange={(value) =>
-                      handleChange('name', 'isValidLastName', value)
-                    }
-                    onValidate={(flag) =>
-                      handleValidate('isValidLastName', flag)
-                    }
-                  />
+                  <div className='mb-3'>
+                    <label className='form-label fw-medium'>
+                      {t('userDetail.name')}{' '}
+                      <span className='text-danger'>*</span>
+                    </label>
+                    <Input
+                      type='text'
+                      placeholder='Ví dụ: A'
+                      value={order?.name || ''}
+                      status={order?.isValidLastName === false ? 'error' : ''}
+                      onChange={(e) =>
+                        handleChange('name', 'isValidLastName', e.target.value)
+                      }
+                      onBlur={(e) => {
+                        const isValid = regexTest('name', e.target.value)
+                        handleValidate('isValidLastName', isValid)
+                      }}
+                    />
+                    {order?.isValidLastName === false && (
+                      <div className='text-danger mt-1 small'>
+                        {t('userDetail.validLastName')}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className='d-inline-block position-relative ms-4'>
@@ -456,30 +477,40 @@ const CheckoutForm = ({
                         })
                       }}
                     >
-                      <i className='fa-light fa-user-large'></i>
+                      <i className='fa-light fa-user-large' />
                     </button>
                   </div>
                   <small className='cus-tooltip-msg'>
                     {t('orderDetail.useRegisterLastName')}
                   </small>
                 </div>
-              </div>
+              </div>{' '}
               <div className='col-12 mt-2 d-flex justify-content-between align-items-end'>
                 <div className='flex-grow-1'>
-                  <Input
-                    type='text'
-                    label={t('userDetail.phone')}
-                    value={order?.phone || ''}
-                    isValid={order?.isValidPhone}
-                    feedback={t('userDetail.phoneValid')}
-                    validator='phone'
-                    placeholder='Ví dụ: 098***3433'
-                    required={true}
-                    onChange={(value) =>
-                      handleChange('phone', 'isValidPhone', value)
-                    }
-                    onValidate={(flag) => handleValidate('isValidPhone', flag)}
-                  />
+                  <div className='mb-3'>
+                    <label className='form-label fw-medium'>
+                      {t('userDetail.phone')}{' '}
+                      <span className='text-danger'>*</span>
+                    </label>
+                    <Input
+                      type='text'
+                      placeholder='Ví dụ: 098***3433'
+                      value={order?.phone || ''}
+                      status={order?.isValidPhone === false ? 'error' : ''}
+                      onChange={(e) =>
+                        handleChange('phone', 'isValidPhone', e.target.value)
+                      }
+                      onBlur={(e) => {
+                        const isValid = regexTest('phone', e.target.value)
+                        handleValidate('isValidPhone', isValid)
+                      }}
+                    />
+                    {order?.isValidPhone === false && (
+                      <div className='text-danger mt-1 small'>
+                        {t('userDetail.phoneValid')}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className='d-inline-block position-relative ms-4'>
@@ -514,7 +545,7 @@ const CheckoutForm = ({
                         })
                       }}
                     >
-                      <i className='fa-light fa-phone'></i>
+                      <i className='fa-light fa-phone' />
                     </button>
                   </div>
                   <small className='cus-tooltip-msg'>
@@ -522,7 +553,6 @@ const CheckoutForm = ({
                   </small>
                 </div>
               </div>
-
               <div className='col-12 mt-2 d-flex justify-content-between align-items-end'>
                 <div className='flex-grow-1'>
                   <DropDownMenu
@@ -563,8 +593,7 @@ const CheckoutForm = ({
                     }}
                     size='lg'
                     label={t('userDetail.address')}
-                  />
-
+                  />{' '}
                   {addresses?.length <= 0 && (
                     <small
                       style={{
@@ -572,7 +601,12 @@ const CheckoutForm = ({
                         display: 'block'
                       }}
                     >
-                      <Error msg='Vui lòng chọn địa chỉ nhận hàng' />
+                      <Alert
+                        message='Vui lòng chọn địa chỉ nhận hàng'
+                        type='warning'
+                        showIcon
+                        size='small'
+                      />
                     </small>
                   )}
                 </div>
@@ -654,7 +688,7 @@ const CheckoutForm = ({
                   order?.amountFromUser1 &&
                   order.totalSalePrice - order.amountFromUser1 > 0 && (
                     <dt className='col-7 text-secondary fw-normal'>
-                      {t('cartDetail.BuynowVoucherApplied')}
+                      {t('cartDetail.ShopBaseVoucherApplied')}
                     </dt>
                   )}
                 {order?.totalSalePrice &&
@@ -725,14 +759,12 @@ const CheckoutForm = ({
                     </span>
                   </dl>
                 </dd>
-              </dl>
-
+              </dl>{' '}
               {error && (
                 <div className='my-1'>
-                  <Error msg={error} />
+                  <Alert message={error} type='error' showIcon />
                 </div>
               )}
-
               <div className='mt-2'>
                 <button
                   type='submit'

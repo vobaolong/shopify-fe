@@ -1,11 +1,10 @@
 import { getToken } from '../../../apis/auth.api'
 import { updateCover } from '../../../apis/store.api'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
-import Loading from '../../ui/Loading'
-import Error from '../../ui/Error'
 import { toast } from 'react-toastify'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from '@tanstack/react-query'
+import { Alert, Spin } from 'antd'
 
 interface StoreCoverUploadProps {
   storeId: string
@@ -43,10 +42,10 @@ const StoreCoverUpload = ({ storeId }: StoreCoverUploadProps) => {
 
   return (
     <>
-      {isLoading && <Loading />}
+      {error && <Alert type='error' message={error} className='mb-2' />}
+      {isLoading && <Spin />}
       <label className='cus-cover-icon'>
-        <i className='fa-solid fa-camera'></i>
-        {error && <Error msg={error} />}
+        <i className='fa-solid fa-camera' />
         <input
           className='visually-hidden'
           type='file'

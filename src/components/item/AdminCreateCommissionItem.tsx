@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import Modal from '../ui/Modal'
 import AdminCreateCommissionForm from './form/AdminCreateCommissionForm'
+import { Button, Modal } from 'antd'
+import { PlusOutlined } from '@ant-design/icons'
 
 interface AdminCreateCommissionItemProps {
   onRun?: () => void
@@ -10,24 +12,42 @@ const AdminCreateCommissionItem = ({
   onRun = () => {}
 }: AdminCreateCommissionItemProps) => {
   const { t } = useTranslation()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const showModal = () => {
+    setIsModalOpen(true)
+  }
+
+  const handleCancel = () => {
+    setIsModalOpen(false)
+  }
+
+  const handleSuccess = () => {
+    setIsModalOpen(false)
+    onRun()
+  }
+
   return (
-    <div className='admin-create-commission-item d-inline-block'>
-      <button
-        type='button'
-        className='btn btn-primary ripple text-nowrap rounded-1'
-        data-bs-toggle='modal'
-        data-bs-target='#admin-create-commission-form'
+    <div className='inline-block'>
+      <Button
+        type='primary'
+        icon={<PlusOutlined />}
+        className='text-nowrap rounded'
+        onClick={showModal}
       >
-        <i className='fa-light fa-plus'></i>
-        <span className='ms-2 res-hide'>{t('commissionDetail.add')}</span>
-      </button>
+        <span className='ml-1 hidden sm:inline'>
+          {t('commissionDetail.add')}
+        </span>
+      </Button>
 
       <Modal
-        id='admin-create-commission-form'
-        hasCloseBtn={false}
+        open={isModalOpen}
+        onCancel={handleCancel}
+        footer={null}
         title={t('dialog.addCommission')}
+        destroyOnClose
       >
-        <AdminCreateCommissionForm onRun={onRun} />
+        <AdminCreateCommissionForm onRun={handleSuccess} />
       </Modal>
     </div>
   )

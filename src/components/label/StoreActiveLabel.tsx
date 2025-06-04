@@ -11,13 +11,13 @@ const StoreActiveLabel = ({ isActive = false, detail = true }) => {
       >
         {isActive ? (
           <span className='px-1 text-success'>
-            <i className='fa-regular fa-circle-check'></i>
+            <i className='fa-regular fa-circle-check' />
 
             {detail && <span className='ms-2'>{t('status.active')}</span>}
           </span>
         ) : (
           <span className='px-1 text-danger'>
-            <i className='fa-solid fa-ban'></i>
+            <i className='fa-solid fa-ban' />
             {detail && <span className='ms-2'>{t('status.banned')}</span>}
           </span>
         )}

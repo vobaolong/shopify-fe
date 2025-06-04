@@ -27,16 +27,13 @@ const ProductCard = ({ product, onRun }: ProductCardProps) => {
   const { t } = useTranslation()
   const { _id: userId } = getToken() || {}
 
-  // Use custom hooks instead of direct API calls
   const { data: followerCount = 0, isLoading: isLoadingFollowers } =
     useProductFavoriteCount(product._id)
   const { data: isFollowing = false, isLoading: isLoadingFollowStatus } =
     useIsFavoriteProduct(userId, product._id)
 
-  // Determine if still loading any data
   const isLoading = isLoadingFollowers || isLoadingFollowStatus
 
-  // Update productValue when data changes
   useMemo(() => {
     if (!isLoading) {
       setProductValue({

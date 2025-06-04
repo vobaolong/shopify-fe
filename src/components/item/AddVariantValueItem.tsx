@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import Modal from '../ui/Modal'
 import AddVariantValueForm from './form/AddVariantValueForm'
+import { Button, Modal } from 'antd'
+import { PlusOutlined } from '@ant-design/icons'
 
 interface AddVariantValueItemProps {
   variantId?: string
@@ -16,33 +18,45 @@ const AddVariantValueItem = ({
   isFullWidth = false
 }: AddVariantValueItemProps) => {
   const { t } = useTranslation()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const showModal = () => {
+    setIsModalOpen(true)
+  }
+
+  const handleCancel = () => {
+    setIsModalOpen(false)
+  }
+
+  const handleSuccess = () => {
+    setIsModalOpen(false)
+    if (onRun) onRun()
+  }
+
   return (
-    <div
-      className={`position-relative d-inline-block ${
-        isFullWidth ? 'w-100' : ''
-      }`}
-    >
-      <button
-        type='button'
-        className={`btn btn-primary ripple text-nowrap rounded-1 ${
-          isFullWidth ? 'w-100' : ''
-        }`}
-        data-bs-toggle='modal'
-        data-bs-target={`#add-variant-value-form-${variantId}`}
+    <div className={`relative inline-block ${isFullWidth ? 'w-full' : ''}`}>
+      <Button
+        type='primary'
+        icon={<PlusOutlined />}
+        className={`text-nowrap rounded ${isFullWidth ? 'w-full' : ''}`}
+        onClick={showModal}
       >
-        <i className='fa-light fa-plus'></i>
-        <span className='ms-2 res-hide'>{t('variantDetail.value.add')}</span>
-      </button>
+        <span className='ml-1 hidden sm:inline'>
+          {t('variantDetail.value.add')}
+        </span>
+      </Button>
 
       <Modal
-        id={`add-variant-value-form-${variantId}`}
-        hasCloseBtn={false}
+        open={isModalOpen}
+        onCancel={handleCancel}
+        footer={null}
         title={`${t('variantDetail.value.add')} '${variantName}'`}
+        destroyOnClose
       >
         <AddVariantValueForm
           variantId={variantId}
           variantName={variantName}
-          onRun={onRun}
+          onRun={handleSuccess}
         />
       </Modal>
     </div>

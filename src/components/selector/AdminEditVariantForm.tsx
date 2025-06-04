@@ -5,9 +5,9 @@ import { toast } from 'react-toastify'
 import { CategoryType } from '../../@types/entity.types'
 import { getToken } from '../../apis/auth.api'
 import { getVariantById, updateVariant } from '../../apis/variant.api'
-import { regexTest } from '../../helper/test'
+import { regexTest } from '../../constants/regex.constant'
 import ConfirmDialog from '../ui/ConfirmDialog'
-import Loading from '../ui/Loading'
+import { Spin, Alert } from 'antd'
 import MultiCategorySelector from './MultiCategorySelector'
 import { Input } from 'antd'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -132,10 +132,9 @@ const AdminEditVariantForm = ({ variantId = '' }: { variantId?: string }) => {
     setError('')
     updateVariantMutation.mutate()
   }
-
   return (
     <div className='container-fluid position-relative'>
-      {isLoading && <Loading />}
+      {isLoading && <Spin size='large' />}
       {isConfirming && (
         <ConfirmDialog
           title={t('categoryDetail.edit')}
@@ -189,7 +188,7 @@ const AdminEditVariantForm = ({ variantId = '' }: { variantId?: string }) => {
             to='/admin/variant'
             className='text-decoration-none cus-link-hover res-w-100-md my-2'
           >
-            <i className='fa-solid fa-angle-left'></i> {t('button.back')}
+            <i className='fa-solid fa-angle-left' /> {t('button.back')}
           </Link>
           <button
             type='submit'

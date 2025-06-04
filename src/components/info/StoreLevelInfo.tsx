@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import Paragraph from '../ui/Paragraph'
 import Skeleton from 'react-loading-skeleton'
 import { formatMonth } from '../../helper/humanReadable'
-import Modal from '../ui/Modal'
+import { Modal } from 'antd'
 import ListReport from '../item/form/ListReport'
 import { getToken } from '../../apis/auth.api'
 import { useSelector } from 'react-redux'
@@ -23,11 +23,22 @@ const StoreLevelInfo = ({ store = {} }: StoreLevelInfoProps) => {
     totalOrders > 0
       ? Math.round((store?.numberOfSuccessfulOrders / totalOrders) * 100) || 100
       : 100
+
   const [showMenu, setShowMenu] = useState(false)
+  const [modalVisible, setModalVisible] = useState(false)
   const user = useSelector((state: any) => state.account.user)
 
   const handleMenuToggle = () => {
     setShowMenu(!showMenu)
+  }
+
+  const handleReportClick = () => {
+    setModalVisible(true)
+    setShowMenu(false)
+  }
+
+  const handleModalClose = () => {
+    setModalVisible(false)
   }
 
   return (
@@ -39,7 +50,7 @@ const StoreLevelInfo = ({ store = {} }: StoreLevelInfoProps) => {
               <Paragraph
                 label={
                   <span>
-                    <i className='fa-light fa-star me-2 text-secondary'></i>
+                    <i className='fa-light fa-star me-2 text-secondary' />
                     {t('storeDetail.rating')}
                   </span>
                 }
@@ -51,7 +62,7 @@ const StoreLevelInfo = ({ store = {} }: StoreLevelInfoProps) => {
                       {store.rating === 0 && store.numberOfReviews === 0
                         ? '4'
                         : store.rating}{' '}
-                      / 5 <i className='fa-solid fa-star text-warning'></i>
+                      / 5 <i className='fa-solid fa-star text-warning' />
                     </span>
                   ) : (
                     <Skeleton height={20} />
@@ -63,7 +74,7 @@ const StoreLevelInfo = ({ store = {} }: StoreLevelInfoProps) => {
               <Paragraph
                 label={
                   <span>
-                    <i className='fa-light fa-user-check me-2 text-secondary'></i>
+                    <i className='fa-light fa-user-check me-2 text-secondary' />
                     {t('joined')}
                   </span>
                 }
@@ -83,7 +94,7 @@ const StoreLevelInfo = ({ store = {} }: StoreLevelInfoProps) => {
               <Paragraph
                 label={
                   <span>
-                    <i className='fa-light fa-user-group me-2 text-secondary'></i>
+                    <i className='fa-light fa-user-group me-2 text-secondary' />
                     {t('storeDetail.followers')}
                   </span>
                 }
@@ -104,7 +115,7 @@ const StoreLevelInfo = ({ store = {} }: StoreLevelInfoProps) => {
               <Paragraph
                 label={
                   <span>
-                    <i className='fa-light fa-box-check me-2 text-secondary'></i>
+                    <i className='fa-light fa-box-check me-2 text-secondary' />
                     {t('success/failure')}
                   </span>
                 }
@@ -128,40 +139,42 @@ const StoreLevelInfo = ({ store = {} }: StoreLevelInfoProps) => {
                     className='btn menu-button'
                     onClick={handleMenuToggle}
                   >
-                    <i className='fa fa-ellipsis-v'></i>
-                  </button>
+                    <i className='fa fa-ellipsis-v' />
+                  </button>{' '}
                   {showMenu && (
                     <div className='menu d-inline-block'>
                       <button
                         type='button'
-                        data-bs-target='#report'
-                        data-bs-toggle='modal'
+                        onClick={handleReportClick}
                         className='btn--with-img menu-item'
                       >
-                        <i className='fa-light fa-circle-info me-2'></i>
+                        <i className='fa-light fa-circle-info me-2' />
                         {t('report')}
                       </button>
-                      <Modal
-                        hasCloseBtn={false}
-                        title={t('dialog.report')}
-                        id='report'
-                      >
-                        <ListReport
-                          reasons={reportStoreReasons}
-                          objectId={store._id}
-                          reportBy={user._id}
-                          isStore={true}
-                          isProduct={false}
-                          isReview={false}
-                        />
-                      </Modal>
                     </div>
                   )}
                 </div>
               </div>
-            )}
+            )}{' '}
         </div>
       </div>
+
+      <Modal
+        title={t('dialog.report')}
+        open={modalVisible}
+        onCancel={handleModalClose}
+        footer={null}
+        closable
+      >
+        <ListReport
+          reasons={reportStoreReasons}
+          objectId={store._id}
+          reportBy={user._id}
+          isStore={true}
+          isProduct={false}
+          isReview={false}
+        />
+      </Modal>
     </div>
   )
 }

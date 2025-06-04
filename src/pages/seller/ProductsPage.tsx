@@ -42,7 +42,7 @@ const ProductsPage = () => {
           className='btn btn-primary ripple text-nowrap rounded-1 ms-2'
           to={`/seller/products/addNew/${store._id}`}
         >
-          <i className='fa-light fa-plus me-1'></i>
+          <i className='fa-light fa-plus me-1' />
           <span>{t('productDetail.createProduct')}</span>
         </Link>
       </div>

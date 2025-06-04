@@ -9,8 +9,8 @@ import StoreActiveLabel from '../label/StoreActiveLabel'
 import StoreStatusLabel from '../label/StoreStatusLabel'
 import Pagination from '../ui/Pagination'
 import SearchInput from '../ui/SearchInput'
-import Loading from '../ui/Loading'
-import Error from '../ui/Error'
+import { Spin, Alert, Table, Button } from 'antd'
+import type { ColumnsType } from 'antd/es/table'
 import SortByButton from './sub/SortByButton'
 import { useTranslation } from 'react-i18next'
 import ShowResult from '../ui/ShowResult'
@@ -23,9 +23,19 @@ const UserStoresTable = ({ heading = false }) => {
   const [error, setError] = useState('')
   const [stores, setStores] = useState([])
   const [pagination, setPagination] = useState({
-    size: 0
+    size: 0,
+    pageCurrent: 1,
+    pageCount: 1
   })
   const [filter, setFilter] = useState({
+    search: '',
+    sortBy: 'point',
+    sortMoreBy: 'rating',
+    order: 'desc',
+    limit: 8,
+    page: 1
+  })
+  const [pendingFilter, setPendingFilter] = useState({
     search: '',
     sortBy: 'point',
     sortMoreBy: 'rating',
@@ -62,13 +72,16 @@ const UserStoresTable = ({ heading = false }) => {
   useEffect(() => {
     init()
   }, [filter])
-
   const handleChangeKeyword = (keyword) => {
-    setFilter({
-      ...filter,
+    setPendingFilter({
+      ...pendingFilter,
       search: keyword,
       page: 1
     })
+  }
+
+  const handleSearch = () => {
+    setFilter({ ...pendingFilter })
   }
 
   const handleChangePage = (newPage) => {
@@ -86,26 +99,106 @@ const UserStoresTable = ({ heading = false }) => {
     })
   }
 
+  // Define columns for Antd Table
+  const columns: ColumnsType<any> = [
+    {
+      title: '#',
+      key: 'index',
+      width: 60,
+      align: 'center',
+      render: (_, __, index) => index + 1 + (filter.page - 1) * filter.limit
+    },
+    {
+      title: t('storeDetail.avatar'),
+      key: 'avatar',
+      width: 100,
+      render: (_, store) => <StoreSmallCard store={store} />
+    },
+    {
+      title: t('storeDetail.storeName'),
+      key: 'name',
+      sorter: true,
+      render: (_, store) => <StoreSmallCard store={store} />
+    },
+    {
+      title: t('storeDetail.role'),
+      key: 'role',
+      sorter: true,
+      render: (_, store) => (
+        <ManagerRoleLabel
+          role={_id === store.ownerId._id ? 'owner' : 'staff'}
+        />
+      )
+    },
+    {
+      title: t('status.active'),
+      key: 'isActive',
+      sorter: true,
+      render: (_, store) => <StoreActiveLabel isActive={store.isActive} />
+    },
+    {
+      title: t('status.status'),
+      key: 'isOpen',
+      sorter: true,
+      render: (_, store) => <StoreStatusLabel isOpen={store.isOpen} />
+    },
+    {
+      title: t('joined'),
+      key: 'createdAt',
+      sorter: true,
+      render: (_, store) => <span>{formatDate(store.createdAt)}</span>
+    },
+    {
+      title: t('action'),
+      key: 'action',
+      width: 120,
+      render: (_, store) => (
+        <Link
+          className='btn btn-sm btn-outline-primary ripple rounded-1'
+          to={`/seller/${store._id}`}
+          title={t('storeDetail.manage')}
+        >
+          <i className='fa-solid fa-eye me-2' />
+          <span className='res-hide'>{t('storeDetail.manage')}</span>
+        </Link>
+      )
+    }
+  ]
+
+  const handleTableChange = (
+    paginationInfo: any,
+    filters: any,
+    sorter: any
+  ) => {
+    if (sorter.order) {
+      handleSetSortBy(sorter.order === 'ascend' ? 'asc' : 'desc', sorter.field)
+    }
+  }
+
   return (
     <div className='position-relative'>
-      {heading && <h5 className='text-start'>{t('myStore')}</h5>}
-      {isLoading && <Loading />}
-      {error && <Error msg={error} />}
+      {heading && <h5 className='text-start'>{t('myStore')}</h5>}{' '}
+      {isLoading && <Spin size='large' />}
+      {error && <Alert message={error} type='error' />}
       <div className='p-3 bg-white rounded-md'>
+        {' '}
         <div className='flex gap-3 items-center flex-wrap'>
-          <SearchInput onChange={handleChangeKeyword} />
+          <SearchInput
+            value={pendingFilter.search || ''}
+            onChange={handleChangeKeyword}
+            onSearch={handleSearch}
+          />
           <div className='ms-2 flex-1'>
             <Link
               type='button'
               className='btn btn-primary ripple text-nowrap rounded-1'
               to='/account/store/create'
             >
-              <i className='fa-light fa-plus'></i>
+              <i className='fa-light fa-plus' />
               <span className='ms-2 res-hide'>{t('createStore')}</span>
             </Link>
           </div>
         </div>
-
         {!isLoading && stores.length === 0 ? (
           <div className='my-3 text-center'>
             <img className='mb-3' src={boxImg} alt='boxImg' width={'80px'} />
@@ -114,129 +207,15 @@ const UserStoresTable = ({ heading = false }) => {
         ) : (
           <>
             <div className='table-scroll my-2'>
-              <table className='table table-sm table-hover align-middle text-start'>
-                <thead>
-                  <tr>
-                    <th scope='col' className='text-center'>
-                      <SortByButton
-                        currentSortBy={filter.sortBy}
-                        title='#'
-                        sortBy='point'
-                        onSet={(order, sortBy) =>
-                          handleSetSortBy(order, sortBy)
-                        }
-                      />
-                    </th>
-                    <th scope='col'>
-                      <span
-                        style={{ fontWeight: '400' }}
-                        className='text-secondary'
-                      >
-                        {t('storeDetail.avatar')}
-                      </span>
-                    </th>
-                    <th scope='col'>
-                      <SortByButton
-                        currentSortBy={filter.sortBy}
-                        title={t('storeDetail.storeName')}
-                        sortBy='name'
-                        onSet={(order, sortBy) =>
-                          handleSetSortBy(order, sortBy)
-                        }
-                      />
-                    </th>
-                    <th scope='col'>
-                      <SortByButton
-                        currentSortBy={filter.sortBy}
-                        title={t('storeDetail.role')}
-                        sortBy='ownerId'
-                        onSet={(order, sortBy) =>
-                          handleSetSortBy(order, sortBy)
-                        }
-                      />
-                    </th>
-                    <th scope='col'>
-                      <SortByButton
-                        currentSortBy={filter.sortBy}
-                        title={t('status.active')}
-                        sortBy='isActive'
-                        onSet={(order, sortBy) =>
-                          handleSetSortBy(order, sortBy)
-                        }
-                      />
-                    </th>
-                    <th scope='col'>
-                      <SortByButton
-                        currentSortBy={filter.sortBy}
-                        title={t('status.status')}
-                        sortBy='isOpen'
-                        onSet={(order, sortBy) =>
-                          handleSetSortBy(order, sortBy)
-                        }
-                      />
-                    </th>
-                    <th scope='col'>
-                      <SortByButton
-                        currentSortBy={filter.sortBy}
-                        title={t('joined')}
-                        sortBy='createdAt'
-                        onSet={(order, sortBy) =>
-                          handleSetSortBy(order, sortBy)
-                        }
-                      />
-                    </th>
-                    <th scope='col'>
-                      <span>{t('action')}</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stores.map((store, index) => (
-                    <tr key={index}>
-                      <th scope='row' className='text-center'>
-                        {index + 1 + (filter.page - 1) * filter.limit}
-                      </th>
-                      <th>
-                        <small className='hidden-name'>
-                          <StoreSmallCard store={store} />
-                        </small>
-                      </th>
-                      <td>
-                        <small className='hidden-avatar'>
-                          <StoreSmallCard store={store} />
-                        </small>
-                      </td>
-                      <td>
-                        <ManagerRoleLabel
-                          role={_id === store.ownerId._id ? 'owner' : 'staff'}
-                        />
-                      </td>
-                      <td>
-                        <StoreActiveLabel isActive={store.isActive} />
-                      </td>
-                      <td>
-                        <StoreStatusLabel isOpen={store.isOpen} />
-                      </td>
-                      <td>
-                        <span>{formatDate(store.createdAt)}</span>
-                      </td>
-                      <td>
-                        <Link
-                          type='button'
-                          className='btn btn-sm btn-outline-primary ripple rounded-1'
-                          to={`/seller/${store._id}`}
-                          title={t('storeDetail.manage')}
-                        >
-                          <i className='fa-solid fa-eye me-2'></i>
-                          <span className='res-hide'>
-                            {t('storeDetail.manage')}
-                          </span>
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <Table
+                columns={columns}
+                dataSource={stores}
+                pagination={false}
+                onChange={handleTableChange}
+                rowKey='_id'
+                scroll={{ x: 800 }}
+                size='small'
+              />
             </div>
 
             <div className='d-flex justify-content-between align-items-center px-4'>

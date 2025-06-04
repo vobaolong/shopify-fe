@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { Form, Input, Button, Modal, Spin, notification } from 'antd'
 import { getToken } from '../../../apis/auth.api'
 import { createValue } from '../../../apis/variant.api'
-import { regexTest } from '../../../helper/test'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from '@tanstack/react-query'
 import useInvalidate from '../../../hooks/useInvalidate'
@@ -81,17 +80,7 @@ const AddVariantValueForm = ({
             label='Value'
             name='name'
             rules={[
-              { required: true, message: 'Please provide a valid value.' },
-              {
-                validator: (_, value) => {
-                  if (!value || regexTest('anything', value)) {
-                    return Promise.resolve()
-                  }
-                  return Promise.reject(
-                    new Error('Please provide a valid value.')
-                  )
-                }
-              }
+              { required: true, message: 'Please provide a valid value.' }
             ]}
           >
             <Input placeholder='Enter value name' className='rounded-md' />

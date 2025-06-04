@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { getToken } from '../../../apis/auth.api'
 import { createCommission } from '../../../apis/commission.api'
-import { Form, Input, Button, notification } from 'antd'
-import Loading from '../../ui/Loading'
+import { Form, Input, Button, Spin, notification } from 'antd'
 import ConfirmDialog from '../../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from '@tanstack/react-query'
@@ -41,26 +40,24 @@ const AdminCreateCommissionForm = ({ onRun = () => {} }) => {
     createCommissionMutation.mutate(values)
     setIsConfirming(false)
   }
-
   return (
-    <div className='position-relative'>
-      {createCommissionMutation.isPending && <Loading />}
-      {isConfirming && (
-        <ConfirmDialog
-          title={t('dialog.createCommission')}
-          onSubmit={handleConfirmSubmit}
-          onClose={() => setIsConfirming(false)}
-          message={t('confirmDialog')}
-        />
-      )}
-      <Form
-        form={form}
-        layout='vertical'
-        onFinish={handleFinish}
-        initialValues={{ name: '', description: '', fee: 0 }}
-        className='row mb-2'
-      >
-        <div className='col-12'>
+    <div className='relative'>
+      <Spin spinning={createCommissionMutation.isPending}>
+        {isConfirming && (
+          <ConfirmDialog
+            title={t('dialog.createCommission')}
+            onSubmit={handleConfirmSubmit}
+            onClose={() => setIsConfirming(false)}
+            message={t('confirmDialog')}
+          />
+        )}
+        <Form
+          form={form}
+          layout='vertical'
+          onFinish={handleFinish}
+          initialValues={{ name: '', description: '', fee: 0 }}
+          className='w-full'
+        >
           <Form.Item
             name='name'
             label={t('commissionDetail.name')}
@@ -70,8 +67,7 @@ const AdminCreateCommissionForm = ({ onRun = () => {} }) => {
           >
             <Input placeholder={t('commissionDetail.name')} />
           </Form.Item>
-        </div>
-        <div className='col-12'>
+
           <Form.Item
             name='fee'
             label={`${t('commissionDetail.fee')} (%)`}
@@ -81,8 +77,7 @@ const AdminCreateCommissionForm = ({ onRun = () => {} }) => {
           >
             <Input type='number' placeholder={t('commissionDetail.fee')} />
           </Form.Item>
-        </div>
-        <div className='col-12'>
+
           <Form.Item
             name='description'
             label={t('commissionDetail.description')}
@@ -93,15 +88,19 @@ const AdminCreateCommissionForm = ({ onRun = () => {} }) => {
               }
             ]}
           >
-            <Input.TextArea placeholder={t('commissionDetail.description')} />
+            <Input.TextArea
+              placeholder={t('commissionDetail.description')}
+              rows={4}
+            />
           </Form.Item>
-        </div>
-        <div className='col-12 d-flex justify-content-end mt-4'>
-          <Button type='primary' htmlType='submit' className='w-50'>
-            {t('button.submit')}
-          </Button>
-        </div>
-      </Form>
+
+          <Form.Item className='flex justify-end mt-6'>
+            <Button type='primary' htmlType='submit' className='w-1/2'>
+              {t('button.submit')}
+            </Button>
+          </Form.Item>
+        </Form>
+      </Spin>
     </div>
   )
 }

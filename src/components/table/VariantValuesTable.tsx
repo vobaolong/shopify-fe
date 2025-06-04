@@ -8,16 +8,15 @@ import {
   restoreValue
 } from '../../apis/variant.api'
 import DeletedLabel from '../label/DeletedLabel'
-import Loading from '../ui/Loading'
+import { Spin, Alert } from 'antd'
 import ConfirmDialog from '../ui/ConfirmDialog'
-import Modal from '../ui/Modal'
+import { Modal } from 'antd'
 import AddVariantValueItem from '../item/AddVariantValueItem'
 import AdminEditVariantValueForm from '../item/form/AdminEditVariantValueForm'
 import ActiveLabel from '../label/ActiveLabel'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { humanReadableDate } from '../../helper/humanReadable'
-import Error from '../ui/Error'
 
 const VariantValuesTable = ({
   heading = true,
@@ -33,9 +32,19 @@ const VariantValuesTable = ({
   const [deletedVariantValue, setDeletedVariantValue] = useState({})
   const [restoredVariantValue, setRestoredVariantValue] = useState({})
   const [editedVariantValue, setEditedVariantValue] = useState({})
+  const [editModalVisible, setEditModalVisible] = useState(false)
   const [variantValues, setVariantValues] = useState([])
   const [variant, setVariant] = useState({})
   const { _id } = getToken()
+
+  const handleEditClick = (value) => {
+    setEditedVariantValue(value)
+    setEditModalVisible(true)
+  }
+
+  const handleEditModalClose = () => {
+    setEditModalVisible(false)
+  }
 
   useEffect(() => {
     setIsLoading(true)
@@ -126,11 +135,10 @@ const VariantValuesTable = ({
         }, 3000)
       })
   }
-
   return (
     <div className='position-relative'>
-      {isLoading && <Loading />}
-      {error && <Error msg={error} />}
+      {isLoading && <Spin size='large' />}
+      {error && <Alert message={error} type='error' />}
       {isConfirmingDelete && (
         <ConfirmDialog
           title={t('dialog.deleteValue')}
@@ -146,8 +154,7 @@ const VariantValuesTable = ({
           onClose={() => setIsConfirmingRestore(false)}
         />
       )}
-
-      {isLoading && <Loading />}
+      {isLoading && <Spin size='large' />}
       <div className='p-3 box-shadow bg-body rounded-2'>
         <div className=' d-flex align-items-center justify-content-between mb-3'>
           {heading && (
@@ -196,14 +203,13 @@ const VariantValuesTable = ({
                       <td>{humanReadableDate(value.createdAt)}</td>
                       <td className='text-nowrap'>
                         <div className='position-relative d-inline-block'>
+                          {' '}
                           <button
                             type='button'
                             className='btn btn-sm btn-outline-primary ripple me-2 rounded-1 cus-tooltip'
-                            data-bs-toggle='modal'
-                            data-bs-target='#edit-variant-value-form'
-                            onClick={() => setEditedVariantValue(value)}
+                            onClick={() => handleEditClick(value)}
                           >
-                            <i className='fa-duotone fa-pen-to-square'></i>
+                            <i className='fa-duotone fa-pen-to-square' />
                           </button>
                           <span className='cus-tooltip-msg'>
                             {t('button.edit')}
@@ -216,7 +222,7 @@ const VariantValuesTable = ({
                               className='btn btn-sm btn-outline-danger ripple rounded-1 cus-tooltip'
                               onClick={() => handleDelete(value)}
                             >
-                              <i className='fa-solid fa-trash-alt '></i>
+                              <i className='fa-solid fa-trash-alt ' />
                             </button>
                           ) : (
                             <button
@@ -224,7 +230,7 @@ const VariantValuesTable = ({
                               className='btn btn-sm btn-outline-success ripple'
                               onClick={() => handleRestore(value)}
                             >
-                              <i className='fa-solid fa-trash-can-arrow-up'></i>
+                              <i className='fa-solid fa-trash-can-arrow-up' />
                             </button>
                           )}
                           <span className='cus-tooltip-msg'>
@@ -246,13 +252,14 @@ const VariantValuesTable = ({
             {t('showing')} {variantValues.length || 0} {t('result')}
           </small>
         </div>
-      </div>
-
+      </div>{' '}
       {!isActive && (
         <Modal
-          id='edit-variant-value-form'
-          hasCloseBtn={false}
           title={t('variantDetail.value.edit')}
+          open={editModalVisible}
+          onCancel={handleEditModalClose}
+          footer={null}
+          closable
         >
           <AdminEditVariantValueForm
             oldVariantValue={editedVariantValue}

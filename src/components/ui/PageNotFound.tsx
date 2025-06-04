@@ -11,7 +11,7 @@ const PageNotFound = () => {
         to='/'
         title='Quay lại trang chủ'
       >
-        <i className='fa-solid fa-angle-left me-2'></i>
+        <i className='fa-solid fa-angle-left me-2' />
         Quay lại trang chủ
       </Link>
     </div>

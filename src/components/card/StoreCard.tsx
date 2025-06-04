@@ -120,7 +120,7 @@ const StoreCard = ({ store, onRun }: StoreCardProps) => {
                     <span className='card-text rating-text ms-2'>
                       {storeValue.rating ? storeValue.rating.toFixed(1) : 0}
                     </span>
-                    <i className='bi bi-circle-fill px-1 pt-1 fs-8'></i>
+                    <i className='bi bi-circle-fill px-1 pt-1 fs-8' />
                     <span>{storeValue.numberOfFollowers || 0} followers</span>
                   </div>
 

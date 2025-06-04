@@ -1,8 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
 import { listReviews } from '../../apis/review.api'
-import Loading from '../ui/Loading'
-import Error from '../ui/Error'
+import { Spin, Alert } from 'antd'
 import Pagination from '../ui/Pagination'
 import StarRating from '../label/StarRating'
 import { useTranslation } from 'react-i18next'
@@ -11,7 +10,7 @@ import SortByButton from './sub/SortByButton'
 import ShowResult from '../ui/ShowResult'
 import box from '../../assets/box.svg'
 import ProductSmallCard from '../card/ProductSmallCard'
-import Modal from '../ui/Modal'
+import { Modal } from 'antd'
 import ListReport from '../item/form/ListReport'
 import { useSelector } from 'react-redux'
 import { selectAccountUser } from '../../store/slices/accountSlice'
@@ -52,8 +51,9 @@ const SellerReviewTable = ({
   const [pagination, setPagination] = useState({
     size: 0
   })
+  const [modalVisible, setModalVisible] = useState(false)
+  const [selectedReview, setSelectedReview] = useState(null)
   const user = useSelector(selectAccountUser)
-
   const [filter, setFilter] = useState({
     productId,
     storeId,
@@ -64,6 +64,16 @@ const SellerReviewTable = ({
     limit: 7,
     page: 1
   })
+
+  const handleReportClick = (review) => {
+    setSelectedReview(review)
+    setModalVisible(true)
+  }
+
+  const handleModalClose = () => {
+    setModalVisible(false)
+    setSelectedReview(null)
+  }
 
   const init = () => {
     setError('')
@@ -116,11 +126,10 @@ const SellerReviewTable = ({
       order
     })
   }
-
   return (
     <div className='position-relative'>
-      {isLoading && <Loading />}
-      {error && <Error msg={error} />}
+      {isLoading && <Spin size='large' />}
+      {error && <Alert message={error} type='error' />}
       <div className='p-3 box-shadow bg-body rounded-1'>
         {!isLoading && pagination.size === 0 ? (
           <div className='my-4 text-center'>
@@ -195,10 +204,10 @@ const SellerReviewTable = ({
                     </td>
                     <td>{humanReadableDate(review.createdAt)}</td>
                     <td>
+                      {' '}
                       <button
                         type='button'
-                        data-bs-target='#report'
-                        data-bs-toggle='modal'
+                        onClick={() => handleReportClick(review)}
                         className='btn btn-sm btn-warning'
                       >
                         {t('button.complaint')}
@@ -236,9 +245,29 @@ const SellerReviewTable = ({
               pagination={pagination}
               onChangePage={handleChangePage}
             />
-          )}
+          )}{' '}
         </div>
       </div>
+
+      <Modal
+        title={t('dialog.complaint')}
+        open={modalVisible}
+        onCancel={handleModalClose}
+        footer={null}
+        closable
+      >
+        {selectedReview && (
+          <ListReport
+            reasons={reviewReasons}
+            objectId={selectedReview._id}
+            reportBy={user._id}
+            isStore={false}
+            isProduct={false}
+            isReview={true}
+            showOtherReason={true}
+          />
+        )}
+      </Modal>
     </div>
   )
 }

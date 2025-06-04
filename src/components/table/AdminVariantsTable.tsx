@@ -30,29 +30,15 @@ import ActiveLabel from '../label/ActiveLabel'
 import CategorySmallCard from '../card/CategorySmallCard'
 import { humanReadableDate } from '../../helper/humanReadable'
 import { ColumnsType } from 'antd/es/table'
+import {
+  VariantFilterState,
+  defaultVariantFilter
+} from '../../@types/filter.type'
 
 interface VariantsResponse {
   variants: any[]
   size: number
   filter: { pageCurrent: number; pageCount: number }
-}
-
-interface FilterState {
-  search: string
-  sortBy: string
-  order: 'asc' | 'desc'
-  limit: number
-  page: number
-  status?: string
-}
-
-const defaultFilter: FilterState = {
-  search: '',
-  sortBy: 'name',
-  order: 'asc',
-  limit: 8,
-  page: 1,
-  status: 'all'
 }
 
 const AdminVariantsTable = ({ heading = false }) => {
@@ -61,8 +47,9 @@ const AdminVariantsTable = ({ heading = false }) => {
   const invalidate = useInvalidate()
   const { _id: userId } = getToken()
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
-  const [filter, setFilter] = useState(defaultFilter)
-  const [pendingFilter, setPendingFilter] = useState(defaultFilter)
+  const [filter, setFilter] = useState<VariantFilterState>(defaultVariantFilter)
+  const [pendingFilter, setPendingFilter] =
+    useState<VariantFilterState>(defaultVariantFilter)
 
   const fetchVariants = async (filter: any): Promise<VariantsResponse> => {
     const res = await listVariants(userId, filter)
@@ -100,7 +87,8 @@ const AdminVariantsTable = ({ heading = false }) => {
       notification.error({ message: errorMessage })
     }
   })
-  const handleFilterChange = (updates: Partial<FilterState>) => {
+
+  const handleFilterChange = (updates: Partial<VariantFilterState>) => {
     setPendingFilter((prev) => ({
       ...prev,
       ...updates,
@@ -117,8 +105,8 @@ const AdminVariantsTable = ({ heading = false }) => {
   }
 
   const handleFilterReset = () => {
-    setFilter(defaultFilter)
-    setPendingFilter(defaultFilter)
+    setFilter(defaultVariantFilter)
+    setPendingFilter(defaultVariantFilter)
   }
 
   const handleDelete = (variantId: string) => {
@@ -311,7 +299,7 @@ const AdminVariantsTable = ({ heading = false }) => {
       {error && (
         <Alert message={error.message} type='error' className='mb-4' showIcon />
       )}
-      <Spin spinning={isLoading} tip={t('loading')} size='large'>
+      <Spin spinning={isLoading} size='large'>
         <div className='p-3 bg-white rounded-md'>
           <div className='flex gap-3 items-center flex-wrap mb-3'>
             <SearchInput

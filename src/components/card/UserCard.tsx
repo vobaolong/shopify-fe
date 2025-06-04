@@ -29,7 +29,7 @@ const UserCard = ({ user }: UserCardProps) => {
     <div className='card shadow border-0'>
       <Link
         className='text-reset text-decoration-none'
-        title={userValue.firstName + ' ' + userValue.lastName}
+        title={userValue.userName}
         to={`/user/${userValue._id}`}
       >
         <div className='card-img-top cus-card-img-top'>
@@ -37,7 +37,7 @@ const UserCard = ({ user }: UserCardProps) => {
             loading='lazy'
             src={userValue.avatar}
             className='cus-card-img'
-            alt={userValue.firstName + ' ' + userValue.lastName}
+            alt={userValue.userName}
           />
         </div>
       </Link>
@@ -58,7 +58,7 @@ const UserCard = ({ user }: UserCardProps) => {
 
         <Link
           className='text-reset text-decoration-none link-hover d-block mt-2'
-          title={userValue.firstName + ' ' + userValue.lastName}
+          title={userValue.userName}
           to={`/user/${userValue._id}`}
         >
           <h6
@@ -69,7 +69,7 @@ const UserCard = ({ user }: UserCardProps) => {
               whiteSpace: 'nowrap'
             }}
           >
-            {userValue.firstName + ' ' + userValue.lastName}
+            {userValue.userName}
           </h6>
         </Link>
       </div>

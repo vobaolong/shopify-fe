@@ -12,8 +12,7 @@ import { totalProducts } from '../../helper/total'
 import { formatPrice } from '../../helper/formatPrice'
 import useUpdateDispatch from '../../hooks/useUpdateDispatch'
 import useToggle from '../../hooks/useToggle'
-import Loading from '../ui/Loading'
-import Error from '../ui/Error'
+import { Spin, Alert } from 'antd'
 import ConfirmDialog from '../ui/ConfirmDialog'
 import DropDownMenu from '../ui/DropDownMenu'
 import CheckoutForm from '../item/form/CheckoutForm'
@@ -114,11 +113,12 @@ const ListCartItems = ({
   const handleUpdate = (value: number, item: any) => {
     updateMutation.mutate({ value, item })
   }
-
   return (
     <div className='position-relative'>
-      {isLoading && <Loading />}
-      {error && <Error msg={error?.message || 'Server Error'} />}
+      {isLoading && <Spin size='large' />}
+      {error && (
+        <Alert message={error?.message || 'Server Error'} type='error' />
+      )}
       {isConfirming && (
         <ConfirmDialog
           title={t('dialog.removeProductFromCart')}
@@ -248,34 +248,32 @@ const ListCartItems = ({
               {item.productId?.isActive &&
                 item.productId?.isSelling &&
                 item.productId?.quantity <= 6 && (
-                  <Error
-                    msg={`${t('productDetail.only')} ${
-                      item.productId.quantity
-                    } ${t('productDetail.productLeft')}`}
+                  <Alert
+                    message={`${t('productDetail.only')} ${item.productId.quantity} ${t('productDetail.productLeft')}`}
+                    type='warning'
                   />
                 )}
               {!item.productId?.isActive && (
-                <Error msg={t('toastError.productBanned')} />
+                <Alert message={t('toastError.productBanned')} type='error' />
               )}
 
               {item.productId?.isActive && !item.productId?.isSelling && (
-                <Error msg={t('toastError.outOfBusiness')} />
+                <Alert message={t('toastError.outOfBusiness')} type='error' />
               )}
 
               {item.productId?.isActive &&
                 item.productId?.isSelling &&
                 item.productId?.quantity <= 0 && (
-                  <Error msg={t('toastError.soldOut')} />
+                  <Alert message={t('toastError.soldOut')} type='error' />
                 )}
 
               {item.productId?.isActive &&
                 item.productId?.isSelling &&
                 item.productId?.quantity > 0 &&
                 item.productId?.quantity < item.count && (
-                  <Error
-                    msg={`${t('productDetail.only')} ${
-                      item.productId.quantity
-                    } ${t('toastError.productLeft')}`}
+                  <Alert
+                    message={`${t('productDetail.only')} ${item.productId.quantity} ${t('toastError.productLeft')}`}
+                    type='warning'
                   />
                 )}
             </div>
@@ -295,7 +293,7 @@ const ListCartItems = ({
                   className='btn btn-sm btn-outline-danger ripple rounded-1 cus-tooltip'
                   onClick={() => handleDelete(item)}
                 >
-                  <i className='fa-solid fa-trash-alt'></i>
+                  <i className='fa-solid fa-trash-alt' />
                 </button>
                 <span className='cus-tooltip-msg'>{t('button.delete')}</span>
               </div>
@@ -328,7 +326,7 @@ const ListCartItems = ({
               {level?.discount?.$numberDecimal > 0 && (
                 <div className='d-flex justify-content-between gap-4'>
                   <span className='text-secondary'>
-                    {t('cartDetail.BuynowDiscount')} (
+                    {t('cartDetail.ShopBaseDiscount')} (
                     {level?.discount?.$numberDecimal}%):{' '}
                   </span>
                   <span>
@@ -366,7 +364,7 @@ const ListCartItems = ({
               className={`ms-1 fa-solid ${
                 showCheckoutFlag ? 'fa-angle-up' : 'fa-angle-down'
               } fa-angle-down`}
-            ></i>
+            />
           </button>
         </div>
       )}

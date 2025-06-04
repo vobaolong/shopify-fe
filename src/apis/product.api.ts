@@ -1,6 +1,6 @@
 import axiosClient, { axiosClientImg } from './client.api'
 
-export const getProduct = async (productId: string) => {
+export const getProduct = async (productId: string): Promise<any> => {
   return await axiosClient.get(`/product/${productId}`)
 }
 
@@ -8,15 +8,15 @@ export const getProductByIdForManager = async (
   userId: string,
   productId: string,
   storeId: string
-) => {
+): Promise<any> => {
   return await axiosClient.get(
     `/product/for/manager/${productId}/${storeId}/${userId}`
   )
 }
 
 //list product
-export const listActiveProducts = async (params: any) => {
-  return await axiosClient.get('/active/products', {
+export const listActiveProducts = async (params: any): Promise<any> => {
+  return await axiosClient.get('/products/active', {
     params
   })
 }
@@ -24,7 +24,7 @@ export const listActiveProducts = async (params: any) => {
 export const listSellingProductsByStore = async (
   params: any,
   storeId: string
-) => {
+): Promise<any> => {
   return await axiosClient.get(`/selling/products/by/store/${storeId}`, {
     params
   })
@@ -34,7 +34,7 @@ export const listProductsForManager = async (
   userId: string,
   params: any,
   storeId: string
-) => {
+): Promise<any> => {
   return await axiosClient.get(`/products/by/store/${storeId}/${userId}`, {
     params
   })
@@ -50,14 +50,17 @@ export const sellingProduct = async (
   value: any,
   storeId: string,
   productId: string
-) => {
+): Promise<any> => {
   return await axiosClient.put(
     `/product/selling/${productId}/${storeId}/${userId}`,
     value
   )
 }
 
-export const activeProduct = async (value: any, productId: string) => {
+export const activeProduct = async (
+  value: any,
+  productId: string
+): Promise<any> => {
   return axiosClient.put(`/admin/active-product/${productId}`, value)
 }
 
@@ -65,7 +68,7 @@ export const banProduct = async (
   userId: string,
   value: any,
   productId: string
-) => {
+): Promise<any> => {
   return await axiosClient.put(`/product/ban/${productId}/${userId}`, value)
 }
 
@@ -73,7 +76,7 @@ export const createProduct = async (
   userId: string,
   product: any,
   storeId: string
-) => {
+): Promise<any> => {
   return await axiosClientImg.post(
     `/product/create/${storeId}/${userId}`,
     product
@@ -85,7 +88,7 @@ export const updateProduct = async (
   product: any,
   productId: string,
   storeId: string
-) => {
+): Promise<any> => {
   return await axiosClientImg.put(
     `/product/update/${productId}/${storeId}/${userId}`,
     product
@@ -98,7 +101,7 @@ export const addListImages = async (
   photo: any,
   productId: string,
   storeId: string
-) => {
+): Promise<any> => {
   return await axiosClientImg.post(
     `/store/${storeId}/user/${userId}/product/${productId}/images`,
     photo
@@ -111,7 +114,7 @@ export const updateListImages = async (
   index: number,
   productId: string,
   storeId: string
-) => {
+): Promise<any> => {
   return await axiosClientImg.put(
     `/store/${storeId}/user/${userId}/product/${productId}/images`,
     photo,
@@ -126,7 +129,7 @@ export const removeListImages = async (
   index: number,
   productId: string,
   storeId: string
-) => {
+): Promise<any> => {
   return await axiosClient.delete(
     `/store/${storeId}/user/${userId}/product/${productId}/images`,
     {

@@ -1,8 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
 import { listReviews } from '../../apis/review.api'
-import Loading from '../ui/Loading'
-import Error from '../ui/Error'
+import { Spin, Alert } from 'antd'
 import Pagination from '../ui/Pagination'
 import ReviewInfo from '../info/ReviewInfo'
 import StarRating from '../label/StarRating'
@@ -97,11 +96,12 @@ const ListReviews = ({ productId = '', storeId = '', userId = '' }) => {
   //   const count = reviews.filter((review) => review.rating === i).length
   //   ratingsCounts.push({ rating: i, count: count })
   // }
-
   return (
     <div className='position-relative'>
-      {isLoading && <Loading />}
-      {isError && <Error msg={error?.message || 'Server Error'} />}
+      {isLoading && <Spin size='large' />}
+      {isError && (
+        <Alert message={error?.message || 'Server Error'} type='error' />
+      )}
       <div className='bg-body rounded border p-3'>
         <span>Lọc theo</span>
         <div className='d-flex justify-content-between align-items-end p-2 rounded-1 border-bottom'>

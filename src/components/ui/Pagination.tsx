@@ -66,7 +66,7 @@ const Pagination: React.FC<PaginationProps> = ({
               style={{ minWidth: '35px' }}
               onClick={() => handleChangePage(1)}
             >
-              <i className='fa-solid fa-angles-left'></i>
+              <i className='fa-solid fa-angles-left' />
             </button>
           )}
           {pageCurrent > 1 && (
@@ -77,7 +77,7 @@ const Pagination: React.FC<PaginationProps> = ({
               style={{ minWidth: '35px' }}
               onClick={() => handleChangePage(pageCurrent - 1)}
             >
-              <i className='fa-solid fa-angle-left'></i>
+              <i className='fa-solid fa-angle-left' />
             </button>
           )}
           {!isSmall && (
@@ -156,7 +156,7 @@ const Pagination: React.FC<PaginationProps> = ({
               style={{ minWidth: '35px' }}
               onClick={() => handleChangePage(pageCurrent + 1)}
             >
-              <i className='fa-solid fa-angle-right'></i>
+              <i className='fa-solid fa-angle-right' />
             </button>
           )}
           {pageCurrent < pageCount && (
@@ -167,7 +167,7 @@ const Pagination: React.FC<PaginationProps> = ({
               style={{ minWidth: '35px' }}
               onClick={() => handleChangePage(pageCount)}
             >
-              <i className='fa-solid fa-angles-right'></i>
+              <i className='fa-solid fa-angles-right' />
             </button>
           )}
         </div>

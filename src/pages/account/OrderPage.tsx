@@ -35,7 +35,7 @@ const OrderPage = () => {
   ]
   return (
     <AccountLayout user={user} paths={paths}>
-      <MetaData title={`${t('helmet.myPurchase')} | Buynow Việt Nam`} />
+      <MetaData title={`${t('helmet.myPurchase')} | ShopBase Việt Nam`} />
       <div className='nav nav-tabs bg-body rounded-top-1 box-shadow mb-2'>
         {orderStatus.map((status) => (
           <li

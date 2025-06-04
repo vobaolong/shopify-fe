@@ -178,7 +178,7 @@ const OrderDetailInfo: React.FC<OrderDetailInfoProps> = ({
               </div>
               {saleFromPlatform !== 0 && (
                 <div className='flex justify-between border-b py-2'>
-                  <span>{t('cartDetail.BuynowVoucherApplied')}</span>
+                  <span>{t('cartDetail.ShopBaseVoucherApplied')}</span>
                   <span>
                     -{formatPrice(saleFromPlatform)}
                     <sup>₫</sup>

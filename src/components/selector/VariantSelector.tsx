@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { listVariantByCategory } from '../../apis/variant.api'
-import Loading from '../ui/Loading'
+import { Spin, Alert } from 'antd'
 import MultiVariantValueSelector from '../selector/MultiVariantValueSelector'
-import Error from '../ui/Error'
 import { useTranslation } from 'react-i18next'
 import { VariantValueType } from '../../@types/entity.types'
 import { useEffect, useState } from 'react'
@@ -83,13 +82,12 @@ const VariantSelector = ({
     ? 'Server Error'
     : data?.data?.error ||
       (variants.length <= 0 ? t('toastSuccess.variant.none') : '')
-
   return (
     <div className='row position-relative'>
-      {isLoading && <Loading />}
+      {isLoading && <Spin size='large' />}
       {errorMessage && (
         <span className='ms-2'>
-          <Error msg={errorMessage} />
+          <Alert message={errorMessage} type='error' />
         </span>
       )}
       {variants.map((variant: VariantValueType, index: number) => (

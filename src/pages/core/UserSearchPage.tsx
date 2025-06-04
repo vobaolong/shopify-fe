@@ -7,8 +7,7 @@ import useUpdateEffect from '../../hooks/useUpdateEffect'
 import MainLayout from '../../components/layout/MainLayout'
 import UserCard from '../../components/card/UserCard'
 import Pagination from '../../components/ui/Pagination'
-import Loading from '../../components/ui/Loading'
-import Error from '../../components/ui/Error'
+import { Spin, Alert } from 'antd'
 import { useTranslation } from 'react-i18next'
 
 const UserSearchPage = () => {
@@ -76,9 +75,9 @@ const UserSearchPage = () => {
   return (
     <MainLayout>
       <div className='position-relative'>
-        {isLoading && <Loading />}
-        {error && <Error msg={error} />}
-
+        {' '}
+        {isLoading && <Spin size='large' />}
+        {error && <Alert message={error} type='error' />}
         <div className='d-flex justify-content-end'>
           <small className='text-nowrap res-hide'>
             {t('showing')}{' '}
@@ -91,7 +90,6 @@ const UserSearchPage = () => {
             {t('of')} {pagination.size} {t('result')}
           </small>
         </div>
-
         <div className='row mt-3'>
           {listUsers &&
             listUsers.map((user, index) => (
@@ -103,7 +101,6 @@ const UserSearchPage = () => {
               </div>
             ))}
         </div>
-
         {pagination.size !== 0 && (
           <Pagination pagination={pagination} onChangePage={handleChangePage} />
         )}

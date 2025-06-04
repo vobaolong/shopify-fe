@@ -1,8 +1,9 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import Modal from '../ui/Modal'
 import StoreEditProfileForm from './form/StoreEditProfileForm'
 import { StoreType } from '../../@types/entity.types'
-import { Button } from 'antd'
+import { Button, Modal } from 'antd'
+import { EditOutlined } from '@ant-design/icons'
 
 interface StoreEditProfileItemProps {
   store: StoreType
@@ -18,7 +19,7 @@ const StoreEditProfileItem = ({ store }: StoreEditProfileItemProps) => {
         data-bs-toggle='modal'
         data-bs-target='#store-profile-edit-form'
       >
-        <i className='fa-duotone fa-pen-to-square'></i>
+        <i className='fa-duotone fa-pen-to-square' />
         <span className='res-hide ms-2'>{t('button.edit')}</span>
       </Button>
 

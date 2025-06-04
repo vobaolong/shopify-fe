@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react'
 import { createStoreLevel, updateStoreLevel } from '../../../apis/level.api'
-import { Form, Input, Button, notification, ColorPicker } from 'antd'
-import Loading from '../../ui/Loading'
+import {
+  Form,
+  Input,
+  Button,
+  notification,
+  ColorPicker,
+  Spin,
+  Alert
+} from 'antd'
 import ConfirmDialog from '../../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from '@tanstack/react-query'
@@ -108,10 +115,13 @@ const AdminStoreLevelForm = ({
 
   const isLoading =
     createStoreLevelMutation.isPending || updateStoreLevelMutation.isPending
-
   return (
     <div className='position-relative'>
-      {isLoading && <Loading />}
+      {isLoading && (
+        <div className='d-flex justify-content-center p-4'>
+          <Spin size='large' />
+        </div>
+      )}
       {isConfirming && (
         <ConfirmDialog
           title={t('dialog.createStoreLevel')}

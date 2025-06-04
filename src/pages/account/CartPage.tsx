@@ -3,8 +3,7 @@ import { getToken } from '../../apis/auth.api'
 import { useTranslation } from 'react-i18next'
 import { listCarts } from '../../apis/cart.api'
 import cartEmpty from '../../assets/cartEmpty.png'
-import Error from '../../components/ui/Error'
-import Loading from '../../components/ui/Loading'
+import { Spin, Alert } from 'antd'
 import MainLayout from '../../components/layout/MainLayout'
 import StoreSmallCard from '../../components/card/StoreSmallCard'
 import ListCartItemsForm from '../../components/list/ListCartItemsForm'
@@ -93,9 +92,9 @@ const CartPage = () => {
   return (
     <MainLayout>
       <div className='position-relative pt-4'>
-        {isLoading && <Loading />}
-        {error && <Error msg={error} />}
-
+        {' '}
+        {isLoading && <Spin size='large' />}
+        {error && <Alert message={error} type='error' />}
         <MetaData title={`${t('cart')}`} />
         {cartCount === 0 ? (
           <div className=''>
@@ -136,7 +135,7 @@ const CartPage = () => {
                     {t('cartDetail.total')}
                   </div>
                   <div className='col-1 text-secondary text-center fs-9'>
-                    <i className='fa-regular fa-trash-can pointer'></i>
+                    <i className='fa-regular fa-trash-can pointer' />
                   </div>
                 </div>
               </div>
@@ -159,7 +158,7 @@ const CartPage = () => {
                     <i
                       style={{ fontSize: '0.9rem' }}
                       className='fa-solid fa-angle-right ms-1 text-secondary'
-                    ></i>
+                    />
                   </button>
                 </h2>
                 <div
@@ -167,13 +166,22 @@ const CartPage = () => {
                   className='accordion-collapse collapse show'
                   aria-labelledby={`panelsStayOpen-collapse-${index}`}
                 >
+                  {' '}
                   <div className='accordion-body px-3'>
                     {!('isActive' in cart.store) && (
-                      <Error msg={t('toastError.storeBanned')} />
+                      <Alert
+                        message={t('toastError.storeBanned')}
+                        type='error'
+                        showIcon
+                      />
                     )}
 
                     {'isActive' in cart.store && !cart.store.isOpen && (
-                      <Error msg={t('toastError.storeClosing')} />
+                      <Alert
+                        message={t('toastError.storeClosing')}
+                        type='warning'
+                        showIcon
+                      />
                     )}
 
                     {'isActive' in cart.store && cart.store.isOpen && (

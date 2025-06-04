@@ -41,7 +41,7 @@ const AccountSideBar = ({
                   className={`${
                     path === 'profile' ? 'fa-solid' : 'fa-light'
                   } text-start fa-user`}
-                ></i>
+                />
                 <span className='ms-2 res-hide-xl'>
                   {t('userDetail.myAccount')}
                 </span>
@@ -62,7 +62,7 @@ const AccountSideBar = ({
                   className={`${
                     path === 'purchase' ? 'fa-solid' : 'fa-light'
                   } w-10 text-start fa-receipt`}
-                ></i>
+                />
                 <span className='ms-2 res-hide-xl'>
                   {t('userDetail.myPurchase')}
                 </span>
@@ -82,7 +82,7 @@ const AccountSideBar = ({
                   className={`${
                     path === 'addresses' ? 'fa-solid' : 'fa-light'
                   } w-10 text-start fa-location-dot`}
-                ></i>
+                />
                 <span className='ms-2 res-hide-xl'>
                   {t('userDetail.address')}
                 </span>
@@ -102,7 +102,7 @@ const AccountSideBar = ({
                   className={`${
                     path === 'wallet' ? 'fa-solid' : 'fa-light'
                   } w-10 text-start fa-wallet`}
-                ></i>
+                />
                 <span className='ms-2 res-hide-lg'>{t('wallet')}</span>
               </Link>
             </li>
@@ -117,7 +117,7 @@ const AccountSideBar = ({
                   className={`${
                     path === 'store' ? 'fa-solid' : 'fa-light'
                   } w-10 text-start fa-store`}
-                ></i>
+                />
                 <span className='ms-2 res-hide-xl'>{t('manageStore')}</span>
                 <span className='ms-2 d-none res-dis-inline-xl res-hide-lg'>
                   {t('manageStore')}
@@ -135,7 +135,7 @@ const AccountSideBar = ({
                   className={`${
                     path === 'following' ? 'fa-solid' : 'fa-light'
                   } w-10 text-start fa-heart`}
-                ></i>
+                />
                 <span className='ms-2 res-hide-lg'>{t('favorite')}</span>
               </Link>
             </li>

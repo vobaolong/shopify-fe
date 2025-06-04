@@ -6,8 +6,7 @@ import { listSellingProductsByStore } from '../../apis/product.api'
 import useUpdateEffect from '../../hooks/useUpdateEffect'
 import ProductCard from '../../components/card/ProductCard'
 import Pagination from '../../components/ui/Pagination'
-import Loading from '../../components/ui/Loading'
-import Error from '../../components/ui/Error'
+import { Spin, Alert } from 'antd'
 import ProductFilter from '../../components/filter/ProductFilter'
 import StoreLayout from '../../components/layout/StoreLayout'
 import MainLayout from '../../components/layout/MainLayout'
@@ -71,7 +70,6 @@ const CollectionPage = () => {
       page: 1
     })
   }, [keyword])
-
   const handleChangePage = (newPage) => {
     setFilter({
       ...filter,
@@ -85,13 +83,17 @@ const CollectionPage = () => {
   ]
   return typeof store.isActive === 'boolean' && !store.isActive ? (
     <MainLayout>
-      <Error msg={t('toastError.storeBanned')} />
+      <Alert message={t('toastError.storeBanned')} type='error' showIcon />
     </MainLayout>
   ) : (
     <StoreLayout store={store} paths={paths}>
       <div className='position-relative'>
-        {isLoading && <Loading />}
-        {error && <Error msg={error} />}
+        {isLoading && (
+          <div className='d-flex justify-content-center p-4'>
+            <Spin size='large' />
+          </div>
+        )}
+        {error && <Alert message={error} type='error' showIcon />}
 
         <ProductFilter filter={filter} setFilter={setFilter} />
 

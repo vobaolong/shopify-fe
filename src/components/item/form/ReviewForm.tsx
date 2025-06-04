@@ -1,192 +1,172 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import { getToken } from '../../../apis/auth.api'
 import { reviewProduct } from '../../../apis/review.api'
-import { numberTest, regexTest } from '../../../helper/test'
-import Loading from '../../ui/Loading'
-import ConfirmDialog from '../../ui/ConfirmDialog'
-import TextArea from '../../ui/TextArea'
-import RatingInput from '../../ui/RatingInput'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
-import Error from '../../ui/Error'
+import { Alert, Button, Spin, Form, Rate, Input, Modal } from 'antd'
+import {
+  validateAmount,
+  validateRating
+} from '../../../constants/regex.constant'
+import { useAntdApp } from '../../../hooks/useAntdApp'
+import { ExclamationCircleOutlined } from '@ant-design/icons'
 
 interface ReviewFormProps {
   storeId?: string
-  orderId?: string
-  productId?: string
-  productName?: string
-  productImage?: string[]
-  productVariant?: string
-  productVariantValue?: string
-  onRun?: () => void
+  orderId: string
+  productId: string
+  productName: string
+  productImage: string[]
+  productVariant: string
+  productVariantValue: string
+  onRun: () => void
 }
 
 const ReviewForm = ({
-  storeId = '',
-  orderId = '',
-  productId = '',
-  productName = '',
+  storeId,
+  orderId,
+  productId,
+  productName,
   productImage = [],
-  productVariant = '',
-  productVariantValue = '',
+  productVariant,
+  productVariantValue,
   onRun
 }: ReviewFormProps) => {
   const { t } = useTranslation()
-  const [isLoading, setIsLoading] = useState(false)
-  const [isConfirming, setIsConfirming] = useState(false)
-  const [error, setError] = useState('')
-  const [review, setReview] = useState({
-    storeId,
-    orderId,
-    productId,
-    productName,
-    productImage,
-    productVariant,
-    productVariantValue,
-    rating: 4,
-    content: '',
-    isValidRating: true,
-    isValidContent: true
-  })
+  const [form] = Form.useForm()
 
   const { _id } = getToken()
+  const { notification } = useAntdApp()
 
-  useEffect(() => {
-    setReview({
-      ...review,
-      storeId,
-      orderId,
-      productId
-    })
-  }, [storeId, productId, orderId])
+  const reviewMutation = useMutation({
+    mutationFn: (reviewData: any) => reviewProduct(_id, reviewData),
+    onSuccess: (res) => {
+      if (res.data.error) {
+        notification.error({ message: res.data.error })
+        return
+      }
+      notification.success({ message: t('toastSuccess.review.add') })
+      if (onRun) onRun()
+    },
+    onError: () => {
+      notification.error({ message: 'Server Error' })
+    }
+  })
 
-  const handleChange = (
-    name: keyof typeof review,
-    isValidName: keyof typeof review,
-    value: any
-  ) => {
-    setReview({
-      ...review,
-      [name]: value,
-      [isValidName]: true
-    })
-  }
-
-  const handleValidate = (isValidName: keyof typeof review, flag: boolean) => {
-    setReview({
-      ...review,
-      [isValidName]: flag
-    })
-  }
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (
-      !review.storeId ||
-      !review.orderId ||
-      !review.productId ||
-      !review.rating
-    ) {
-      setReview({
-        ...review,
-        isValidRating: numberTest('oneTo5', review.rating),
-        isValidContent: regexTest('nullable', review.content)
-      })
+  const onFinish = (values: any) => {
+    if (!validateRating(values.rating)) {
+      form.setFields([
+        {
+          name: 'rating',
+          errors: [t('reviewDetail.isValid')]
+        }
+      ])
       return
     }
 
-    if (!review.isValidRating || !review.isValidContent) return
-
-    onSubmit()
-  }
-
-  const onSubmit = () => {
-    setError('')
-    setIsLoading(true)
-    reviewProduct(_id, review)
-      .then((res: { data: { error?: string } }) => {
-        if (res.data.error) setError(res.data.error)
-        else {
-          toast.success(t('toastSuccess.review.add'))
-          if (onRun) onRun()
+    Modal.confirm({
+      title: t('productDetail.productReview'),
+      icon: <ExclamationCircleOutlined />,
+      content: t('confirmDialog'),
+      okText: t('button.confirm'),
+      cancelText: t('button.cancel'),
+      onOk() {
+        const reviewData = {
+          storeId,
+          orderId,
+          productId,
+          productName,
+          productImage,
+          productVariant,
+          productVariantValue,
+          rating: values.rating,
+          content: values.content || ''
         }
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
-      .catch(() => {
-        setError('Server Error')
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
+        reviewMutation.mutate(reviewData)
+      }
+    })
   }
 
   return (
     <div className='position-relative'>
-      {isLoading && <Loading />}
-      {isConfirming && (
-        <ConfirmDialog
-          title={t('productDetail.productReview')}
-          onSubmit={onSubmit}
-          message={t('confirmDialog')}
-          onClose={() => setIsConfirming(false)}
-        />
-      )}
-
-      {error && <Error msg={error} />}
-
-      <form className='row mb-2' onSubmit={handleSubmit}>
-        <div className='col-12'>
-          <div className='d-flex'>
-            <img
-              className='w-15 rounded-1 me-2'
-              alt='review.productName'
-              src={
-                Array.isArray(review.productImage)
-                  ? review.productImage[0] || ''
-                  : review.productImage
-              }
-            />
-            <div className='d-grid'>
-              <span>{review.productName}</span>
-              <small>
-                {review.productVariant}: {review.productVariantValue}
-              </small>
+      <Spin spinning={reviewMutation.isPending}>
+        {reviewMutation.error && (
+          <Alert
+            type='error'
+            message={reviewMutation.error.message || 'Server Error'}
+          />
+        )}{' '}
+        {reviewMutation.data?.data?.error && (
+          <Alert type='error' message={reviewMutation.data.data.error} />
+        )}
+        <Form
+          form={form}
+          layout='vertical'
+          onFinish={onFinish}
+          initialValues={{ rating: 4, content: '' }}
+        >
+          <div className='col-12'>
+            <div className='d-flex mb-4'>
+              <img
+                className='w-15 rounded-1 me-2'
+                alt={productName}
+                src={
+                  Array.isArray(productImage)
+                    ? productImage[0] || ''
+                    : productImage
+                }
+              />
+              <div className='d-grid'>
+                <span>{productName}</span>
+                <small>
+                  {productVariant}: {productVariantValue}
+                </small>
+              </div>
             </div>
+
+            <Form.Item
+              name='rating'
+              label={t('reviewDetail.productQuality')}
+              rules={[
+                { required: true, message: t('reviewDetail.isValid') },
+                {
+                  validator: (_, value) =>
+                    validateRating(value)
+                      ? Promise.resolve()
+                      : Promise.reject(new Error(t('reviewDetail.isValid')))
+                }
+              ]}
+            >
+              <Rate />
+            </Form.Item>
           </div>
-          <RatingInput
-            label={t('reviewDetail.productQuality')}
-            value={review.rating}
-            isValid={review.isValidRating}
-            feedback={t('reviewDetail.isValid')}
-            onChange={(value) => handleChange('rating', 'isValidRating', value)}
-          />
-        </div>
 
-        <div className='col-12 mt-3'>
-          <TextArea
-            label={t('reviewDetail.content')}
-            value={review.content}
-            isValid={review.isValidContent}
-            feedback={t('reviewDetail.isValid')}
-            validator='nullable'
-            onChange={(value) =>
-              handleChange('content', 'isValidContent', value)
-            }
-            onValidate={(flag) => handleValidate('isValidContent', flag)}
-          />
-        </div>
+          <div className='col-12 mt-3'>
+            <Form.Item
+              name='content'
+              label={t('reviewDetail.content')}
+              rules={[{ max: 10000, message: t('reviewDetail.isValid') }]}
+            >
+              <Input.TextArea
+                rows={4}
+                placeholder={t('reviewDetail.content')}
+              />
+            </Form.Item>
+          </div>
 
-        <div className='col-sm-12 col-md-6 ms-auto d-grid mt-4'>
-          <button type='submit' className='btn btn-primary ripple rounded-1'>
-            {t('button.submit')}
-          </button>
-        </div>
-      </form>
+          <div className='col-sm-12 col-md-6 ms-auto d-grid mt-4'>
+            <Button
+              type='primary'
+              htmlType='submit'
+              loading={reviewMutation.isPending}
+              className='w-full'
+            >
+              {t('button.submit')}
+            </Button>
+          </div>
+        </Form>
+      </Spin>
     </div>
   )
 }

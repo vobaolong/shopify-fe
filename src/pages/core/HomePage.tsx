@@ -12,7 +12,7 @@ const HomePage = () => {
 
   return (
     <MainLayout container='container-md' navFor='user'>
-      <MetaData title={`Buynow Việt Nam | Mua và Bán Trên Website`} />
+      <MetaData title={`ShopBase Việt Nam | Mua và Bán Trên Website`} />
       <div className='mb-4 pt-4'>
         <ListBanner />
       </div>

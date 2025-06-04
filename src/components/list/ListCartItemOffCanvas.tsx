@@ -17,7 +17,7 @@ const ListCartItemOffCanvas = () => {
           data-bs-target='#offcanvasFilter'
           aria-controls='offcanvasFilter'
         >
-          <i className='fa-solid fa-sliders-h'></i>
+          <i className='fa-solid fa-sliders-h' />
           <span className='ms-2'>{t('filters.filter')}</span>
         </button>
       </div>

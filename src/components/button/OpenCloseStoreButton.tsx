@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getToken } from '../../apis/auth.api'
 import { openStore } from '../../apis/store.api'
-import Loading from '../ui/Loading'
+import { Spin, Alert } from 'antd'
 import ConfirmDialog from '../ui/ConfirmDialog'
 import { toast } from 'react-toastify'
 import { useTranslation } from 'react-i18next'
-import Error from '../ui/Error'
 import { useMutation } from '@tanstack/react-query'
 
 interface OpenCloseStoreButtonProps {
@@ -56,11 +55,20 @@ const OpenCloseStoreButton = ({
     mutate()
     setIsConfirming(false)
   }, [mutate])
-
   return (
     <div className='position-relative'>
-      {isPending && <Loading size='small' />}
-      {error && <Error msg={(error as any).message || 'Server Error'} />}
+      {isPending && (
+        <div className='d-flex justify-content-center p-2'>
+          <Spin size='small' />
+        </div>
+      )}
+      {error && (
+        <Alert
+          message={(error as any).message || 'Server Error'}
+          type='error'
+          showIcon
+        />
+      )}
 
       {isConfirming && (
         <ConfirmDialog
@@ -77,7 +85,7 @@ const OpenCloseStoreButton = ({
           checked={!openFlag}
           onChange={handleOpenStore}
         />
-        <i></i>
+        <i />
       </label>
     </div>
   )

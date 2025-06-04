@@ -24,7 +24,7 @@ const WalletPage = () => {
 
   return (
     <AccountLayout user={user} paths={paths}>
-      <MetaData title={`${t('helmet.myWallet')} | Buynow Việt Nam`} />
+      <MetaData title={`${t('helmet.myWallet')} | ShopBase Việt Nam`} />
       <TransactionsTable
         eWallet={eWallet}
         by='user'

@@ -1,4 +1,6 @@
-import Modal from '../ui/Modal'
+import { useState } from 'react'
+import { Modal, Button, Tooltip } from 'antd'
+import { ImportOutlined, ExportOutlined } from '@ant-design/icons'
 import CreateDepositTransactionForm from './form/CreateDepositTransactionForm'
 import CreateWithDrawTransactionForm from './form/CreateWithDrawTransactionForm'
 import { useTranslation } from 'react-i18next'
@@ -15,69 +17,81 @@ const CreateTransactionItem = ({
   onRun
 }: CreateTransactionItemProps) => {
   const { t } = useTranslation()
+  const [isDepositModalOpen, setIsDepositModalOpen] = useState(false)
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false)
+
+  const showDepositModal = () => setIsDepositModalOpen(true)
+  const hideDepositModal = () => {
+    setIsDepositModalOpen(false)
+    if (onRun) onRun()
+  }
+
+  const showWithdrawModal = () => setIsWithdrawModalOpen(true)
+  const hideWithdrawModal = () => {
+    setIsWithdrawModalOpen(false)
+    if (onRun) onRun()
+  }
 
   return (
-    <div className='d-flex gap-3'>
-      <div className='position-relative d-inline-block'>
-        <div className='cus-tooltip'>
-          <button
-            type='button'
-            className='btn btn-outline-success ripple text-nowrap rounded-1'
-            data-bs-toggle='modal'
-            data-bs-target='#create-deposit-transaction-form'
-          >
-            <i className='fa-solid fa-file-import'></i>
-            <span className='ms-2'>{t('transactionDetail.deposit')}</span>
-          </button>
+    <div className='flex gap-3'>
+      <Tooltip title={t('transactionDetail.deposit')}>
+        <Button
+          type='default'
+          icon={<ImportOutlined />}
+          onClick={showDepositModal}
+          className='border-green-500 text-green-500 hover:bg-green-50 hover:border-green-600 hover:text-green-600'
+        >
+          {t('transactionDetail.deposit')}
+        </Button>
+      </Tooltip>
 
-          <Modal
-            id='create-deposit-transaction-form'
-            hasCloseBtn={false}
-            title={t('transactionDetail.deposit')}
-          >
-            <CreateDepositTransactionForm
-              eWallet={eWallet}
-              storeId={storeId}
-              onRun={onRun}
-            />
-          </Modal>
-        </div>
-      </div>
+      <Tooltip
+        title={
+          eWallet <= 0
+            ? t('transactionDetail.empty')
+            : t('transactionDetail.draw')
+        }
+      >
+        <Button
+          type='default'
+          icon={<ExportOutlined />}
+          onClick={showWithdrawModal}
+          disabled={eWallet <= 0}
+          className='border-red-500 text-red-500 hover:bg-red-50 hover:border-red-600 hover:text-red-600 disabled:border-gray-300 disabled:text-gray-300'
+        >
+          {t('transactionDetail.draw')}
+        </Button>
+      </Tooltip>
 
-      {/*  */}
-      <div className='position-relative d-inline-block'>
-        <div className='cus-tooltip'>
-          <button
-            type='button'
-            disabled={eWallet <= 0 ? true : false}
-            className='btn btn-outline-danger ripple text-nowrap rounded-1'
-            data-bs-toggle='modal'
-            data-bs-target='#create-withdraw-transaction-form'
-          >
-            <i className='fa-solid fa-file-export'></i>
-            <span className='ms-2'>{t('transactionDetail.draw')}</span>
-          </button>
+      <Modal
+        title={t('transactionDetail.deposit')}
+        open={isDepositModalOpen}
+        onCancel={hideDepositModal}
+        footer={null}
+        width={600}
+        className='custom-modal'
+      >
+        <CreateDepositTransactionForm
+          eWallet={eWallet}
+          storeId={storeId}
+          onRun={hideDepositModal}
+        />
+      </Modal>
 
-          {eWallet > 0 && (
-            <Modal
-              id='create-withdraw-transaction-form'
-              hasCloseBtn={false}
-              title={t('transactionDetail.draw')}
-            >
-              <CreateWithDrawTransactionForm
-                eWallet={eWallet}
-                storeId={storeId}
-                onRun={onRun}
-              />
-            </Modal>
-          )}
-        </div>
-        {eWallet <= 0 && (
-          <small className='cus-tooltip-msg'>
-            {t('transactionDetail.empty')}
-          </small>
-        )}
-      </div>
+      <Modal
+        title={t('transactionDetail.draw')}
+        open={isWithdrawModalOpen}
+        onCancel={hideWithdrawModal}
+        footer={null}
+        width={600}
+        className='custom-modal'
+      >
+        <CreateWithDrawTransactionForm
+          eWallet={eWallet}
+          storeId={storeId}
+          onRun={hideWithdrawModal}
+        />
+      </Modal>
     </div>
   )
 }

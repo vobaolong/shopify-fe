@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import UserSmallCard from '../card/UserSmallCard'
-import Alert from '../ui/Alert'
+import { Alert } from 'antd'
 import { useState } from 'react'
 
 const StoreOwnerTable = ({ heading = false, ownerId = {} }) => {
@@ -9,14 +9,15 @@ const StoreOwnerTable = ({ heading = false, ownerId = {} }) => {
 
   return (
     <div className='position-relative'>
-      {heading && <h5 className='text-start'>{t('staffDetail.owner')}</h5>}
+      {heading && <h5 className='text-start'>{t('staffDetail.owner')}</h5>}{' '}
       {alerts ? (
         <Alert
-          icon={<i className='text-primary fa-solid fa-circle-info'></i>}
-          msg1={`${t('alert.theOwner')}`}
-          alert={`${t('alert.thisSectionContainsInfo')}`}
-          msg2={`${t('alert.theShopOwner')}`}
+          message={`${t('alert.theOwner')} ${t('alert.thisSectionContainsInfo')} ${t('alert.theShopOwner')}`}
+          type='info'
+          showIcon
+          closable
           onClose={() => setAlerts(false)}
+          className='mb-3'
         />
       ) : null}
       <div className='p-3 box-shadow bg-body rounded-2'>

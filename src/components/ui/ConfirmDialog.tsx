@@ -1,4 +1,6 @@
 import { useTranslation } from 'react-i18next'
+import { Modal } from 'antd'
+import { ExclamationCircleOutlined } from '@ant-design/icons'
 
 interface ConfirmDialogProps {
   title?: string
@@ -6,6 +8,7 @@ interface ConfirmDialogProps {
   color?: string
   onSubmit?: () => void
   onClose?: () => void
+  open?: boolean
 }
 
 const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -13,51 +16,47 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   message = 'Bạn có chắc chắn về điều này không?',
   color = 'primary',
   onSubmit = () => {},
-  onClose = () => {}
+  onClose = () => {},
+  open = true
 }) => {
   const { t } = useTranslation()
-  const onConfirm = () => {
+
+  const handleOk = () => {
     onSubmit()
     onClose()
   }
 
+  const handleCancel = () => {
+    onClose()
+  }
+
   return (
-    <>
-      <div className='modal-backdrop fade show'></div>
-      <div className='modal d-block' tabIndex={-1} role='dialog'>
-        <div className='modal-dialog' role='document'>
-          <div className='modal-content rounded-1'>
-            <div className={`modal-header text-${color}`}>
-              <h5 className='modal-title'>{title}</h5>
-              <button
-                type='button'
-                className='btn-close'
-                onClick={onClose}
-              ></button>
-            </div>
-            <div className='modal-body text-start'>
-              <span className='text-dark-emphasis'>{message}</span>
-            </div>
-            <div className='modal-footer'>
-              <button
-                type='button'
-                className='btn btn-outline-danger rounded-1'
-                onClick={onClose}
-              >
-                {t('button.cancel')}
-              </button>
-              <button
-                type='button'
-                className='btn btn-primary ripple rounded-1'
-                onClick={onConfirm}
-              >
-                {t('button.confirm')}
-              </button>
-            </div>
-          </div>
+    <Modal
+      title={
+        <div
+          className={`flex items-center gap-2 text-${color === 'danger' ? 'red' : 'blue'}-600`}
+        >
+          <ExclamationCircleOutlined />
+          <span>{title}</span>
         </div>
-      </div>
-    </>
+      }
+      open={open}
+      onOk={handleOk}
+      onCancel={handleCancel}
+      okText={t('button.confirm')}
+      cancelText={t('button.cancel')}
+      okButtonProps={{
+        className:
+          color === 'danger'
+            ? 'bg-red-500 border-red-500 hover:bg-red-600 hover:border-red-600'
+            : ''
+      }}
+      cancelButtonProps={{
+        className: 'border-gray-300'
+      }}
+    >
+      <div className='text-gray-700 py-2'>{message}</div>
+    </Modal>
   )
 }
 

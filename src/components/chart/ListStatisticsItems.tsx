@@ -200,24 +200,24 @@ const ListStatisticsItems = ({
     {
       value: 'order',
       label: t('admin.orders'),
-      icon: <i className='fa-solid fa-cart-shopping'></i>
+      icon: <i className='fa-solid fa-cart-shopping' />
     },
     {
       value: 'product',
       label: t('admin.products'),
-      icon: <i className='fa-solid fa-box'></i>
+      icon: <i className='fa-solid fa-box' />
     },
     ...(by === 'admin'
       ? [
           {
             value: 'user',
             label: t('admin.users'),
-            icon: <i className='fa-solid fa-users'></i>
+            icon: <i className='fa-solid fa-users' />
           },
           {
             value: 'store',
             label: t('admin.stores'),
-            icon: <i className='fa-solid fa-store'></i>
+            icon: <i className='fa-solid fa-store' />
           }
         ]
       : [])
@@ -273,7 +273,7 @@ const ListStatisticsItems = ({
   ]
 
   return (
-    <Spin spinning={isLoading} tip={t('loading')}>
+    <Spin spinning={isLoading}>
       {error && (
         <Alert message={String(error)} type='error' showIcon className='mb-4' />
       )}
@@ -311,22 +311,22 @@ const ListStatisticsItems = ({
                       {
                         label: t('admin.adDashboard.hour'),
                         value: 'hours',
-                        icon: <i className='fa-regular fa-clock'></i>
+                        icon: <i className='fa-regular fa-clock' />
                       },
                       {
                         label: t('admin.adDashboard.day'),
                         value: 'date',
-                        icon: <i className='fa-regular fa-calendar-days'></i>
+                        icon: <i className='fa-regular fa-calendar-days' />
                       },
                       {
                         label: t('admin.adDashboard.month'),
                         value: 'month',
-                        icon: <i className='fa-solid fa-calendar-alt'></i>
+                        icon: <i className='fa-solid fa-calendar-alt' />
                       },
                       {
                         label: t('admin.adDashboard.year'),
                         value: 'year',
-                        icon: <i className='fa-solid fa-calendar-minus'></i>
+                        icon: <i className='fa-solid fa-calendar-minus' />
                       }
                     ]}
                     value={options.by}
@@ -377,12 +377,12 @@ const ListStatisticsItems = ({
                     {
                       label: t('admin.adDashboard.line'),
                       value: 'line',
-                      icon: <i className='fa-solid fa-chart-line'></i>
+                      icon: <i className='fa-solid fa-chart-line' />
                     },
                     {
                       label: t('admin.adDashboard.bar'),
                       value: 'bar',
-                      icon: <i className='fa-solid fa-chart-column'></i>
+                      icon: <i className='fa-solid fa-chart-column' />
                     }
                   ]}
                   value={options.type}

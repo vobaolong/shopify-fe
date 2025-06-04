@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Table, Button, Alert, Select, Divider } from 'antd'
+import { Table, Button, Alert, Select, Divider, Typography } from 'antd'
 import { getToken } from '../../apis/auth.api'
 import {
   listTransactionsByUser,
@@ -23,7 +23,7 @@ import { DatePicker } from 'antd'
 import dayjs from 'dayjs'
 import { SyncOutlined } from '@ant-design/icons'
 import { PaginationType } from '../../@types/pagination.type'
-
+import { CopyOutlined } from '@ant-design/icons'
 interface TransactionType {
   _id: string
   amount: { $numberDecimal: string }
@@ -54,6 +54,7 @@ export interface Filter {
 }
 
 const { RangePicker } = DatePicker
+const { Text } = Typography
 
 const TransactionsTable = ({
   storeId = '',
@@ -161,8 +162,15 @@ const TransactionsTable = ({
       title: t('userDetail.transaction'),
       dataIndex: '_id',
       key: '_id',
-      render: (id: string) => <small>{id}</small>,
-      sorter: true
+      render: (id: string) => (
+        <Text
+          className='uppercase'
+          copyable={{ text: id.toUpperCase(), icon: <CopyOutlined /> }}
+        >
+          #{id.slice(-10).toUpperCase()}
+        </Text>
+      ),
+      width: 150
     },
     {
       title: t('userDetail.total'),
@@ -213,9 +221,11 @@ const TransactionsTable = ({
       dataIndex: 'createdAt',
       key: 'createdAt',
       render: (createdAt: string) => (
-        <small>{humanReadableDate(createdAt)}</small>
+        <span>{humanReadableDate(createdAt)}</span>
       ),
-      sorter: true
+      sorter: true,
+      width: 150,
+      align: 'right'
     }
   ].filter(Boolean) as ColumnType<TransactionType>[]
 

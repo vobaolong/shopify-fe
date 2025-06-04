@@ -1,8 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
 import { listActiveValues } from '../../apis/variant.api'
-import Error from '../ui/Error'
-import Loading from '../ui/Loading'
+import { Spin, Alert } from 'antd'
 import AddVariantValueItem from '../item/AddVariantValueItem'
 import { useTranslation } from 'react-i18next'
 import { VariantValueType } from '../../@types/entity.types'
@@ -92,8 +91,8 @@ const MultiVariantValueSelector = ({
 
   return (
     <div className='position-relative'>
-      {isLoading && <Loading />}
-      {error && <Error msg={error} />}
+      {isLoading && <Spin size='large' />}
+      {error && <Alert message={error} type='error' />}
 
       <div className='position-relative mt-4'>
         <label
@@ -120,7 +119,7 @@ const MultiVariantValueSelector = ({
                     className='btn btn-outline-danger btn-sm ripple rounded-1 ms-2'
                     onClick={() => handleRemove(index)}
                   >
-                    <i className='fa-solid fa-xmark'></i>
+                    <i className='fa-solid fa-xmark' />
                   </button>
                 </span>
               </span>

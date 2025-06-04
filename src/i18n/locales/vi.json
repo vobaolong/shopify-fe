@@ -23,7 +23,7 @@
     "myPurchase": "Đơn hàng của tôi",
     "addressBook": "Sổ địa chỉ",
     "listFavorites": "Danh sách yêu thích",
-    "myWallet": "Số dư TK Buynow",
+    "myWallet": "Số dư TK ShopBase",
     "myStore": "Shop của tôi"
   },
   "breadcrumbs": {
@@ -46,7 +46,7 @@
     "home": "Trang chủ",
     "myPurchase": "Đơn hàng của tôi",
     "addressBook": "Sổ địa chỉ",
-    "myWallet": "Số dư TK Buynow",
+    "myWallet": "Số dư TK ShopBase",
     "myStore": "Shop của tôi",
     "createStore": "Mở 1 shop mới",
     "collection": "Tất cả sản phẩm",
@@ -64,7 +64,7 @@
     "staff": "Nhân viên",
     "order": "Đơn hàng",
     "orderDetail": "Chi tiết đơn hàng",
-    "wallet": "Số dư TK Buynow",
+    "wallet": "Số dư TK ShopBase",
     "transactions": "Giao dịch",
     "product": "Sản Phẩm"
   },
@@ -191,7 +191,7 @@
     "storeBanned": "Shop này bị tạm khoá!",
     "soldOut": "Sản phẩm đã bán hết, vui lòng xóa khỏi giỏ hàng, bạn có thể tiếp tục với những sản phẩm khác!",
     "outOfBusiness": "Sản phẩm đã ngừng kinh doanh, vui lòng xóa khỏi giỏ hàng của bạn, bạn có thể tiếp tục với những sản phẩm khác!",
-    "productBanned": "Sản phẩm bị Buynow cấm!",
+    "productBanned": "Sản phẩm bị ShopBase cấm!",
     "productLeft": "sản phẩm còn lại, vui lòng cập nhật giỏ hàng!"
   },
   "message": {
@@ -450,10 +450,10 @@
     "totalPrice": "Tổng số tiền",
     "shippingFee": "Phí vận chuyển",
     "discountShippingFee": "Giảm giá phí vận chuyển",
-    "BuynowVoucherApplied": "Voucher từ Buynow",
-    "BuynowDiscount": "Giảm giá Buynow",
+    "ShopBaseVoucherApplied": "Voucher từ ShopBase",
+    "ShopBaseDiscount": "Giảm giá ShopBase",
     "empty": "Giỏ hàng của bạn đang trống",
-    "emptyRefer": "Bạn tham khảo thêm các sản phẩm được Buynow gợi ý phía dưới nhé!"
+    "emptyRefer": "Bạn tham khảo thêm các sản phẩm được ShopBase gợi ý phía dưới nhé!"
   },
   "goToUserManager": "Đến quản lý người dùng",
   "goToShopManager": "Đến quản lý shop",
@@ -493,7 +493,7 @@
     "currentPw": "Mật khẩu hiện tại",
     "newPw": "Mật khẩu mới",
     "pwValid": "Vui lòng cung cấp mật khẩu hợp lệ!",
-    "wallet": "Số dư TK Buynow",
+    "wallet": "Số dư TK ShopBase",
     "transaction": "Mã giao dịch",
     "by": "Người thực hiện",
     "in": "Nạp",
@@ -671,7 +671,7 @@
     "role": "Vai trò",
     "commissions": "Chiết khấu",
     "getPaid": "Bạn sẽ được trả tiền bằng cách nào?",
-    "sellOn": "Bán trên Buynow",
+    "sellOn": "Bán trên ShopBase",
     "agreeBy": "Bằng việc tạo shop, bạn đồng ý với ",
     "backToStore": "Quay lại trang quản lý",
     "follow": "Theo dõi",
@@ -698,7 +698,7 @@
     "featuredValid": "Vui lòng cung cấp ảnh nổi bật phù hợp!"
   },
   "favorite": "Yêu thích",
-  "wallet": "Số dư TK Buynow",
+  "wallet": "Số dư TK ShopBase",
   "myBalance": "Số dư của tôi",
   "dropHere": "Thả ảnh vào đây...",
   "dragNDrop": "Kéo/Thả ảnh vào đây hoặc nhấn để chọn",
@@ -772,11 +772,11 @@
   "signInForm": {
     "comeBack": "Chào mừng đã quay lại!",
     "signUp": "Đăng ký thật dễ dàng",
-    "emailLabel": "Địa chỉ Email hoặc số điện thoại",
+    "emailOrPhone": "Địa chỉ Email hoặc số điện thoại",
     "emailFeedback": "Vui lòng cung cấp địa chỉ Email hoặc số điện thoại hợp lệ!",
     "passwordLabel": "Mật khẩu",
     "passwordFeedback": "Vui lòng nhập mật khẩu chính xác!",
-    "dontHaveAccount": "Bạn không có tài khoản?",
+    "noAccount": "Bạn không có tài khoản?",
     "haveAnAccount": "Đã có sẵn tài khoản?",
     "agreeBy": "Bằng việc đăng ký, bạn đã đồng ý với"
   },
@@ -866,11 +866,11 @@
 
   "footer": {
     "quickLink": "Truy cập nhanh",
-    "about": "Về Buynow",
+    "about": "Về ShopBase",
     "policy": "Chính sách bảo mật",
-    "title": "Buynow - Thật nhanh, thật chất lượng, thật rẻ",
-    "p1": "Buynow có tất cả",
-    "small1": "Với hàng triệu sản phẩm từ các thương hiệu, shop uy tín, hàng nghìn loại mặt hàng từ Điện thoại smartphone đến mỹ phẩm,Buynow mang đến cho bạn một trải nghiệm mua sắm online bắt đầu bằng chữ tín.",
+    "title": "ShopBase - Thật nhanh, thật chất lượng, thật rẻ",
+    "p1": "ShopBase có tất cả",
+    "small1": "Với hàng triệu sản phẩm từ các thương hiệu, shop uy tín, hàng nghìn loại mặt hàng từ Điện thoại smartphone đến mỹ phẩm,ShopBase mang đến cho bạn một trải nghiệm mua sắm online bắt đầu bằng chữ tín.",
     "payment": "Thanh toán",
     "deliveryUnit": "Đơn vị vận chuyển"
   },

@@ -2,10 +2,9 @@ import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getToken } from '../../apis/auth.api'
 import { useCancelStaff } from '../../hooks/useCancelStaff'
-import Loading from '../ui/Loading'
+import { Spin, Alert } from 'antd'
 import ConfirmDialog from '../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
-import Error from '../ui/Error'
 import { toast } from 'react-toastify'
 
 const CancelStaffButton = ({ storeId = '' }) => {
@@ -26,12 +25,19 @@ const CancelStaffButton = ({ storeId = '' }) => {
       }
     )
   }, [mutate, _id, storeId, t, navigate])
-
   return (
     <div className='position-relative'>
-      {isPending && <Loading />}
+      {isPending && (
+        <div className='d-flex justify-content-center p-2'>
+          <Spin size='small' />
+        </div>
+      )}
       {error && (
-        <Error msg={error instanceof Error ? error.message : String(error)} />
+        <Alert
+          message={error instanceof Error ? error.message : String(error)}
+          type='error'
+          showIcon
+        />
       )}
       {isConfirming && (
         <ConfirmDialog
@@ -46,7 +52,7 @@ const CancelStaffButton = ({ storeId = '' }) => {
         className='btn btn-outline-danger rounded-1 ripple'
         onClick={() => setIsConfirming(true)}
       >
-        <i className='fa-solid fa-ban'></i>
+        <i className='fa-solid fa-ban' />
         <span className='ms-2 res-hide'>{t('staffDetail.leave')}</span>
       </button>
     </div>

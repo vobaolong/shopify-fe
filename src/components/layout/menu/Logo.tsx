@@ -1,5 +1,5 @@
-import logo from '../../../assets/Buynow.svg'
-import logoAdmin from '../../../assets/BuynowAdmin.svg'
+import logo from '../../../assets/ShopBase.svg'
+import logoAdmin from '../../../assets/ShopBaseAdmin.svg'
 
 interface LogoProps {
   width?: string

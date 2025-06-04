@@ -42,7 +42,7 @@ const RatingInput: React.FC<RatingInputProps> = ({
               className={`fa-solid fa-star me-1 ${
                 value >= 5 ? 'link-golden' : 'text-muted'
               }`}
-            ></i>
+            />
           </label>
         </span>
 
@@ -62,7 +62,7 @@ const RatingInput: React.FC<RatingInputProps> = ({
               className={`fa-solid fa-star me-1 ${
                 value >= 4 ? 'link-golden' : 'text-muted'
               }`}
-            ></i>
+            />
           </label>
         </span>
 
@@ -81,7 +81,7 @@ const RatingInput: React.FC<RatingInputProps> = ({
               className={`fa-solid fa-star me-1 ${
                 value >= 3 ? 'link-golden' : 'text-muted'
               }`}
-            ></i>
+            />
           </label>
         </span>
 
@@ -100,7 +100,7 @@ const RatingInput: React.FC<RatingInputProps> = ({
               className={`fa-solid fa-star me-1 ${
                 value >= 2 ? 'link-golden' : 'text-muted'
               }`}
-            ></i>
+            />
           </label>
         </span>
 
@@ -119,7 +119,7 @@ const RatingInput: React.FC<RatingInputProps> = ({
               className={`fa-solid fa-star me-1 ${
                 value >= 1 ? 'link-golden' : 'text-muted'
               }`}
-            ></i>
+            />
           </label>
         </span>
       </div>

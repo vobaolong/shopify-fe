@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux'
 import StoreLayout from '../../components/layout/StoreLayout'
 import MainLayout from '../../components/layout/MainLayout'
-import Error from '../../components/ui/Error'
+import { Alert } from 'antd'
 import ListReviews from '../../components/list/ListReviews'
 import { useTranslation } from 'react-i18next'
 import { selectStoreStore } from '../../store/slices/storeSlice'
@@ -16,7 +16,7 @@ const ReviewAndRatingPage = () => {
   ]
   return typeof store.isActive === 'boolean' && !store.isActive ? (
     <MainLayout>
-      <Error msg={t('toastError.storeBanned')} />
+      <Alert message={t('toastError.storeBanned')} type='error' showIcon />
     </MainLayout>
   ) : (
     <StoreLayout store={store} paths={paths}>

@@ -6,14 +6,14 @@ import { addStaff } from '../../../apis/store.api'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
 import UserSmallCard from '../../card/UserSmallCard'
 import SearchInput from '../../ui/SearchInput'
-import Loading from '../../ui/Loading'
 import ConfirmDialog from '../../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
-import Error from '../../ui/Error'
 import { useMutation } from '@tanstack/react-query'
 import { AxiosResponse } from 'axios'
 import { useAntdApp } from '../../../hooks/useAntdApp'
+import { Button, Spin } from 'antd'
+import { UserAddOutlined, CloseOutlined, DownOutlined } from '@ant-design/icons'
 
 interface StoreAddStaffFormProps {
   storeId?: string
@@ -30,6 +30,7 @@ const StoreAddStaffForm = ({
   const { t } = useTranslation()
   const { notification } = useAntdApp()
   const [filter, setFilter] = useState<any>({})
+  const [pendingFilter, setPendingFilter] = useState<any>({})
   const [pagination, setPagination] = useState<any>({})
   const [listUsers, setListUsers] = useState<any[]>([])
   const [listLeft, setListLeft] = useState<any[]>([])
@@ -75,16 +76,17 @@ const StoreAddStaffForm = ({
         return
       })
   }
-
   useEffect(() => {
-    setFilter({
+    const initialFilter = {
       search: '',
       sortBy: 'userName',
       role: 'customer',
       order: 'asc',
       limit: 3,
       page: 1
-    })
+    }
+    setFilter(initialFilter)
+    setPendingFilter(initialFilter)
   }, [storeId, owner, staff])
 
   useEffect(() => {
@@ -104,13 +106,16 @@ const StoreAddStaffForm = ({
       )
     )
   }, [listUsers])
-
   const handleChangeKeyword = (keyword: string) => {
-    setFilter({
-      ...filter,
+    setPendingFilter({
+      ...pendingFilter,
       search: keyword,
       page: 1
     })
+  }
+
+  const handleSearch = () => {
+    setFilter({ ...pendingFilter })
   }
 
   const handleLoadMore = () => {
@@ -141,92 +146,97 @@ const StoreAddStaffForm = ({
   }
 
   return (
-    <div className='position-relative'>
-      {addStaffMutation.isPending && <Loading />}
-      {isConfirming && (
-        <ConfirmDialog
-          title={t('staffDetail.add')}
-          message={t('message.addStaff')}
-          onSubmit={onSubmit}
-          onClose={() => setIsConfirming(false)}
-        />
-      )}
-      <div className='row'>
-        <div className='col'>
-          <div className='border rounded-1 p-2 cus-group bg-light d-flex flex-column justify-content-between'>
-            <div className='mb-2'>
-              <SearchInput onChange={handleChangeKeyword} />
-            </div>
-            <div className='flex-grow-1 w-100'>
-              {listLeft &&
-                listLeft.map((user, index) => (
-                  <div
-                    key={index}
-                    className='d-flex justify-content-between align-items-center'
-                  >
-                    <div className='mb-2'>
-                      <UserSmallCard user={user} />
-                    </div>
-                    <div className='position-relative d-inline-block'>
-                      <button
-                        type='button'
-                        className='btn btn-primary btn-sm ripple rounded-1 cus-tooltip'
-                        onClick={() => handleAddBtn(user)}
-                      >
-                        <i className='fa-solid fa-user-plus'></i>
-                      </button>
-                      <span className='cus-tooltip-msg'>{t('button.add')}</span>
-                    </div>
-                  </div>
-                ))}
-            </div>
-            <button
-              type='button'
-              disabled={
-                pagination && pagination.pageCount > pagination.pageCurrent
-                  ? false
-                  : true
-              }
-              className='btn btn-primary ripple w-100 mt-4 rounded-1'
-              onClick={handleLoadMore}
-            >
-              <i className='fa-solid fa-caret-down'></i> {t('button.more')}
-            </button>
-          </div>
-        </div>
-        <div className='col'>
-          <div className='border rounded-1 p-2 cus-group bg-light  d-flex flex-column justify-content-between align-items-center'>
-            <div className='flex-grow-1 w-100'>
-              {listRight &&
-                listRight.map((user, index) => (
-                  <div
-                    key={index}
-                    className='d-flex justify-content-between align-items-center'
-                  >
-                    <div className='mb-2'>
-                      <UserSmallCard user={user} />
-                    </div>
-                    <button
-                      type='button'
-                      className='btn btn-outline-danger btn-sm rounded-1 ripple'
-                      onClick={() => handleRemoveBtn(user)}
+    <Spin spinning={addStaffMutation.isPending}>
+      <div className='relative'>
+        {isConfirming && (
+          <ConfirmDialog
+            title={t('staffDetail.add')}
+            message={t('message.addStaff')}
+            onSubmit={onSubmit}
+            onClose={() => setIsConfirming(false)}
+          />
+        )}
+        <div className='flex flex-wrap -mx-2'>
+          <div className='w-full md:w-1/2 px-2 mb-4 md:mb-0'>
+            <div className='border rounded p-4 bg-gray-50 flex flex-col justify-between h-full'>
+              {' '}
+              <div className='mb-4'>
+                <SearchInput
+                  value={pendingFilter.search || ''}
+                  onChange={handleChangeKeyword}
+                  onSearch={handleSearch}
+                />
+              </div>
+              <div className='flex-grow w-full mb-4'>
+                {listLeft &&
+                  listLeft.map((user, index) => (
+                    <div
+                      key={index}
+                      className='flex justify-between items-center mb-3'
                     >
-                      <i className='fa-solid fa-xmark'></i>
-                    </button>
-                  </div>
-                ))}
+                      <div>
+                        <UserSmallCard user={user} />
+                      </div>
+                      <Button
+                        type='primary'
+                        size='small'
+                        icon={<UserAddOutlined />}
+                        onClick={() => handleAddBtn(user)}
+                        title={t('button.add')}
+                      />
+                    </div>
+                  ))}
+              </div>
+              <Button
+                type='primary'
+                disabled={
+                  pagination && pagination.pageCount > pagination.pageCurrent
+                    ? false
+                    : true
+                }
+                icon={<DownOutlined />}
+                onClick={handleLoadMore}
+                className='w-full'
+              >
+                {t('button.more')}
+              </Button>
             </div>
-            <button
-              type='button'
-              className='btn rounded-1 btn-primary ripple w-100 mt-4'
-              onClick={handleSubmit}
-            >
-              {t('button.submit')}
-            </button>
+          </div>
+          <div className='w-full md:w-1/2 px-2'>
+            <div className='border rounded p-4 bg-gray-50 flex flex-col justify-between h-full'>
+              <div className='flex-grow w-full mb-4'>
+                {listRight &&
+                  listRight.map((user, index) => (
+                    <div
+                      key={index}
+                      className='flex justify-between items-center mb-3'
+                    >
+                      <div>
+                        <UserSmallCard user={user} />
+                      </div>
+                      <Button
+                        type='primary'
+                        danger
+                        size='small'
+                        icon={<CloseOutlined />}
+                        onClick={() => handleRemoveBtn(user)}
+                      />
+                    </div>
+                  ))}
+              </div>
+              <Button
+                type='primary'
+                onClick={handleSubmit}
+                className='w-full'
+                loading={addStaffMutation.isPending}
+              >
+                {t('button.submit')}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </Spin>
   )
 }
 

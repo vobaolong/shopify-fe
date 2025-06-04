@@ -180,7 +180,7 @@
     "storeBanned": "This store is temporarily banned!",
     "soldOut": "The product is sold out, please delete it from your cart, you can continue with others!",
     "outOfBusiness": "The product is out of business, please delete it from your cart, you can continue with others!",
-    "productBanned": "The product is banned by Buynow!",
+    "productBanned": "The product is banned by ShopBase!",
     "productLeft": "products left, please update cart!"
   },
   "message": {
@@ -421,10 +421,10 @@
     "totalPrice": "Total Amount",
     "shippingFee": "Shipping Fee",
     "discountShippingFee": "Shipping Discount",
-    "BuynowVoucherApplied": "Buynow Voucher Applied",
-    "BuynowDiscount": "Buynow Discount",
+    "ShopBaseVoucherApplied": "ShopBase Voucher Applied",
+    "ShopBaseDiscount": "ShopBase Discount",
     "empty": "Your shopping cart is empty",
-    "emptyRefer": "Please refer to the products suggested by Buynow below!"
+    "emptyRefer": "Please refer to the products suggested by ShopBase below!"
   },
   "goToUserManager": "Go to User Manager",
   "goToShopManager": "Go to Shop Manager",
@@ -599,7 +599,7 @@
     "followers": "Followers",
     "vacationMode": "Vacation Mode",
     "vacationModeContent": "Enable Vacation Mode to prevent customers from placing new orders. But orders in progress still have to be processed.",
-    "banned": "The store is temporarily locked by Buynow, contact us for more details",
+    "banned": "The store is temporarily locked by ShopBase, contact us for more details",
     "active": "The store is active",
     "address": "Address",
     "viewShop": "View Shop",
@@ -619,7 +619,7 @@
     "role": "Role",
     "commissions": "Commissions",
     "getPaid": "How you'll get paid?",
-    "sellOn": "Sell on Buynow",
+    "sellOn": "Sell on ShopBase",
     "agreeBy": "By Creating store, you agree to ",
     "backToStore": "Back to store manager",
     "follow": "Follow",
@@ -698,11 +698,11 @@
   "signInForm": {
     "comeBack": "Welcome back!",
     "signUp": "SignUp is easy",
-    "emailLabel": "Email address or phone number",
+    "emailOrPhone": "Email address or phone number",
     "emailFeedback": "Please provide a valid email address or phone number!",
     "passwordLabel": "Password",
     "passwordFeedback": "Please provide a valid password!",
-    "dontHaveAccount": "Don't have an account?",
+    "noAccount": "Don't have an account?",
     "haveAnAccount": "Already have an account?",
     "agreeBy": "By Signing in, you agree to"
   },
@@ -787,9 +787,9 @@
     "quickLink": "Quick Link",
     "about": "About Us",
     "policy": "Policy",
-    "title": "Buynow - Fast, Quality, Affordable",
-    "p1": "Buynow has it all",
-    "small1": "With millions of products from trusted brands and stores, thousands of items ranging from smartphones to fresh fruits and vegetables, Buynow brings you an online shopping experience that starts with trust.",
+    "title": "ShopBase - Fast, Quality, Affordable",
+    "p1": "ShopBase has it all",
+    "small1": "With millions of products from trusted brands and stores, thousands of items ranging from smartphones to fresh fruits and vegetables, ShopBase brings you an online shopping experience that starts with trust.",
     "payment": "Payment",
     "deliveryUnit": "Logistics"
   },

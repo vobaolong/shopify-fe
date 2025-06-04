@@ -1,14 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import Loading from '../../ui/Loading'
-import Error from '../../ui/Error'
 import {
   getProvincesGHN,
   getDistrictsGHN,
   getWardsGHN
 } from '../../../apis/address.api'
-import { Input } from 'antd'
+import { Input, Select, Form, Spin, Alert } from 'antd'
 import {
   AddressDetail,
   District,
@@ -93,9 +91,8 @@ const AddressForm: React.FC<AddressFormProps> = ({
     }
   }, [])
 
-  const handleProvinceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value
-    const name = e.target.options[e.target.selectedIndex].text.trim()
+  const handleProvinceChange = (value: string, option: any) => {
+    const name = option?.label || ''
     setAddress({
       ...address,
       province: value,
@@ -113,9 +110,8 @@ const AddressForm: React.FC<AddressFormProps> = ({
     }
   }
 
-  const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value
-    const name = e.target.options[e.target.selectedIndex].text.trim()
+  const handleDistrictChange = (value: string, option: any) => {
+    const name = option?.label || ''
     setAddress({
       ...address,
       district: value,
@@ -130,13 +126,12 @@ const AddressForm: React.FC<AddressFormProps> = ({
     }
   }
 
-  const handleWardChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value
-    const name = e.target.options[e.target.selectedIndex].text.trim()
+  const handleWardChange = (value: string, option: any) => {
+    const name = option?.label || ''
     setAddress({ ...address, ward: value, wardName: name })
   }
-
-  const handleChange = (value: string) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
     if (address.provinceName && address.districtName && address.wardName) {
       setAddress((prev) => ({
         ...prev,
@@ -148,75 +143,97 @@ const AddressForm: React.FC<AddressFormProps> = ({
   }
 
   return (
-    <div className='position-relative'>
-      {isLoading && <Loading />}
-      <div className='row mb-2 text-start gap-3'>
-        <div className='col-12 d-flex flex-column justify-content-between align-items-center'>
-          <label className='col-12 mb-1' htmlFor='province'>
-            {t('addressForm.province')} <span className='text-danger'>*</span>
-          </label>
-          <select
-            className='col-12 border rounded-1 px-2 py-1 select-item text-dark-emphasis'
-            id='province'
+    <Spin spinning={isLoading}>
+      <div className='grid grid-cols-1 gap-4'>
+        {error && <Alert message={error} type='error' showIcon />}
+
+        <Form.Item label={t('addressForm.province')} required className='mb-4'>
+          <Select
+            placeholder={t('addressForm.selectProvince')}
+            value={address.province || undefined}
             onChange={handleProvinceChange}
-            value={address.province}
-          >
-            <option value=''>{t('addressForm.selectProvince')}</option>
-            {provinces
+            showSearch
+            status={!address.province && address.street ? 'error' : ''}
+            className='w-full'
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            options={provinces
               .slice()
               .sort((a, b) => a.ProvinceName.localeCompare(b.ProvinceName))
-              .map((province) => (
-                <option key={province.ProvinceID} value={province.ProvinceID}>
-                  {province.ProvinceName}
-                </option>
-              ))}
-          </select>
-        </div>
-        <div className='col-12 d-flex flex-column justify-content-between align-items-center'>
-          <label className='col-12 mb-1' htmlFor='district'>
-            {t('addressForm.district')} <span className='text-danger'>*</span>
-          </label>
-          <select
-            className='col-12 border rounded-1 px-2 py-1 select-item text-dark-emphasis'
-            id='district'
+              .map((province) => ({
+                value: province.ProvinceID,
+                label: province.ProvinceName
+              }))}
+          />
+        </Form.Item>
+
+        <Form.Item label={t('addressForm.district')} required className='mb-4'>
+          <Select
+            placeholder={t('addressForm.selectDistrict')}
+            value={address.district || undefined}
             onChange={handleDistrictChange}
-            value={address.district}
             disabled={!address.province}
-          >
-            <option value=''>{t('addressForm.selectDistrict')}</option>
-            {districts
+            showSearch
+            status={
+              address.province && !address.district && address.street
+                ? 'error'
+                : ''
+            }
+            className='w-full'
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            options={districts
               .slice()
               .sort((a, b) => a.DistrictName.localeCompare(b.DistrictName))
-              .map((district) => (
-                <option key={district.DistrictID} value={district.DistrictID}>
-                  {district.DistrictName}
-                </option>
-              ))}
-          </select>
-        </div>
-        <div className='col-12 d-flex flex-column justify-content-between align-items-center'>
-          <label className='col-12 mb-1' htmlFor='ward'>
-            {t('addressForm.ward')} <span className='text-danger'>*</span>
-          </label>
-          <select
-            className='col-12 border rounded-1 px-2 py-1 select-item text-dark-emphasis'
-            id='ward'
+              .map((district) => ({
+                value: district.DistrictID,
+                label: district.DistrictName
+              }))}
+          />
+        </Form.Item>
+
+        <Form.Item label={t('addressForm.ward')} required className='mb-4'>
+          <Select
+            placeholder={t('addressForm.selectWard')}
+            value={address.ward || undefined}
             onChange={handleWardChange}
-            value={address.ward}
             disabled={!address.district}
-          >
-            <option value=''>{t('addressForm.selectWard')}</option>
-            {wards
+            showSearch
+            status={
+              address.district && !address.ward && address.street ? 'error' : ''
+            }
+            className='w-full'
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            options={wards
               .slice()
               .sort((a, b) => a.WardName.localeCompare(b.WardName))
-              .map((ward) => (
-                <option key={ward.WardID} value={ward.WardID}>
-                  {ward.WardName}
-                </option>
-              ))}
-          </select>
-        </div>
-        <div className='col-12'>
+              .map((ward) => ({
+                value: ward.WardID,
+                label: ward.WardName
+              }))}
+          />
+        </Form.Item>
+
+        <Form.Item
+          label={t('addressForm.street')}
+          required
+          help={
+            !(address.district && address.province && address.ward) &&
+            address.street
+              ? t('addressForm.completeSelections')
+              : ''
+          }
+          validateStatus={
+            !(address.district && address.province && address.ward) &&
+            address.street
+              ? 'error'
+              : ''
+          }
+        >
           <Input
             disabled={
               !(
@@ -225,22 +242,14 @@ const AddressForm: React.FC<AddressFormProps> = ({
                 address.wardName
               )
             }
-            type='text'
-            name='street'
             value={address.street}
-            required
+            onChange={handleChange}
             maxLength={100}
-            onChange={(e) => handleChange(e.target.value)}
             placeholder='Ví dụ: Số 58 Đường số 1'
           />
-        </div>
-        {error && (
-          <div className='col-12'>
-            <Error msg={error} />
-          </div>
-        )}
+        </Form.Item>
       </div>
-    </div>
+    </Spin>
   )
 }
 

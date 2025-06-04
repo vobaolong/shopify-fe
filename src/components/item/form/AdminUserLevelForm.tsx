@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react'
 import { createUserLevel, updateUserLevel } from '../../../apis/level.api'
-import { Form, Input, Button, notification, ColorPicker } from 'antd'
-import Loading from '../../ui/Loading'
+import {
+  Form,
+  Input,
+  Button,
+  notification,
+  ColorPicker,
+  Spin,
+  Alert
+} from 'antd'
 import ConfirmDialog from '../../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from '@tanstack/react-query'
@@ -112,10 +119,13 @@ const AdminUserLevelForm = ({
 
   const isLoading =
     createUserLevelMutation.isPending || updateUserLevelMutation.isPending
-
   return (
     <div className={isEditMode ? 'p-4' : 'position-relative'}>
-      {isLoading && <Loading />}
+      {isLoading && (
+        <div className='d-flex justify-content-center p-4'>
+          <Spin size='large' />
+        </div>
+      )}
 
       {/* Confirmation dialog only for create mode */}
       {!isEditMode && isConfirming && (

@@ -3,7 +3,7 @@ import { getToken } from '../../apis/auth.api'
 import { calcTime } from '../../helper/calcTime'
 import ConfirmDialog from '../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
-import { notification, Spin } from 'antd'
+import { notification, Button, Tooltip } from 'antd'
 import { socketId } from '../../socket'
 import { OrderStatus } from '../../enums/OrderStatus.enum'
 import { useUserCancelOrder } from '../../hooks/useOrder'
@@ -57,9 +57,13 @@ const UserCancelOrderButton = ({
     )
     setIsConfirming(false)
   }, [mutate, _id, orderId, onRun, t])
-
   const disabled =
     status !== OrderStatus.PENDING || calcTime(createdAt) >= 1 || isPending
+
+  const isOrderNonPending = Boolean(status && status !== OrderStatus.PENDING)
+  const isTimeExpired = calcTime(createdAt) >= 1
+  const showTooltip = isOrderNonPending || isTimeExpired
+
   return (
     <div className='relative'>
       {isConfirming && (
@@ -70,22 +74,22 @@ const UserCancelOrderButton = ({
           onClose={() => setIsConfirming(false)}
         />
       )}
-      <div className='d-inline-block cus-tooltip'>
-        <button
-          type='button'
-          className='btn btn-outline-danger ripple rounded-1'
+      <Tooltip
+        title={showTooltip ? t('status.cantCancelOrder') : ''}
+        placement='top'
+      >
+        <Button
+          type='default'
+          danger
           disabled={disabled}
           onClick={handleCancelOrder}
+          loading={isPending}
+          icon={<i className='fa-solid fa-ban' />}
+          className='flex items-center gap-2'
         >
-          {isPending && <Spin size='small' style={{ marginRight: '8px' }} />}
-          <i className='fa-solid fa-ban'></i>
-          {detail && <span className='ms-2'>{t('button.cancel')}</span>}
-        </button>
-      </div>
-      {(Boolean(status && status !== OrderStatus.PENDING) ||
-        calcTime(createdAt) >= 1) && (
-        <small className='cus-tooltip-msg'>{t('status.cantCancelOrder')}</small>
-      )}
+          {detail && <span>{t('button.cancel')}</span>}
+        </Button>
+      </Tooltip>
     </div>
   )
 }

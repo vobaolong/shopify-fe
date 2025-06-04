@@ -39,7 +39,7 @@ const UserCoverUpload = () => {
     <>
       {isLoading && <Spin />}
       <label className='cus-cover-icon'>
-        <i className='fa-solid fa-camera'></i>
+        <i className='fa-solid fa-camera' />
         <input
           className='visually-hidden'
           type='file'

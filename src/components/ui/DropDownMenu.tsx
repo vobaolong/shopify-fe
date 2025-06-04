@@ -116,7 +116,7 @@ const DropDownMenu: React.FC<DropDownMenuProps> = ({
             {selectedItem?.label}
           </span>
         </span>
-        <i className={iconClass}></i>
+        <i className={iconClass} />
       </button>
     </div>
   )

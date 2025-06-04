@@ -1,4 +1,4 @@
-import { regexTest } from '../../helper/test'
+import { regexTest } from '../../constants/regex.constant'
 
 interface TextAreaProps {
   onChange?: (value: string) => void

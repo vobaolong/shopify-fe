@@ -1,5 +1,4 @@
 import { useEffect, useCallback } from 'react'
-import Loading from '../ui/Loading'
 import { getToken } from '../../apis/auth.api'
 import { useTranslation } from 'react-i18next'
 import { useToggleProductFavorite } from '../../hooks/useToggleProductFavorite'
@@ -69,7 +68,7 @@ const FollowProductButton = ({
               ? 'bg-danger text-white fa-solid'
               : 'bg-white fa-regular'
           }`}
-        ></i>
+        />
       </span>
     </div>
   )

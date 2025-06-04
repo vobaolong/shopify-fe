@@ -12,7 +12,7 @@ const SignupPage = () => {
 
   return (
     <>
-      <MetaData title={`${t('button.signUp')} | Buynow Việt Nam`} />
+      <MetaData title={`${t('button.signUp')} | ShopBase Việt Nam`} />
       <MainLayout>
         <div className='flex items-center justify-center bg-gray-100'>
           <div className='py-4 w-[400px] max-w-full'>

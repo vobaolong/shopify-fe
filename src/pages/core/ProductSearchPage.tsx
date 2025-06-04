@@ -6,8 +6,7 @@ import useUpdateEffect from '../../hooks/useUpdateEffect'
 import MainLayout from '../../components/layout/MainLayout'
 import ProductCard from '../../components/card/ProductCard'
 import Pagination from '../../components/ui/Pagination'
-import Loading from '../../components/ui/Loading'
-import Error from '../../components/ui/Error'
+import { Spin, Alert } from 'antd'
 import ProductFilter from '../../components/filter/ProductFilter'
 import ShowResult from '../../components/ui/ShowResult'
 
@@ -77,13 +76,12 @@ const ProductSearchPage = () => {
   return (
     <MainLayout>
       <div className='position-relative pt-4'>
-        {isLoading && <Loading />}
-        {error && <Error msg={error} />}
-
+        {' '}
+        {isLoading && <Spin size='large' />}
+        {error && <Alert message={error} type='error' />}
         <div className='d-flex justify-content-between align-items-end'>
           <ProductFilter filter={filter} setFilter={setFilter} />
         </div>
-
         <div className='row mt-3'>
           {listProducts &&
             listProducts.map((product, index) => (

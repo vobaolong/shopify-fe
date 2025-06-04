@@ -25,7 +25,7 @@ const SellerSideBar = ({ user, store }: SellerSideBarProps) => {
               className={`${
                 path === store._id ? 'fa-solid' : 'fa-light'
               } w-10 text-center fa-chart-line`}
-            ></i>
+            />
             <span className='ms-3 res-hide-xl'>
               {t('admin.adDashboard.overview')}
             </span>
@@ -43,7 +43,7 @@ const SellerSideBar = ({ user, store }: SellerSideBarProps) => {
               className={`${
                 path === 'profile' ? 'fa-solid' : 'fa-light'
               } w-10 text-center fa-store`}
-            ></i>
+            />
             <span className='ms-3 res-hide-xl'>{t('storeDetail.profile')}</span>
           </Link>
         </li>
@@ -59,7 +59,7 @@ const SellerSideBar = ({ user, store }: SellerSideBarProps) => {
               className={`${
                 path === 'products' ? 'fa-solid' : 'fa-light'
               } w-10 text-center fa-box`}
-            ></i>
+            />
             <span className='ms-3 res-hide-xl'>
               {t('storeDetail.products')}
             </span>
@@ -77,7 +77,7 @@ const SellerSideBar = ({ user, store }: SellerSideBarProps) => {
               className={`${
                 path === 'staff' ? 'fa-solid' : 'fa-light'
               } w-10 text-center  fa-user-group`}
-            ></i>
+            />
             <span className='ms-3 res-hide-xl'>{t('storeDetail.staff')}</span>
           </Link>
         </li>
@@ -93,7 +93,7 @@ const SellerSideBar = ({ user, store }: SellerSideBarProps) => {
               className={`${
                 path === 'orders' ? 'fa-solid' : 'fa-light'
               } w-10 text-center fa-receipt`}
-            ></i>
+            />
             <span className='ms-3 res-hide-xl'>{t('storeDetail.orders')}</span>
           </Link>
         </li>
@@ -109,7 +109,7 @@ const SellerSideBar = ({ user, store }: SellerSideBarProps) => {
               className={`${
                 path === 'return' ? 'fa-solid' : 'fa-light'
               } w-10 text-center fa-arrow-rotate-left`}
-            ></i>
+            />
             <span className='ms-3 res-hide-xl'>
               {t('storeDetail.requestReturn')}
             </span>
@@ -127,7 +127,7 @@ const SellerSideBar = ({ user, store }: SellerSideBarProps) => {
               className={`${
                 path === 'wallet' ? 'fa-solid' : 'fa-light'
               } w-10 text-center fa-wallet`}
-            ></i>
+            />
             <span className='ms-3 res-hide-xl'>{t('wallet')}</span>
           </Link>
         </li>
@@ -143,7 +143,7 @@ const SellerSideBar = ({ user, store }: SellerSideBarProps) => {
               className={`${
                 path === 'review' ? 'fa-solid' : 'fa-light'
               } w-10 text-center fa-comment`}
-            ></i>
+            />
             <span className='ms-3 res-hide-xl'>{t('review')}</span>
           </Link>
         </li>

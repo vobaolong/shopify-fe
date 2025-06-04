@@ -1,12 +1,10 @@
-import { useState } from 'react'
 import { getToken } from '../../../apis/auth.api'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
-import Loading from '../../ui/Loading'
-import Error from '../../ui/Error'
 import { toast } from 'react-toastify'
 import { useTranslation } from 'react-i18next'
 import { updateAvatar } from '../../../apis/store.api'
 import { useMutation } from '@tanstack/react-query'
+import { Alert, Spin } from 'antd'
 
 interface StoreAvatarUploadProps {
   storeId?: string
@@ -44,14 +42,10 @@ const StoreAvatarUpload = ({ storeId = '' }: StoreAvatarUploadProps) => {
 
   return (
     <>
-      {isLoading && <Loading />}
+      {error && <Alert type='error' message={error} className='mb-2' />}
+      {isLoading && <Spin />}
       <label className='cus-avatar-icon'>
-        <i className='fa-solid fa-camera'></i>
-        {error && (
-          <span>
-            <Error msg={error} />
-          </span>
-        )}
+        <i className='fa-solid fa-camera' />
         <input
           className='visually-hidden'
           type='file'

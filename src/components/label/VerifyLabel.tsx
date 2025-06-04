@@ -5,9 +5,7 @@ const VerifyLabel = ({ verify }: { verify: boolean }) => {
   const { t } = useTranslation()
   return (
     <Tag color={verify ? 'success' : 'error'}>
-      <i
-        className={`fa-solid fa-circle-${verify ? 'check' : 'xmark'} me-1`}
-      ></i>
+      <i className={`fa-solid fa-circle-${verify ? 'check' : 'xmark'} me-1`} />
       <span>{verify ? t('status.verified') : t('status.notVerified')}</span>
     </Tag>
   )

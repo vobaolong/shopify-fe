@@ -1,181 +1,149 @@
 import { useState } from 'react'
+import { Form, Input, Button, Alert, Spin } from 'antd'
+import { DollarOutlined, LockOutlined } from '@ant-design/icons'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { getToken } from '../../../apis/auth.api'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
 import { createTransactionByStore } from '../../../apis/transaction.api'
-import { regexTest, numberTest } from '../../../helper/test'
-import Input from '../../ui/Input'
-import Loading from '../../ui/Loading'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
-import Error from '../../ui/Error'
 
 interface TransactionState {
-  isUp: string
   amount: number
   currentPassword: string
-  isValidAmount: boolean
-  isValidCurrentPassword: boolean
 }
 
 interface CreateWithDrawTransactionFormProps {
-  eWallet?: number | string
-  storeId?: string
-  onRun?: () => void
+  eWallet: number | string
+  storeId: string
+  onRun: () => void
 }
 
 const CreateWithDrawTransactionForm = ({
-  eWallet = 0,
-  storeId = '',
+  eWallet,
+  storeId,
   onRun
 }: CreateWithDrawTransactionFormProps) => {
   const { t } = useTranslation()
+  const [form] = Form.useForm()
   const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
   const [updateDispatch] = useUpdateDispatch()
+  const queryClient = useQueryClient()
 
   const { _id: userId } = getToken()
 
-  const [transaction, setTransaction] = useState<TransactionState>({
-    isUp: 'false',
-    amount: 1000000,
-    currentPassword: '',
-    isValidAmount: true,
-    isValidCurrentPassword: true
+  const createTransactionMutation = useMutation({
+    mutationFn: (transaction: {
+      isUp: string
+      amount: number
+      currentPassword: string
+    }) => createTransactionByStore(userId, transaction, storeId),
+    onSuccess: (res: { data: { error?: string; store?: any } }) => {
+      if (res.data.error) {
+        setError(res.data.error)
+        setTimeout(() => setError(''), 3000)
+      } else {
+        form.resetFields()
+        updateDispatch('seller', res.data.store)
+        toast.success(t('toastSuccess.withdraw'))
+        queryClient.invalidateQueries({ queryKey: ['transactions'] })
+        queryClient.invalidateQueries({ queryKey: ['store', storeId] })
+        if (onRun) onRun()
+      }
+    },
+    onError: () => {
+      setError('Server Error')
+      setTimeout(() => setError(''), 3000)
+    }
   })
 
-  const handleChange = (
-    name: keyof TransactionState,
-    isValidName: keyof TransactionState,
-    value: string | number
-  ) => {
-    setTransaction({
-      ...transaction,
-      [name]: value,
-      [isValidName]: true
-    })
-  }
+  const onFinish = (values: TransactionState) => {
+    setError('')
 
-  const handleValidate = (
-    isValidName: keyof TransactionState,
-    flag: boolean
-  ) => {
-    if (isValidName === 'isValidAmount') {
-      setTransaction({
-        ...transaction,
-        isValidAmount:
-          flag &&
-          parseFloat(transaction.amount.toString()) <=
-            parseFloat(eWallet.toString())
-      })
-    } else
-      setTransaction({
-        ...transaction,
-        [isValidName]: flag
-      })
-  }
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const { amount, currentPassword } = transaction
-
-    if (!userId || !storeId || !amount || !currentPassword) {
-      setTransaction({
-        ...transaction,
-        isValidAmount:
-          numberTest('positive', amount) &&
-          parseFloat(amount.toString()) <= parseFloat(eWallet.toString()),
-        isValidCurrentPassword: regexTest('password', currentPassword)
-      })
-      return
+    const transaction = {
+      isUp: 'false',
+      amount: values.amount,
+      currentPassword: values.currentPassword
     }
 
-    if (!transaction.isValidAmount || !transaction.isValidCurrentPassword)
-      return
-
-    onSubmit()
+    createTransactionMutation.mutate(transaction)
   }
 
-  const onSubmit = () => {
-    setError('')
-    setIsLoading(true)
-    createTransactionByStore(userId, transaction, storeId)
-      .then((res: { data: { error?: string; store?: any } }) => {
-        if (res.data.error) setError(res.data.error)
-        else {
-          setTransaction({
-            ...transaction,
-            amount: 100000,
-            currentPassword: '',
-            isValidAmount: true,
-            isValidCurrentPassword: true
-          })
-          updateDispatch('seller', res.data.store)
-          toast.success(t('toastSuccess.withdraw'))
-          if (onRun) onRun()
-        }
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
-      .catch(() => {
-        setError('Server Error')
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
+  const validateAmount = (_: any, value: number) => {
+    if (!value) {
+      return Promise.reject(new Error(t('transactionDetail.amountValid')))
+    }
+    if (!validateAmount('positive', value)) {
+      return Promise.reject(new Error(t('transactionDetail.amountValid')))
+    }
+    if (parseFloat(value.toString()) > parseFloat(eWallet.toString())) {
+      return Promise.reject(new Error(t('transactionDetail.amountValid')))
+    }
+    return Promise.resolve()
+  }
+
+  const validatePassword = (_: any, value: string) => {
+    if (!value) {
+      return Promise.reject(new Error(t('transactionDetail.currentPwValid')))
+    }
+    if (!validatePassword('password', value)) {
+      return Promise.reject(new Error(t('transactionDetail.currentPwValid')))
+    }
+    return Promise.resolve()
   }
 
   return (
-    <div className='position-relative'>
-      {isLoading && <Loading />}
-
-      <form className='row mb-2' onSubmit={handleSubmit}>
-        <div className='col-12'>
-          <Input
-            type='number'
+    <div className='relative'>
+      {error && (
+        <Alert message={error} type='error' showIcon className='mb-4' />
+      )}
+      <Spin spinning={createTransactionMutation.isPending}>
+        <Form
+          form={form}
+          layout='vertical'
+          onFinish={onFinish}
+          initialValues={{
+            amount: 1000000
+          }}
+          className='space-y-4'
+        >
+          <Form.Item
+            name='amount'
             label={`${t('transactionDetail.amount')} (₫)`}
-            value={transaction.amount.toString()}
-            isValid={transaction.isValidAmount}
-            required={true}
-            feedback={t('transactionDetail.amountValid')}
-            validator='positive'
-            onChange={(value) => handleChange('amount', 'isValidAmount', value)}
-            onValidate={(flag) => handleValidate('isValidAmount', flag)}
-          />
-        </div>
+            rules={[{ validator: validateAmount }]}
+          >
+            <Input
+              type='number'
+              prefix={<DollarOutlined className='text-gray-400' />}
+              placeholder={t('transactionDetail.amount')}
+              className='h-10'
+            />
+          </Form.Item>
 
-        <div className='col-12'>
-          <Input
-            type='password'
+          <Form.Item
+            name='currentPassword'
             label={t('transactionDetail.currentPw')}
-            value={transaction.currentPassword}
-            required={true}
-            isValid={transaction.isValidCurrentPassword}
-            feedback={t('transactionDetail.currentPwValid')}
-            validator='password'
-            onChange={(value) =>
-              handleChange('currentPassword', 'isValidCurrentPassword', value)
-            }
-            onValidate={(flag) =>
-              handleValidate('isValidCurrentPassword', flag)
-            }
-          />
-        </div>
+            rules={[{ validator: validatePassword }]}
+          >
+            <Input.Password
+              prefix={<LockOutlined className='text-gray-400' />}
+              placeholder={t('transactionDetail.currentPw')}
+              className='h-10'
+            />
+          </Form.Item>
 
-        {error && (
-          <div className='col-12'>
-            <Error msg={error} />
-          </div>
-        )}
-
-        <div className='col-12 d-grid mt-4'>
-          <button type='submit' className='btn btn-primary ripple rounded-1'>
-            {t('button.submit')}
-          </button>
-        </div>
-      </form>
+          <Form.Item className='mb-0'>
+            <Button
+              type='primary'
+              htmlType='submit'
+              loading={createTransactionMutation.isPending}
+              className='w-full h-10 bg-blue-500 hover:bg-blue-600 border-blue-500 hover:border-blue-600'
+            >
+              {t('button.submit')}
+            </Button>
+          </Form.Item>
+        </Form>
+      </Spin>
     </div>
   )
 }

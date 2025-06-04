@@ -2,16 +2,12 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { getToken } from '../../../apis/auth.api'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
-import Loading from '../../ui/Loading'
-import Input from '../../ui/Input'
-import ConfirmDialog from '../../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'react-toastify'
-import Error from '../../ui/Error'
 import { addAddress } from '../../../apis/user.api'
 import { useMutation } from '@tanstack/react-query'
 import { AxiosResponse } from 'axios'
 import { useAntdApp } from '../../../hooks/useAntdApp'
+import { Form, Input, Select, Button, Spin, Alert, Modal, Space } from 'antd'
 import {
   getDistrict,
   getProvince,
@@ -43,39 +39,25 @@ async function getWards(districtId: string) {
   return wardList.data
 }
 
-interface AddressState {
-  province: string
-  provinceName: string
-  district: string
-  districtName: string
-  ward: string
-  wardName: string
-  street: string
-  isValidStreet: boolean
+interface AddressFormProps {
+  onSuccess?: () => void
 }
 
-const UserAddAddressForm = () => {
+const { Option } = Select
+
+const UserAddAddressForm: React.FC<AddressFormProps> = ({ onSuccess }) => {
   const { t } = useTranslation()
   const { notification } = useAntdApp()
-  const [isConfirming, setIsConfirming] = useState(false)
-  const [address, setAddress] = useState<AddressState>({
-    province: '',
-    provinceName: '',
-    district: '',
-    districtName: '',
-    ward: '',
-    wardName: '',
-    street: '',
-    isValidStreet: true
-  })
+  const [form] = Form.useForm()
   const [provinces, setProvinces] = useState<any[]>([])
   const [districts, setDistricts] = useState<any[]>([])
   const [wards, setWards] = useState<any[]>([])
-  const [isLoadingDistrict, setIsLoadingDistrict] = useState(false)
-  const [isLoadingWard, setIsLoadingWard] = useState(false)
+  const [isLoadingProvinces, setIsLoadingProvinces] = useState(false)
+  const [isLoadingDistricts, setIsLoadingDistricts] = useState(false)
+  const [isLoadingWards, setIsLoadingWards] = useState(false)
+  const [error, setError] = useState('')
   const [updateDispatch] = useUpdateDispatch()
   const { _id } = getToken()
-
   // Mutation for addAddress
   const addAddressMutation = useMutation({
     mutationFn: async (addressData: any) => {
@@ -87,27 +69,21 @@ const UserAddAddressForm = () => {
         notification.error({ message: data.error })
       } else {
         updateDispatch('account', data.user)
-        setAddress({
-          province: '',
-          provinceName: '',
-          district: '',
-          districtName: '',
-          ward: '',
-          wardName: '',
-          street: '',
-          isValidStreet: true
-        })
-        toast.success(t('toastSuccess.address.add'))
+        form.resetFields()
+        notification.success({ message: t('toastSuccess.address.add') })
+        if (onSuccess) {
+          onSuccess()
+        }
       }
     },
     onError: () => {
       notification.error({ message: 'Server Error' })
     }
   })
-
   useEffect(() => {
     const fetchProvinces = async () => {
       try {
+        setIsLoadingProvinces(true)
         const { data } = await axios.get(getProvince, {
           headers: {
             Token: GHN_TOKEN
@@ -116,197 +92,204 @@ const UserAddAddressForm = () => {
         setProvinces(data.data)
       } catch (error) {
         console.error('Error fetching provinces:', error)
+        setError(t('addressForm.errorLoadingProvinces'))
+      } finally {
+        setIsLoadingProvinces(false)
       }
     }
     fetchProvinces()
   }, [])
 
-  const handleProvinceChange = async (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const value = e.target.value
-    const name = e.target.options[e.target.selectedIndex].text.trim()
-    setAddress({
-      ...address,
-      province: value,
-      provinceName: name,
-      district: '',
-      districtName: '',
-      ward: '',
-      wardName: ''
-    })
-    if (value) {
-      setIsLoadingDistrict(true)
-      const districts = await getDistricts(value)
+  const fetchDistricts = async (provinceId: string) => {
+    try {
+      setIsLoadingDistricts(true)
+      const districts = await getDistricts(provinceId)
       setDistricts(districts)
-      setIsLoadingDistrict(false)
-    } else {
-      setDistricts([])
-      setWards([])
+      return districts
+    } catch (error) {
+      console.error('Error fetching districts:', error)
+      setError(t('addressForm.errorLoadingDistricts'))
+      return []
+    } finally {
+      setIsLoadingDistricts(false)
     }
   }
 
-  const handleDistrictChange = async (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const value = e.target.value
-    const name = e.target.options[e.target.selectedIndex].text.trim()
-    setAddress({
-      ...address,
-      district: value,
-      districtName: name,
-      ward: '',
-      wardName: ''
-    })
-    if (value) {
-      setIsLoadingWard(true)
-      const wards = await getWards(value)
+  const fetchWards = async (districtId: string) => {
+    try {
+      setIsLoadingWards(true)
+      const wards = await getWards(districtId)
       setWards(wards)
-      setIsLoadingWard(false)
-    } else {
-      setWards([])
+      return wards
+    } catch (error) {
+      console.error('Error fetching wards:', error)
+      setError(t('addressForm.errorLoadingWards'))
+      return []
+    } finally {
+      setIsLoadingWards(false)
     }
   }
 
-  const handleWardChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value
-    const name = e.target.options[e.target.selectedIndex].text.trim()
-    setAddress({ ...address, ward: value, wardName: name })
+  const handleProvinceChange = async (value: string) => {
+    form.setFieldsValue({ district: undefined, ward: undefined, street: '' })
+    setDistricts([])
+    setWards([])
+
+    if (value) {
+      await fetchDistricts(value)
+    }
   }
 
-  const handleChange = (
-    name: keyof AddressState,
-    isValidName: keyof AddressState,
-    value: string
-  ) => {
-    setAddress({
-      ...address,
-      [name]: value,
-      [isValidName]: true
-    })
+  const handleDistrictChange = async (value: string) => {
+    form.setFieldsValue({ ward: undefined, street: '' })
+    setWards([])
+
+    if (value) {
+      await fetchWards(value)
+    }
   }
 
-  const handleValidate = (isValidName: keyof AddressState, flag: boolean) => {
-    setAddress({
-      ...address,
-      [isValidName]: flag
-    })
-  }
+  const handleFinish = async (values: any) => {
+    const province = provinces.find((p) => p.ProvinceID === values.province)
+    const district = districts.find((d) => d.DistrictID === values.district)
+    const ward = wards.find((w) => w.WardCode === values.ward)
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const { provinceName, districtName, wardName, street } = address
-    if (!provinceName || !districtName || !wardName || !street) {
-      notification.error({ message: t('addressFormValid.allFields') })
+    if (!province || !district || !ward) {
+      setError(t('addressFormValid.allFields'))
       return
     }
-    setIsConfirming(true)
-  }
 
-  const onSubmit = () => {
-    const addressString = `${address.street}, ${address.wardName}, ${address.districtName}, ${address.provinceName}`
+    const addressString = `${values.street}, ${ward.WardName}, ${district.DistrictName}, ${province.ProvinceName}`
     const addressData = {
-      provinceID: address.province,
-      provinceName: address.provinceName,
-      districtID: address.district,
-      districtName: address.districtName,
-      wardID: address.ward,
-      wardName: address.wardName,
+      provinceID: values.province,
+      provinceName: province.ProvinceName,
+      districtID: values.district,
+      districtName: district.DistrictName,
+      wardID: values.ward,
+      wardName: ward.WardName,
       address: addressString
     }
+
     addAddressMutation.mutate(addressData)
-    setIsConfirming(false)
   }
 
   return (
-    <div className='position-relative'>
-      {addAddressMutation.isPending && <Loading />}
-      {isConfirming && (
-        <ConfirmDialog
-          title={t('userDetail.addAddress')}
-          onSubmit={onSubmit}
-          message={t('confirmDialog')}
-          onClose={() => setIsConfirming(false)}
-        />
-      )}
-      <form className='row mb-2 text-start gap-3' onSubmit={handleSubmit}>
-        <div className='col-12 d-flex justify-content-between align-items-center'>
-          <label className='col-3 me-3' htmlFor='province'>
-            {t('addressForm.province')}
-          </label>
-          <select
-            className='flex-grow-1 border rounded-1 px-2 py-1 select-item'
-            id='province'
-            onChange={handleProvinceChange}
-            value={address.province}
-          >
-            <option value=''>{t('addressForm.selectProvince')}</option>
-            {provinces.map((province) => (
-              <option key={province.ProvinceID} value={province.ProvinceID}>
-                {province.ProvinceName}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className='col-12 d-flex justify-content-between align-items-center'>
-          <label className='col-3 me-3' htmlFor='district'>
-            {t('addressForm.district')}
-          </label>
-          <select
-            className='flex-grow-1 border rounded-1 px-2 py-1 select-item'
-            id='district'
-            onChange={handleDistrictChange}
-            value={address.district}
-            disabled={!address.province}
-          >
-            <option value=''>{t('addressForm.selectDistrict')}</option>
-            {districts.map((district) => (
-              <option key={district.DistrictID} value={district.DistrictID}>
-                {district.DistrictName}
-              </option>
-            ))}
-          </select>
-          {isLoadingDistrict && <Loading />}
-        </div>
-        <div className='col-12 d-flex justify-content-between align-items-center'>
-          <label className='col-3 me-3' htmlFor='ward'>
-            {t('addressForm.ward')}
-          </label>
-          <select
-            className='flex-grow-1 border rounded-1 px-2 py-1 select-item'
-            id='ward'
-            onChange={handleWardChange}
-            value={address.ward}
-            disabled={!address.district}
-          >
-            <option value=''>{t('addressForm.selectWard')}</option>
-            {wards.map((ward) => (
-              <option key={ward.WardCode} value={ward.WardCode}>
-                {ward.WardName}
-              </option>
-            ))}
-          </select>
-          {isLoadingWard && <Loading />}
-        </div>
-        <div className='col-12'>
-          <Input
-            type='text'
-            label={t('addressForm.street')}
-            value={address.street}
-            isValid={address.isValidStreet}
-            required
-            feedback={t('addressFormValid.streetValid')}
-            validator='address'
-            onChange={(value) => handleChange('street', 'isValidStreet', value)}
-            onValidate={(flag) => handleValidate('isValidStreet', flag)}
+    <div className='w-full'>
+      <Spin spinning={addAddressMutation.isPending}>
+        {error && (
+          <Alert
+            message={error}
+            type='error'
+            showIcon
+            className='mb-4'
+            closable
+            onClose={() => setError('')}
           />
-        </div>
-        <div className='col-12 d-grid mt-4'>
-          <button type='submit' className='btn btn-primary ripple rounded-1'>
-            {t('button.save')}
-          </button>
-        </div>
-      </form>
+        )}
+
+        <Form form={form} layout='vertical' onFinish={handleFinish}>
+          <Form.Item
+            name='province'
+            label={t('addressForm.province')}
+            rules={[
+              {
+                required: true,
+                message: t('addressFormValid.provinceRequired')
+              }
+            ]}
+          >
+            <Select
+              placeholder={t('addressForm.selectProvince')}
+              loading={isLoadingProvinces}
+              onChange={handleProvinceChange}
+            >
+              {provinces
+                .slice()
+                .sort((a, b) => a.ProvinceName.localeCompare(b.ProvinceName))
+                .map((province) => (
+                  <Option key={province.ProvinceID} value={province.ProvinceID}>
+                    {province.ProvinceName}
+                  </Option>
+                ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name='district'
+            label={t('addressForm.district')}
+            rules={[
+              {
+                required: true,
+                message: t('addressFormValid.districtRequired')
+              }
+            ]}
+          >
+            <Select
+              placeholder={t('addressForm.selectDistrict')}
+              disabled={districts.length === 0}
+              loading={isLoadingDistricts}
+              onChange={handleDistrictChange}
+            >
+              {districts
+                .slice()
+                .sort((a, b) => a.DistrictName.localeCompare(b.DistrictName))
+                .map((district) => (
+                  <Option key={district.DistrictID} value={district.DistrictID}>
+                    {district.DistrictName}
+                  </Option>
+                ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name='ward'
+            label={t('addressForm.ward')}
+            rules={[
+              { required: true, message: t('addressFormValid.wardRequired') }
+            ]}
+          >
+            <Select
+              placeholder={t('addressForm.selectWard')}
+              disabled={wards.length === 0}
+              loading={isLoadingWards}
+            >
+              {wards
+                .slice()
+                .sort((a, b) => a.WardName.localeCompare(b.WardName))
+                .map((ward) => (
+                  <Option key={ward.WardCode} value={ward.WardCode}>
+                    {ward.WardName}
+                  </Option>
+                ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name='street'
+            label={t('addressForm.street')}
+            rules={[
+              { required: true, message: t('addressFormValid.streetRequired') },
+              { max: 100, message: t('addressFormValid.streetTooLong') }
+            ]}
+          >
+            <Input
+              placeholder='Ví dụ: Số 58 Đường số 1'
+              disabled={!form.getFieldValue('ward')}
+            />
+          </Form.Item>
+
+          <Form.Item>
+            <Button
+              type='primary'
+              htmlType='submit'
+              loading={addAddressMutation.isPending}
+              className='w-full'
+            >
+              {t('button.save')}
+            </Button>
+          </Form.Item>
+        </Form>
+      </Spin>
     </div>
   )
 }

@@ -1,12 +1,11 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { getToken } from '../../apis/auth.api'
 import { useSellerUpdateOrderStatus } from '../../hooks/useSellerUpdateOrderStatus'
-import Loading from '../ui/Loading'
+import { Spin, Alert } from 'antd'
 import ConfirmDialog from '../ui/ConfirmDialog'
 import DropDownMenu from '../ui/DropDownMenu'
 import { toast } from 'react-toastify'
 import { useTranslation } from 'react-i18next'
-import Error from '../ui/Error'
 import { socketId } from '../../socket'
 import { OrderStatus } from '../../enums/OrderStatus.enum'
 
@@ -103,12 +102,19 @@ const SellerUpdateOrderStatus = ({
         return options
     }
   }, [statusValue, t])
-
   return (
     <div className='position-relative'>
-      {isPending && <Loading />}
+      {isPending && (
+        <div className='d-flex justify-content-center p-2'>
+          <Spin size='small' />
+        </div>
+      )}
       {error && (
-        <Error msg={error instanceof Error ? error.message : String(error)} />
+        <Alert
+          message={error instanceof Error ? error.message : String(error)}
+          type='error'
+          showIcon
+        />
       )}
       {isConfirming && (
         <ConfirmDialog

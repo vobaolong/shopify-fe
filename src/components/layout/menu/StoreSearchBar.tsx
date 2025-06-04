@@ -43,7 +43,7 @@ const StoreSearchBar = ({ storeId = '' }: StoreSearchBarProps) => {
         type='dashed'
         onClick={handleFormSubmit}
       >
-        <i className='fa-solid fa-search'></i>
+        <i className='fa-solid fa-search' />
       </Button>
     </form>
   )

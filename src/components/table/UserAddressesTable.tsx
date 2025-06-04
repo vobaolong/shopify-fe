@@ -1,242 +1,179 @@
 import { useState } from 'react'
 import { getToken } from '../../apis/auth.api'
 import useUpdateDispatch from '../../hooks/useUpdateDispatch'
-import AddressForm from '../item/form/AddressForm'
 import UserAddAddressItem from '../item/UserAddAddressItem'
-import Modal from '../ui/Modal'
-import Loading from '../ui/Loading'
-import ConfirmDialog from '../ui/ConfirmDialog'
+import UserEditAddressForm from '../item/form/UserEditAddressForm'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'react-toastify'
-import { getAddress } from '../../apis/address.api'
-import Error from '../ui/Error'
-import { deleteAddresses, updateAddress } from '../../apis/user.api'
+import { deleteAddresses } from '../../apis/user.api'
+import {
+  Table,
+  Button,
+  Modal,
+  Space,
+  Spin,
+  Alert,
+  Popconfirm,
+  Typography
+} from 'antd'
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons'
+import { useMutation } from '@tanstack/react-query'
+import { useAntdApp } from '../../hooks/useAntdApp'
 
-const UserAddressesTable = ({ addresses = [] }) => {
+const { Text } = Typography
+
+interface UserAddressesTableProps {
+  addresses: string[]
+}
+
+const UserAddressesTable: React.FC<UserAddressesTableProps> = ({
+  addresses = []
+}) => {
   const { t } = useTranslation()
-  const [isLoading, setIsLoading] = useState(false)
+  const { notification } = useAntdApp()
   const [error, setError] = useState('')
-  const [isLoadingFetchData, setIsLoadingFetchData] = useState(false)
-  const [editAddress, setEditAddress] = useState({})
-  const [addressDetail, setAddressDetail] = useState(null)
-  const [newAddressDetail, setNewAddressDetail] = useState(null)
-  const [deleteAddress, setDeleteAddress] = useState({})
-  const [isConfirming, setIsConfirming] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [selectedAddress, setSelectedAddress] = useState<{
+    address: string
+    index: number | null
+  }>({
+    address: '',
+    index: null
+  })
   const [updateDispatch] = useUpdateDispatch()
   const { _id } = getToken()
-  const [isConfirmingEdit, setIsConfirmingEdit] = useState(false)
 
-  const handleEditAddress = async (address, index) => {
-    await fetchAddress(address)
-    setEditAddress(() => ({
-      index: index,
-      address: address
-    }))
-  }
-
-  const handleDeleteAddress = (address, index) => {
-    setDeleteAddress({
-      index: index,
-      address: address
+  const handleEditAddress = (address: string, index: number) => {
+    setSelectedAddress({
+      address,
+      index
     })
-    setIsConfirming(true)
+    setIsEditModalOpen(true)
   }
-
-  const onSubmit = () => {
-    setError('')
-    setIsLoading(true)
-    deleteAddresses(_id, deleteAddress.index)
-      .then((data) => {
-        if (data.error) setError(data.error)
-        else {
-          updateDispatch('account', data.user)
-          toast.success(t('toastSuccess.address.delete'))
-        }
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
-      .catch(() => {
-        setError('Server Error')
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
-  }
-
-  const handleSelectAddress = (address, addressDetail1) => {
-    setNewAddressDetail(() => ({ ...addressDetail1 }))
-    setEditAddress({
-      ...editAddress,
-      address: address
-    })
-  }
-
-  const onSubmitEdit = (index) => {
-    setError('')
-    setIsLoading(true)
-    updateAddress(_id, index, {
-      address: editAddress.address,
-      addressDetail: newAddressDetail
-    })
-      .then((data) => {
-        if (data.error) setError(data.error)
-        else {
-          updateDispatch('account', data.user)
-          toast.success(t('toastSuccess.address.update'))
-        }
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
-      .catch(() => {
-        setError('Server Error')
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
-  }
-
-  const handleSubmit = () => {
-    setIsConfirmingEdit(true)
-  }
-
-  const fetchAddress = async (address) => {
-    setAddressDetail(null)
-    setIsLoadingFetchData(true)
-    const res = await getAddress(address)
-    if (res.error !== 'not found') {
-      setAddressDetail(res)
+  // Delete Address Mutation
+  const deleteAddressMutation = useMutation({
+    mutationFn: (index: number) => deleteAddresses(_id, index),
+    onSuccess: (data) => {
+      if (data.error) {
+        setError(data.error)
+      } else {
+        updateDispatch('account', data.user)
+        notification.success({ message: t('toastSuccess.address.delete') })
+      }
+    },
+    onError: () => {
+      notification.error({ message: 'Server Error' })
     }
-    setIsLoadingFetchData(false)
+  })
+
+  const columns = [
+    {
+      title: '#',
+      key: 'index',
+      width: 50,
+      render: (_: any, _record: any, index: number) => index + 1
+    },
+    {
+      title: t('userDetail.address'),
+      dataIndex: 'address',
+      key: 'address'
+    },
+    {
+      title: t('action'),
+      key: 'action',
+      width: 150,
+      render: (_: any, record: any, index: number) => (
+        <Space>
+          <Button
+            type='primary'
+            size='small'
+            icon={<EditOutlined />}
+            onClick={() => handleEditAddress(record.address, index)}
+          >
+            {t('button.edit')}
+          </Button>
+          <Popconfirm
+            title={t('userDetail.delAddress')}
+            description={record.address}
+            onConfirm={() => deleteAddressMutation.mutate(index)}
+            okText={t('button.yes')}
+            cancelText={t('button.no')}
+          >
+            <Button
+              type='primary'
+              danger
+              size='small'
+              icon={<DeleteOutlined />}
+            >
+              {t('button.delete')}
+            </Button>
+          </Popconfirm>
+        </Space>
+      )
+    }
+  ]
+
+  const dataSource = addresses.map((address) => ({
+    key: address,
+    address
+  }))
+
+  const handleEditSuccess = () => {
+    setIsEditModalOpen(false)
   }
 
   return (
-    <div className='position-relative'>
-      {isLoading && <Loading />}
-      {error && <Error msg={error} />}
+    <div className='w-full'>
+      <Spin spinning={deleteAddressMutation.isPending}>
+        {error && (
+          <Alert
+            message={error}
+            type='error'
+            showIcon
+            className='mb-4'
+            closable
+            onClose={() => setError('')}
+          />
+        )}
 
-      {isConfirming && (
-        <ConfirmDialog
-          title={t('userDetail.delAddress')}
-          message={deleteAddress.address}
-          color='danger'
-          onSubmit={onSubmit}
-          onClose={() => setIsConfirming(false)}
-        />
-      )}
-
-      <div className='p-3 box-shadow bg-body rounded-2'>
-        <div className='text-end mb-3'>
+        <div className='flex justify-between items-center mb-4'>
           <UserAddAddressItem heading={true} count={addresses?.length || 0} />
         </div>
-        {!isLoading && addresses.length === 0 ? (
-          <div className='d-flex justify-content-center mt-3 text-primary text-center'>
-            <h5>{t('userDetail.noAddress')}</h5>
+
+        {addresses.length === 0 ? (
+          <div className='py-8 text-center'>
+            <Text type='secondary' className='text-lg'>
+              {t('userDetail.noAddress')}
+            </Text>
           </div>
         ) : (
-          <div className='table-scroll my-2'>
-            <table className='table table-sm table-hover align-middle text-start'>
-              <thead>
-                <tr>
-                  <th scope='col' className='text-center'></th>
-                  <th scope='col'>
-                    <span>{t('userDetail.address')}</span>
-                  </th>
-                  <th scope='col'>
-                    <span>{t('action')}</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {addresses?.map((address, index) => (
-                  <tr key={index}>
-                    <th scope='row' className='text-center'>
-                      {index + 1}
-                    </th>
-                    <td>
-                      <span>{address}</span>
-                    </td>
-                    <td>
-                      <button
-                        type='button'
-                        className='btn btn-sm btn-outline-primary ripple me-2 my-1 rounded-1'
-                        data-bs-toggle='modal'
-                        data-bs-target='#edit-address-form'
-                        onClick={() => handleEditAddress(address, index)}
-                        title={t('button.edit')}
-                      >
-                        <i className='d-none res-dis-sm fa-duotone fa-pen-to-square'></i>
-                        <span className='res-hide'>{t('button.edit')}</span>
-                      </button>
-                      <button
-                        type='button'
-                        className='btn btn-sm btn-outline-danger ripple my-1 rounded-1'
-                        onClick={() => handleDeleteAddress(address, index)}
-                        title={t('button.delete')}
-                      >
-                        <i className='d-none res-dis-sm fa-solid fa-trash-alt'></i>
-                        <span className='res-hide'>{t('button.delete')}</span>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <Table
+            dataSource={dataSource}
+            columns={columns}
+            pagination={false}
+            size='middle'
+            footer={() => (
+              <Text type='secondary'>
+                {t('showing')} <Text strong>{addresses?.length || 0}</Text>{' '}
+                {t('result')}
+              </Text>
+            )}
+          />
         )}
+
         <Modal
-          id='edit-address-form'
-          hasCloseBtn={false}
+          open={isEditModalOpen}
+          onCancel={() => setIsEditModalOpen(false)}
+          footer={null}
           title={t('userDetail.editAddress')}
+          destroyOnClose
         >
-          {isLoadingFetchData && <Loading />}
-          {addressDetail !== null && (
-            <>
-              <AddressForm
-                addressDetail={addressDetail}
-                onChange={(value) => {
-                  handleSelectAddress(value.street, value)
-                }}
-              />
-              <div className='col-12 d-grid mt-4'>
-                <button
-                  type='submit'
-                  className='btn btn-primary ripple rounded-1'
-                  onClick={handleSubmit}
-                >
-                  {t('button.save')}
-                </button>
-              </div>
-              {isConfirmingEdit && (
-                <ConfirmDialog
-                  title={t('userDetail.editAddress')}
-                  onSubmit={() => onSubmitEdit(editAddress.index)}
-                  onClose={() => {
-                    setIsConfirmingEdit(false)
-                  }}
-                />
-              )}
-            </>
-          )}
+          <UserEditAddressForm
+            oldAddress={selectedAddress.address}
+            index={selectedAddress.index}
+            onSuccess={handleEditSuccess}
+          />
         </Modal>
-        {addresses?.length !== 0 && (
-          <span className='text-nowrap'>
-            <span
-              style={{ fontSize: '0.85rem' }}
-              className='text-nowrap text-secondary'
-            >
-              {t('showing')}{' '}
-              <span className='fw-bold'>{addresses?.length || 0} </span>
-              {t('result')}
-            </span>
-          </span>
-        )}
-      </div>
+      </Spin>
     </div>
   )
 }

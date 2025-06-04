@@ -1,6 +1,8 @@
-import Modal from '../ui/Modal'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import EditReviewForm from './form/EditReviewForm'
+import { Button, Modal } from 'antd'
+import { EditOutlined } from '@ant-design/icons'
 
 interface ReviewType {
   rating: number
@@ -26,7 +28,7 @@ const EditReviewItem = ({
         data-bs-toggle='modal'
         className='btn btn-sm ripple text-primary-rgba'
       >
-        <i className='fa-duotone fa-pen-to-square me-2'></i>
+        <i className='fa-duotone fa-pen-to-square me-2' />
         {t('reviewDetail.edit')}
       </button>
 

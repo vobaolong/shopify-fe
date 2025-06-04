@@ -10,7 +10,7 @@ const MallLabel = () => {
       }}
       className={`badge rounded-2 text-primary`}
     >
-      <i className='fa-regular fa-circle-check me-1'></i>
+      <i className='fa-regular fa-circle-check me-1' />
       <span
         style={{ fontSize: '0.6rem', fontWeight: '700' }}
         className='text-uppercase'

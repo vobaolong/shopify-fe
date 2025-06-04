@@ -42,7 +42,7 @@ const Language: React.FC<LanguageProps> = ({ vertical = true }) => {
               <i
                 style={{ fontSize: '10px' }}
                 className='fa-solid fa-angle-down ms-1'
-              ></i>
+              />
             </div>
             <ul
               style={{ width: 'unset', left: '10%' }}

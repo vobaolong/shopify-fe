@@ -90,11 +90,9 @@ export const changePassword = async (
 
 // Kiểm tra email đã tồn tại chưa
 export const checkEmailExists = async (email: string): Promise<boolean> => {
-  console.log('API: Checking email exists for:', email)
-  const res = await axiosClient.post('/auth/check-email', { email })
-  console.log('API: checkEmailExists response (after interceptor):', res)
-  console.log('API: checkEmailExists response.exists:', res?.exists)
-  // Since axios interceptor returns response.data, res is already the data object
+  const res = (await axiosClient.post('/auth/check-email', { email })) as {
+    exists: boolean
+  }
   return res?.exists || false
 }
 

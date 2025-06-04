@@ -1,9 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
 import { listVariantByCategory } from '../../apis/variant.api'
-import Loading from '../ui/Loading'
+import { Spin, Alert } from 'antd'
 import MultiVariantValueSelector from '../selector/MultiVariantValueSelector'
-import Error from '../ui/Error'
 import { useTranslation } from 'react-i18next'
 import { VariantValueType } from '../../@types/entity.types'
 
@@ -101,13 +100,12 @@ const BrandSelector: React.FC<BrandSelectorProps> = ({
     setSelectedVariantValues(newArray)
     if (onSet) onSet(newArray)
   }
-
   return (
     <div className='row position-relative'>
-      {isLoading && <Loading />}
+      {isLoading && <Spin size='large' />}
       {error && (
         <span className='ms-2'>
-          <Error msg={error} />
+          <Alert message={error} type='error' />
         </span>
       )}
       {variants.map((variant: Variant, index: number) => (

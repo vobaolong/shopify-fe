@@ -23,7 +23,7 @@ const UserNav = ({ user }: { user: UserType }) => {
           data-bs-target='#offcanvasNavbarUserNav'
           aria-controls='offcanvasNavbarUserNav'
         >
-          <i className='fa-solid fa-bars'></i>
+          <i className='fa-solid fa-bars' />
         </button>
 
         <div className='collapse navbar-collapse' id='navbarSupportedContent'>
@@ -72,7 +72,7 @@ const UserNav = ({ user }: { user: UserType }) => {
                   className={`nav-link ${path === user._id ? 'active' : ''}`}
                   to={`/user/${user._id}`}
                 >
-                  <i className='fa-solid fa-user-group me-2'></i>
+                  <i className='fa-solid fa-user-group me-2' />
                   User
                 </Link>
               </li>
@@ -82,7 +82,7 @@ const UserNav = ({ user }: { user: UserType }) => {
                   className={`nav-link ${path === 'about' ? 'active' : ''}`}
                   to={`/user/about/${user._id}`}
                 >
-                  <i className='fa-solid fa-info-circle me-2'></i>
+                  <i className='fa-solid fa-info-circle me-2' />
                   Thông Tin
                 </Link>
               </li>

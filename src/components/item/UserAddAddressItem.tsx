@@ -1,45 +1,61 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import Modal from '../ui/Modal'
 import UserAddAddressForm from './form/UserAddAddressForm'
-import { Button } from 'antd'
+import { Button, Modal, Typography, Tooltip } from 'antd'
+import { PlusOutlined } from '@ant-design/icons'
 
-const UserAddAddressItem = ({ heading = false, count = 0, detail = true }) => {
+const { Title } = Typography
+
+interface UserAddAddressItemProps {
+  heading?: boolean
+  count?: number
+  detail?: boolean
+}
+
+const UserAddAddressItem: React.FC<UserAddAddressItemProps> = ({
+  heading = false,
+  count = 0,
+  detail = true
+}) => {
   const { t } = useTranslation()
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   return (
-    <div className='position-relative d-flex align-items-center justify-content-between'>
+    <div className='flex items-center justify-between w-full'>
       {heading && (
-        <h5 className='text-start mb-0'>{t('userDetail.address')}</h5>
+        <Title level={5} className='m-0 text-left'>
+          {t('userDetail.address')}
+        </Title>
       )}
-      <div className='cus-tooltip'>
-        <Button
-          type='primary'
-          disabled={count >= 10 ? true : false}
-          className='btn btn-primary ripple text-nowrap rounded-1'
-          data-bs-toggle='modal'
-          data-bs-target='#add-address-form'
+      <div className='relative'>
+        <Tooltip
+          title={count >= 10 ? t('userDetail.limit10Addresses') : ''}
+          placement='topRight'
         >
-          <i className='fa-light fa-plus'></i>
-          {detail && (
-            <span className='ms-2 res-hide'>{t('userDetail.addAddress')}</span>
-          )}
-        </Button>
-
-        {count < 10 && (
-          <Modal
-            id='add-address-form'
-            hasCloseBtn={false}
-            title={t('userDetail.addAddress')}
+          <Button
+            type='primary'
+            icon={<PlusOutlined />}
+            disabled={count >= 10}
+            onClick={() => setIsModalOpen(true)}
           >
-            <UserAddAddressForm />
-          </Modal>
-        )}
+            {detail && (
+              <span className='hidden sm:inline'>
+                {t('userDetail.addAddress')}
+              </span>
+            )}
+          </Button>
+        </Tooltip>
+
+        <Modal
+          open={isModalOpen && count < 10}
+          onCancel={() => setIsModalOpen(false)}
+          footer={null}
+          title={t('userDetail.addAddress')}
+          destroyOnClose
+        >
+          <UserAddAddressForm onSuccess={() => setIsModalOpen(false)} />
+        </Modal>
       </div>
-      {count >= 10 && (
-        <small className='cus-tooltip-msg'>
-          {t('userDetail.limit10Addresses')}
-        </small>
-      )}
     </div>
   )
 }

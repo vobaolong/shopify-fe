@@ -8,15 +8,15 @@ import StoreAddStaffItem from '../item/StoreAddStaffItem'
 import CancelStaffButton from '../button/CancelStaffButton'
 import Pagination from '../ui/Pagination'
 import SearchInput from '../ui/SearchInput'
-import Loading from '../ui/Loading'
+import { Spin } from 'antd'
 import ConfirmDialog from '../ui/ConfirmDialog'
 import SortByButton from './sub/SortByButton'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import ShowResult from '../ui/ShowResult'
-import Error from '../ui/Error'
-import Alert from '../ui/Alert'
+import { Alert } from 'antd'
 import boxImg from '../../assets/box.svg'
+import { StaffFilterState, defaultStaffFilter } from '../../@types/filter.type'
 
 const StoreStaffTable = ({
   heading = false,
@@ -33,16 +33,14 @@ const StoreStaffTable = ({
   const [updateDispatch] = useUpdateDispatch()
   const [listStaff, setListStaff] = useState([])
   const [pagination, setPagination] = useState({
-    size: 0
+    size: 0,
+    pageCurrent: 1,
+    pageCount: 1
   })
   const [alerts, setAlerts] = useState(true)
-  const [filter, setFilter] = useState({
-    search: '',
-    limit: 6,
-    sortBy: 'name',
-    order: 'asc',
-    page: 1
-  })
+  const [filter, setFilter] = useState<StaffFilterState>(defaultStaffFilter)
+  const [pendingFilter, setPendingFilter] =
+    useState<StaffFilterState>(defaultStaffFilter)
 
   useEffect(() => {
     if (!staffIds || staffIds.length <= 0) {
@@ -53,19 +51,18 @@ const StoreStaffTable = ({
       })
       return
     }
-
-    const search = filter.search.toLowerCase()
+    const search = (filter.search || '').toLowerCase()
     const filterList = staffIds
       .filter(
-        (staff) =>
+        (staff: any) =>
           staff.userName.toLowerCase().includes(search) ||
           staff.name.toLowerCase().includes(search)
       )
-      .sort(compareFunc(filter.sortBy, filter.order))
+      .sort(compareFunc(filter.sortBy || 'name', filter.order || 'asc'))
 
-    const limit = filter.limit
+    const limit = filter.limit || 6
     const size = filterList.length
-    const pageCurrent = filter.page
+    const pageCurrent = filter.page || 1
     const pageCount = Math.ceil(size / limit)
     let skip = limit * (pageCurrent - 1)
     if (pageCurrent > pageCount) {
@@ -80,37 +77,40 @@ const StoreStaffTable = ({
       pageCount
     })
   }, [filter, staffIds])
+  const handleChangeKeyword = (keyword: string) => {
+    setPendingFilter({
+      ...pendingFilter,
+      search: keyword
+    })
+  }
 
-  const handleChangeKeyword = (keyword) => {
+  const handleSearch = () => {
     setFilter({
-      ...filter,
-      search: keyword,
+      ...pendingFilter,
       page: 1
     })
   }
 
-  const handleChangePage = (newPage) => {
+  const handleChangePage = (newPage: number) => {
     setFilter({
       ...filter,
       page: newPage
     })
   }
-
-  const handleSetSortBy = (order, sortBy) => {
+  const handleSetSortBy = (order: string, sortBy: string) => {
     setFilter({
       ...filter,
       sortBy,
-      order
+      order: order as 'asc' | 'desc'
     })
   }
 
-  const handleDeleteStaff = (staff) => {
+  const handleDeleteStaff = (staff: any) => {
     setDeletedStaff(staff)
     setIsConfirming(true)
   }
-
   const onDeleteSubmitStaff = () => {
-    const staff = deletedStaff._id
+    const staff = (deletedStaff as any)?._id
     setError('')
     setIsLoading(true)
     deleteStaff(userId, staff, storeId)
@@ -136,17 +136,18 @@ const StoreStaffTable = ({
 
   return (
     <div className='position-relative'>
+      {' '}
       {alerts ? (
         <Alert
-          icon={<i className='text-primary fa-solid fa-circle-info'></i>}
-          msg1={`${t('alert.listStaff')}`}
-          alert={`${t('alert.thisSectionContains')}`}
-          msg2={`${t('alert.theShopStaff.')}`}
+          type='info'
+          message={t('alert.listStaff')}
+          description={`${t('alert.thisSectionContains')} ${t('alert.theShopStaff.')}`}
+          closable
           onClose={() => setAlerts(false)}
+          style={{ marginBottom: 16 }}
         />
       ) : null}
-
-      {isLoading && <Loading />}
+      {isLoading && <Spin size='large' />}
       {isConfirming && (
         <ConfirmDialog
           title={t('staffDetail.delete')}
@@ -156,13 +157,16 @@ const StoreStaffTable = ({
           onClose={() => setIsConfirming(false)}
         />
       )}
-
       {heading && <h5 className='text-start'>{t('staffDetail.staffList')}</h5>}
-      {error && <Error msg={error} />}
+      {error && <Alert message={error} type='error' />}
       <div className='p-3 bg-white rounded-md'>
         <div className='flex gap-3 items-center flex-wrap'>
-          <SearchInput onChange={handleChangeKeyword} />
-          {ownerId && userId === ownerId._id ? (
+          <SearchInput
+            value={pendingFilter.search || ''}
+            onChange={handleChangeKeyword}
+            onSearch={handleSearch}
+          />
+          {ownerId && userId === (ownerId as any)?._id ? (
             <StoreAddStaffItem
               storeId={storeId}
               owner={ownerId}
@@ -221,9 +225,8 @@ const StoreStaffTable = ({
                       sortBy='phone'
                       onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
                     />
-                  </th>
-
-                  {ownerId && userId === ownerId._id && (
+                  </th>{' '}
+                  {(ownerId as any) && userId === (ownerId as any)?._id && (
                     <th scope='col'>
                       <span style={{ fontWeight: '400', fontSize: '.875rem' }}>
                         {t('action')}
@@ -233,10 +236,12 @@ const StoreStaffTable = ({
                 </tr>
               </thead>
               <tbody>
-                {listStaff?.map((staff, index) => (
+                {listStaff?.map((staff: any, index: number) => (
                   <tr key={index}>
                     <th scope='row' className='text-center'>
-                      {index + 1 + (filter.page - 1) * filter.limit}
+                      {index +
+                        1 +
+                        ((filter.page || 1) - 1) * (filter.limit || 6)}
                     </th>
                     <td style={{ maxWidth: '300px' }}>
                       <UserSmallCard user={staff} />
@@ -244,7 +249,7 @@ const StoreStaffTable = ({
                     <td>{staff.id_card || '-'}</td>
                     <td>{staff.email || '-'}</td>
                     <td>{staff.phone || '-'}</td>
-                    {ownerId && userId === ownerId._id && (
+                    {(ownerId as any) && userId === (ownerId as any)?._id && (
                       <td>
                         <div className='position-relative d-inline-block'>
                           <button
@@ -252,7 +257,7 @@ const StoreStaffTable = ({
                             className='btn btn-sm btn-outline-danger rounded-1 ripple cus-tooltip'
                             onClick={() => handleDeleteStaff(staff)}
                           >
-                            <i className='fa-solid fa-user-xmark'></i>
+                            <i className='fa-solid fa-user-xmark' />
                           </button>
                           <span className='cus-tooltip-msg'>
                             {t('button.delete')}
@@ -267,9 +272,10 @@ const StoreStaffTable = ({
           </div>
         )}
         <div className='d-flex justify-content-between align-items-center px-4'>
+          {' '}
           {pagination.size !== 0 && (
             <ShowResult
-              limit={filter.limit}
+              limit={filter.limit || 6}
               size={pagination.size}
               pageCurrent={pagination.pageCurrent}
             />
@@ -288,8 +294,8 @@ const StoreStaffTable = ({
 
 export default StoreStaffTable
 
-const compareFunc = (sortBy, order) => {
-  return (a, b) => {
+const compareFunc = (sortBy: string, order: string) => {
+  return (a: any, b: any) => {
     let valueA =
       sortBy !== 'name' ? a[sortBy] : (a.userName + a.name).toLowerCase()
     let valueB =
@@ -298,12 +304,14 @@ const compareFunc = (sortBy, order) => {
     if (typeof valueA === 'undefined') valueA = ''
     if (typeof valueB === 'undefined') valueB = ''
 
-    if (order === 'asc')
+    if (order === 'asc') {
       if (valueA < valueB) return -1
       else if (valueA > valueB) return 1
       else return 0
-    else if (valueA < valueB) return 1
-    else if (valueA > valueB) return -1
-    else return 0
+    } else {
+      if (valueA < valueB) return 1
+      else if (valueA > valueB) return -1
+      else return 0
+    }
   }
 }

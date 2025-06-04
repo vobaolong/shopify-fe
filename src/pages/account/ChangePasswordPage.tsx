@@ -2,11 +2,10 @@
 import { useState, useEffect } from 'react'
 import { useParams, Navigate } from 'react-router-dom'
 import { changePassword } from '../../apis/auth.api'
-import Loading from '../../components/ui/Loading'
-import Error from '../../components/ui/Error'
+import { Spin, Alert } from 'antd'
 import Logo from '../../components/layout/menu/Logo'
-import Input from '../../components/ui/Input'
-import { regexTest } from '../../helper/test'
+import { Input } from 'antd'
+import { regexTest } from '../../constants/regex.constant'
 import { useTranslation } from 'react-i18next'
 import checkImg from '../../assets/check.svg'
 const ChangePasswordPage = () => {
@@ -93,7 +92,7 @@ const ChangePasswordPage = () => {
         className='position-relative'
         style={{ width: '460px', maxWidth: '100%' }}
       >
-        {isLoading && <Loading />}
+        {isLoading && <Spin size='large' />}
         {redirect && <Navigate to={redirect} />}
 
         {success ? (
@@ -119,43 +118,60 @@ const ChangePasswordPage = () => {
             <div className='col-12 bg-primary rounded-top-2 py-2'>
               <Logo navFor='user' />
               <p className='text-white fw-light'>{t('recoverPw')}</p>
-            </div>
-
+            </div>{' '}
             <div className='col-12 mt-3'>
-              <Input
-                type='password'
-                label={t('newPw')}
-                value={account.password}
-                isValid={account.isValidPassword}
-                required={true}
-                feedback={t('passwordFeedback')}
-                validator='password'
-                onChange={(value) =>
-                  handleChange('password', 'isValidPassword', value)
-                }
-                onValidate={(flag) => handleValidate('isValidPassword', flag)}
-              />
+              <div className='mb-3'>
+                <label className='form-label fw-medium'>
+                  {t('newPw')} <span className='text-danger'>*</span>
+                </label>
+                <Input
+                  type='password'
+                  placeholder={t('newPw')}
+                  value={account.password}
+                  status={account.isValidPassword === false ? 'error' : ''}
+                  onChange={(e) =>
+                    handleChange('password', 'isValidPassword', e.target.value)
+                  }
+                  onBlur={(e) => {
+                    const isValid = regexTest('password', e.target.value)
+                    handleValidate('isValidPassword', isValid)
+                  }}
+                />
+                {account.isValidPassword === false && (
+                  <div className='text-danger mt-1 small'>
+                    {t('passwordFeedback')}
+                  </div>
+                )}
+              </div>
             </div>
             <div className='col-12 mt-3'>
-              <Input
-                type='password'
-                label={t('confirmPw')}
-                value={confirmPassword}
-                isValid={isValidConfirmPassword}
-                required={true}
-                feedback={t('passwordFeedback')}
-                validator='password'
-                onChange={(value) => setConfirmPassword(value)}
-                onValidate={(flag) => setIsValidConfirmPassword(flag)}
-              />
+              <div className='mb-3'>
+                <label className='form-label fw-medium'>
+                  {t('confirmPw')} <span className='text-danger'>*</span>
+                </label>
+                <Input
+                  type='password'
+                  placeholder={t('confirmPw')}
+                  value={confirmPassword}
+                  status={isValidConfirmPassword === false ? 'error' : ''}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onBlur={(e) => {
+                    const isValid = regexTest('password', e.target.value)
+                    setIsValidConfirmPassword(isValid)
+                  }}
+                />
+                {isValidConfirmPassword === false && (
+                  <div className='text-danger mt-1 small'>
+                    {t('passwordFeedback')}
+                  </div>
+                )}
+              </div>
             </div>
-
             {error && (
               <div className='col-12'>
-                <Error msg={error} />
+                <Alert message={error} type='error' />
               </div>
             )}
-
             <div className='col-12 d-grid mt-4 mb-3'>
               <button
                 type='submit'

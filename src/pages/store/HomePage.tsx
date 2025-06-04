@@ -2,7 +2,7 @@ import { useSelector } from 'react-redux'
 import StoreLayout from '../../components/layout/StoreLayout'
 import Carousel from '../../components/image/Carousel'
 import ListProductsByStore from '../../components/list/ListProductsByStore'
-import Error from '../../components/ui/Error'
+import { Alert } from 'antd'
 import MainLayout from '../../components/layout/MainLayout'
 import { useTranslation } from 'react-i18next'
 import MetaData from '../../components/layout/meta/MetaData'
@@ -17,11 +17,11 @@ const HomePage = () => {
       <MetaData
         title={`${
           store.name !== undefined ? store.name : ''
-        } | Buynow Việt Nam`}
-      />
+        } | ShopBase Việt Nam`}
+      />{' '}
       {typeof store.isActive === 'boolean' && !store.isActive ? (
         <MainLayout>
-          <Error msg={t('toastError.storeBanned')} />
+          <Alert message={t('toastError.storeBanned')} type='error' showIcon />
         </MainLayout>
       ) : (
         <StoreLayout store={store}>

@@ -4,13 +4,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import { getToken } from '../../../apis/auth.api'
 import { createStore } from '../../../apis/store.api'
 import { listActiveCommissions as getListCommissions } from '../../../apis/commission.api'
-import { regexTest } from '../../../helper/test'
-import Input from '../../ui/Input'
-import InputFile from '../../ui/InputFile'
-import TextArea from '../../ui/TextArea'
-import DropDownMenu from '../../ui/DropDownMenu'
-import Loading from '../../ui/Loading'
-import Error from '../../ui/Error'
 import ConfirmDialog from '../../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
@@ -18,54 +11,83 @@ import AddressForm from './AddressForm'
 import { sendCreateStoreEmail } from '../../../apis/notification.api'
 import { useSelector } from 'react-redux'
 import { socketId } from '../../../socket'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { AxiosResponse } from 'axios'
 import { useAntdApp } from '../../../hooks/useAntdApp'
+import {
+  Form,
+  Input,
+  Button,
+  Checkbox,
+  Select,
+  Spin,
+  Alert,
+  Typography,
+  Card,
+  Upload,
+  message,
+  Divider
+} from 'antd'
+import {
+  ArrowLeftOutlined,
+  UploadOutlined,
+  PlusOutlined,
+  ShopOutlined,
+  FileImageOutlined
+} from '@ant-design/icons'
+import ImgCrop from 'antd-img-crop'
 
-interface StoreState {
-  name: string
-  bio: string
-  address: string
-  commissionId: string
-  avatar: string | File
-  cover: string | File
-  isValidName: boolean
-  isValidBio: boolean
-  isValidAddress: boolean
-  isValidAvatar: boolean
-  isValidCover: boolean
-}
+const { Title, Text } = Typography
+const { TextArea } = Input
+const { Option } = Select
 
 const UserCreateStoreForm = () => {
   const { t } = useTranslation()
   const { notification } = useAntdApp()
+  const [form] = Form.useForm()
   const [isConfirming, setIsConfirming] = useState(false)
-  const [error1, setError1] = useState('')
-  const [error, setError] = useState('')
   const [isScrolled, setIsScrolled] = useState(false)
   const [isChecked, setIsChecked] = useState(false)
-  const [listActiveCommissions, setListActiveCommissions] = useState<any[]>([])
   const [addressDetail, setAddressDetail] = useState<any>({})
-  const [store, setStore] = useState<StoreState>({
-    name: '',
-    bio: '',
-    address: '',
-    commissionId: '',
-    avatar: '',
-    cover: '',
-    isValidName: true,
-    isValidBio: true,
-    isValidAddress: true,
-    isValidAvatar: true,
-    isValidCover: true
-  })
   const navigate = useNavigate()
   const { _id } = getToken()
   const user = useSelector((state: any) => state.account.user)
 
+  // Query for active commissions
+  const {
+    data: commissionsData,
+    isError: isCommissionsError,
+    isLoading: isLoadingCommissions
+  } = useQuery({
+    queryKey: ['active-commissions'],
+    queryFn: async () => {
+      const res = await getListCommissions()
+      return (res as AxiosResponse<any>).data || res
+    }
+  })
+
+  const commissions = commissionsData?.commissions || []
+  const commissionError = isCommissionsError ? 'Failed to load commissions' : ''
+
   // Mutation for createStore
   const createStoreMutation = useMutation({
-    mutationFn: async (formData: FormData) => {
+    mutationFn: async (values: any) => {
+      const formData = new FormData()
+      formData.set('name', values.name)
+      formData.set('bio', values.bio)
+      formData.set('address', values.address)
+      formData.set('commissionId', values.commissionId)
+
+      if (values.avatar && values.avatar[0]?.originFileObj) {
+        formData.set('avatar', values.avatar[0].originFileObj)
+      }
+
+      if (values.cover && values.cover[0]?.originFileObj) {
+        formData.set('cover', values.cover[0].originFileObj)
+      }
+
+      formData.set('addressDetail', JSON.stringify(addressDetail))
+
       const res = await createStore(_id, formData)
       return (res as AxiosResponse<any>).data || res
     },
@@ -87,86 +109,32 @@ const UserCreateStoreForm = () => {
       notification.error({ message: 'Server Error' })
     }
   })
-
-  const init = () => {
-    getListCommissions()
-      .then((data) => {
-        if (data.data.error) setError1(data.data.error)
-        else {
-          setListActiveCommissions(data.data.commissions)
-          setStore((prev) => ({
-            ...prev,
-            commissionId: data.data.commissions[0]._id
-          }))
-        }
-      })
-      .catch((error) => setError1(error))
-  }
-
-  useEffect(() => {
-    init()
-  }, [])
-
-  const handleChange = (
-    name: keyof StoreState,
-    isValidName: keyof StoreState,
-    value: string | File
-  ) => {
-    setStore({
-      ...store,
-      [name]: value,
-      [isValidName]: true
-    })
-  }
-
-  const handleValidate = (isValidName: keyof StoreState, flag: boolean) => {
-    setStore({
-      ...store,
-      [isValidName]: flag
-    })
-  }
-
-  const handleSelectCommission = (value: string) => {
-    setStore({
-      ...store,
-      commissionId: value
-    })
-  }
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (
-      !store.name ||
-      !store.bio ||
-      !store.address ||
-      !store.avatar ||
-      !store.cover
-    ) {
-      setStore({
-        ...store,
-        isValidName: regexTest('name', store.name),
-        isValidBio: regexTest('bio', store.bio),
-        isValidAddress: regexTest('address', store.address),
-        isValidAvatar: !!store.avatar,
-        isValidCover: !!store.cover
-      })
+  const handleFinish = (values: any) => {
+    if (!addressDetail || !addressDetail.street) {
+      notification.error({ message: t('storeDetailValid.addressValid') })
       return
     }
-    if (
-      !store.isValidName ||
-      !store.isValidBio ||
-      !store.isValidAddress ||
-      !store.avatar ||
-      !store.cover
-    )
-      return
-    if (store.name.toLowerCase().includes('buynow')) {
-      setError('Tên gian hàng không được chứa tên sàn')
+
+    if (values.name.toLowerCase().includes('shopbase')) {
+      notification.error({ message: 'Tên gian hàng không được chứa tên sàn' })
       return
     }
+
     setIsConfirming(true)
   }
 
+  const handleAddressChange = (value: any) => {
+    setAddressDetail(value)
+    form.setFieldsValue({ address: value.street })
+  }
+
+  // Normalize file for Ant Design Upload
+  const normFile = (e: any) => {
+    if (Array.isArray(e)) {
+      return e
+    }
+    return e?.fileList
+  }
   useEffect(() => {
     const checkScroll = () => {
       const isBottom =
@@ -180,183 +148,311 @@ const UserCreateStoreForm = () => {
   }, [])
 
   const onSubmit = () => {
-    const formData = new FormData()
-    formData.set('name', store.name)
-    formData.set('bio', store.bio)
-    formData.set('address', store.address)
-    formData.set('commissionId', store.commissionId)
-    formData.set('avatar', store.avatar)
-    formData.set('cover', store.cover)
-    formData.set('addressDetail', JSON.stringify(addressDetail))
-    createStoreMutation.mutate(formData)
+    const values = form.getFieldsValue()
+    createStoreMutation.mutate(values)
     setIsConfirming(false)
   }
-
   return (
-    <div className='position-relative container-fluid'>
-      {createStoreMutation.isPending && <Loading />}
-      {isConfirming && (
-        <ConfirmDialog
-          title={t('dialog.createStore')}
-          message={
-            <small>
-              {t('storeDetail.agreeBy')}{' '}
-              <Link to='/legal/privacy' target='_blank'>
-                {t('footer.policy')}.
+    <div className='relative w-full'>
+      <Spin spinning={createStoreMutation.isPending}>
+        {isConfirming && (
+          <ConfirmDialog
+            title={t('dialog.createStore')}
+            message={
+              <div className='text-sm'>
+                {t('storeDetail.agreeBy')}{' '}
+                <Link
+                  to='/legal/privacy'
+                  target='_blank'
+                  className='text-blue-500 hover:underline'
+                >
+                  {t('footer.policy')}
+                </Link>
                 <br />
-              </Link>
-              {t('storeDetail.getPaid')}{' '}
-              <Link to='/legal/sell-on-buynow' target='_blank'>
-                {t('storeDetail.sellOn')}
-              </Link>
-              .
-            </small>
-          }
-          onSubmit={onSubmit}
-          onClose={() => setIsConfirming(false)}
-        />
-      )}
-      <form className='' onSubmit={handleSubmit}>
-        <div className='box-shadow rounded-1 row mb-2 bg-body p-2'>
-          <div className='col-12 py-2'>
-            <span className='fw-normal fs-12'>
-              {t('storeDetail.basicInfo')}
-            </span>
+                {t('storeDetail.getPaid')}{' '}
+                <Link
+                  to='/legal/sell-on-shopbase'
+                  target='_blank'
+                  className='text-blue-500 hover:underline'
+                >
+                  {t('storeDetail.sellOn')}
+                </Link>
+              </div>
+            }
+            onSubmit={onSubmit}
+            onClose={() => setIsConfirming(false)}
+          />
+        )}
+
+        <div className='mb-6'>
+          <div className='flex items-center mb-2'>
+            <ShopOutlined className='text-blue-500 text-xl mr-2' />
+            <Title level={3} className='m-0'>
+              {t('storeDetail.createStoreTitle')}
+            </Title>
           </div>
-          <div className='col-12 px-4 mt-2'>
-            {error1 && <Error msg={error1} />}
-            {!error1 && (
-              <DropDownMenu
-                listItem={listActiveCommissions?.map((c) => {
-                  const newC = {
-                    value: c._id,
-                    label:
-                      c.name + ' (' + c.fee.$numberDecimal + `%/${t('order')})`
-                  }
-                  return newC
-                })}
-                value={store.commissionId}
-                setValue={handleSelectCommission}
-                size='lg'
-                label={t('storeDetail.typeOfStall')}
-                required={true}
-                borderBtn={false}
+          <Text type='secondary' className='text-sm'>
+            {t('storeDetail.createStoreDesc')}
+          </Text>
+        </div>
+
+        <Form
+          form={form}
+          layout='vertical'
+          onFinish={handleFinish}
+          className='w-full'
+          initialValues={{
+            name: '',
+            bio: '',
+            address: '',
+            commissionId: commissions[0]?._id || ''
+          }}
+          requiredMark={true}
+        >
+          {' '}
+          {/* Basic Info Section */}
+          <Card
+            className='mb-6 shadow-sm rounded-lg'
+            title={
+              <div className='flex items-center'>
+                <ShopOutlined className='text-blue-500 mr-2' />
+                <Title level={5} className='text-gray-700 m-0'>
+                  {t('storeDetail.basicInfo')}
+                </Title>
+              </div>
+            }
+          >
+            {commissionError && (
+              <Alert
+                message={commissionError}
+                type='error'
+                className='mb-4'
+                showIcon
               />
             )}
-          </div>
-          {error && (
-            <div className='col-12 px-4'>
-              <Error msg={error} />
-            </div>
-          )}
-          <div className='col-12 px-4 mt-2'>
-            <Input
-              type='text'
+
+            <Form.Item
+              name='commissionId'
+              label={t('storeDetail.typeOfStall')}
+              tooltip={t('storeDetail.commissionTooltip')}
+              rules={[
+                {
+                  required: true,
+                  message: t('storeDetailValid.commissionValid')
+                }
+              ]}
+            >
+              <Select
+                loading={isLoadingCommissions}
+                placeholder={t('storeDetail.selectCommission')}
+                className='w-full'
+                size='large'
+              >
+                {commissions?.map((c: any) => (
+                  <Option key={c._id} value={c._id}>
+                    {c.name} ({c.fee.$numberDecimal}%/{t('order')})
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              name='name'
               label={t('storeDetail.storeName')}
-              value={store.name}
-              isValid={store.isValidName}
-              feedback={t('storeDetailValid.validName')}
-              validator='name'
-              placeholder='Ví dụ: Cửa hàng giày ABC'
-              required={true}
-              onChange={(value) => handleChange('name', 'isValidName', value)}
-              onValidate={(flag) => handleValidate('isValidName', flag)}
-            />
-          </div>
-          <div className='col-12 px-4 mt-2'>
-            <TextArea
+              rules={[
+                { required: true, message: t('storeDetailValid.validName') },
+                { min: 2, message: t('storeDetailValid.validName') },
+                { max: 50, message: t('storeDetailValid.validName') }
+              ]}
+            >
+              <Input placeholder='Ví dụ: Cửa hàng giày ABC' size='large' />
+            </Form.Item>
+
+            <Form.Item
+              name='bio'
               label='Bio'
-              value={store.bio}
-              isValid={store.isValidBio}
-              feedback={t('storeDetailValid.bioValid')}
-              validator='bio'
-              placeholder='Ví dụ: Chào mừng bạn đến với Cửa hàng giày ABC!
-								Chúng tôi tự hào là địa chỉ tin cậy cho những tín đồ yêu giày, mang đến những mẫu giày thời trang, chất lượng và phong cách. Với sự đa dạng về kiểu dáng và màu sắc, chúng tôi cam kết mang lại sự thoải mái và tự tin cho từng bước chân của bạn. Hãy đến và trải nghiệm sự khác biệt tại Cửa hàng giày ABC – nơi phong cách gặp gỡ chất lượng!
-								Cảm ơn bạn đã tin tưởng và ủng hộ chúng tôi!'
-              required={true}
-              onChange={(value) => handleChange('bio', 'isValidBio', value)}
-              onValidate={(flag) => handleValidate('isValidBio', flag)}
-            />
-          </div>
-          <div className='col-12 px-4 mt-2'>
-            <AddressForm
-              onChange={(value: any) => {
-                setAddressDetail({ ...value })
-                handleChange('address', 'isValidAddress', value.street)
-              }}
-            />
-          </div>
-        </div>
-        <div className='box-shadow rounded-1 row mb-2 bg-body p-2 mt-3'>
-          <div className='col-12 px-3 py-1'>
-            <span className='fw-normal fs-12'>{t('storeDetail.imgInfo')}</span>
-          </div>
-          <div className='col-2 px-4'>
-            <InputFile
-              label={t('storeDetail.avatar')}
-              size='avatar'
-              feedback={t('storeDetailValid.avatarValid')}
-              required={true}
-              onChange={(value) =>
-                handleChange('avatar', 'isValidAvatar', value)
-              }
-              onValidate={(flag) => handleValidate('isValidAvatar', flag)}
-            />
-          </div>
-          <div className='col-10 px-4'>
-            <InputFile
-              label={t('storeDetail.cover')}
-              size='cover'
-              required={true}
-              feedback={t('storeDetailValid.coverValid')}
-              onChange={(value) => handleChange('cover', 'isValidCover', value)}
-              onValidate={(flag) => handleValidate('isValidCover', flag)}
-            />
-          </div>
-        </div>
-        <div
-          className={`bg-body ${
-            isScrolled ? 'shadow' : 'box-shadow'
-          } rounded-1 row px-4 p-3 mt-3`}
-          style={{ position: 'sticky', bottom: '0' }}
-        >
-          <div className='d-flex justify-content-between align-items-center'>
-            <Link
-              to='/account/store'
-              className='text-decoration-none link-hover res-w-100-md my-2'
+              rules={[
+                { required: true, message: t('storeDetailValid.bioValid') },
+                { min: 10, message: t('storeDetailValid.bioValid') }
+              ]}
             >
-              <i className='fa-solid fa-angle-left'></i>{' '}
-              {t('storeDetail.backToStore')}
-            </Link>
-            <small className='text-center d-block mx-2'>
-              <span className='text-muted'>{t('storeDetail.getPaid')}</span>{' '}
-              <Link to='/legal/sell-on-buynow' target='_blank'>
-                {t('storeDetail.sellOn')}
-              </Link>
-              <br className='res-hide' />
-              <input
-                type='checkbox'
-                checked={isChecked}
-                onChange={(e) => setIsChecked(e.target.checked)}
+              <TextArea
+                rows={5}
+                placeholder='Ví dụ: Chào mừng bạn đến với Cửa hàng giày ABC! Chúng tôi tự hào là địa chỉ tin cậy cho những tín đồ yêu giày, mang đến những mẫu giày thời trang, chất lượng và phong cách.'
+                className='resize-none'
+                showCount
+                maxLength={500}
               />
-              <span className='ms-2 text-muted'>
-                {t('storeDetail.agreeBy')}{' '}
-              </span>
-              <Link to='/legal/privacy' target='_blank'>
-                {t('footer.policy')}
-              </Link>
-            </small>
-            <button
-              type='submit'
-              className='btn btn-primary ripple res-w-100-md rounded-1'
-              disabled={!isChecked}
-              style={{ width: '200px', maxWidth: '100%' }}
+            </Form.Item>
+
+            <Form.Item
+              name='address'
+              hidden
+              label={t('storeDetail.address')}
+              rules={[
+                { required: true, message: t('storeDetailValid.addressValid') }
+              ]}
             >
-              {t('button.submit')}
-            </button>
+              <Input />
+            </Form.Item>
+
+            <div className='border p-4 rounded-lg bg-gray-50'>
+              <Title level={5} className='text-gray-700 mb-4'>
+                {t('storeDetail.address')}
+              </Title>
+              <AddressForm onChange={handleAddressChange} />
+            </div>
+          </Card>{' '}
+          {/* Image Info Section */}
+          <Card
+            className='mb-16 shadow-sm rounded-lg'
+            title={
+              <div className='flex items-center'>
+                <FileImageOutlined className='text-blue-500 mr-2' />
+                <Title level={5} className='text-gray-700 m-0'>
+                  {t('storeDetail.imgInfo')}
+                </Title>
+              </div>
+            }
+          >
+            <div className='grid grid-cols-1 md:grid-cols-12 gap-6'>
+              <div className='col-span-1 md:col-span-3'>
+                <Form.Item
+                  name='avatar'
+                  label={
+                    <span className='font-medium'>
+                      {t('storeDetail.avatar')}
+                    </span>
+                  }
+                  valuePropName='fileList'
+                  getValueFromEvent={normFile}
+                  rules={[
+                    {
+                      required: true,
+                      message: t('storeDetailValid.avatarValid')
+                    }
+                  ]}
+                  help={
+                    <Text type='secondary' className='text-xs'>
+                      Recommended size: 200x200px
+                    </Text>
+                  }
+                >
+                  <ImgCrop rotationSlider aspect={1}>
+                    <Upload
+                      listType='picture-card'
+                      maxCount={1}
+                      beforeUpload={() => false}
+                      accept='image/jpeg,image/png'
+                    >
+                      <div className='flex flex-col items-center justify-center'>
+                        <PlusOutlined />
+                        <div className='mt-2'>{t('upload')}</div>
+                      </div>
+                    </Upload>
+                  </ImgCrop>
+                </Form.Item>
+              </div>
+              <div className='col-span-1 md:col-span-9'>
+                <Form.Item
+                  name='cover'
+                  label={
+                    <span className='font-medium'>
+                      {t('storeDetail.cover')}
+                    </span>
+                  }
+                  valuePropName='fileList'
+                  getValueFromEvent={normFile}
+                  rules={[
+                    {
+                      required: true,
+                      message: t('storeDetailValid.coverValid')
+                    }
+                  ]}
+                  help={
+                    <Text type='secondary' className='text-xs'>
+                      Recommended size: 1200x300px
+                    </Text>
+                  }
+                >
+                  <ImgCrop rotationSlider aspect={4}>
+                    <Upload
+                      listType='picture-card'
+                      maxCount={1}
+                      beforeUpload={() => false}
+                      accept='image/jpeg,image/png'
+                    >
+                      <div className='flex flex-col items-center justify-center'>
+                        <PlusOutlined />
+                        <div className='mt-2'>{t('upload')}</div>
+                      </div>
+                    </Upload>
+                  </ImgCrop>
+                </Form.Item>
+              </div>
+            </div>
+          </Card>
+          {/* Sticky Footer */}
+          <div
+            className={`fixed bottom-0 left-0 right-0 p-4 bg-white border-t ${
+              isScrolled ? 'shadow-lg' : ''
+            } z-10`}
+          >
+            <div className='container mx-auto px-4'>
+              <div className='flex flex-col md:flex-row justify-between items-center'>
+                <Link
+                  to='/account/store'
+                  className='text-blue-500 hover:text-blue-700 flex items-center mb-4 md:mb-0'
+                >
+                  <ArrowLeftOutlined className='mr-2' />
+                  {t('storeDetail.backToStore')}
+                </Link>
+
+                <div className='text-center mb-4 md:mb-0 flex flex-col items-center'>
+                  <Text className='text-gray-500 text-sm'>
+                    {t('storeDetail.getPaid')}{' '}
+                    <Link
+                      to='/legal/sell-on-shopbase'
+                      target='_blank'
+                      className='text-blue-500 hover:underline'
+                    >
+                      {t('storeDetail.sellOn')}
+                    </Link>
+                  </Text>
+                  <div className='mt-2'>
+                    <Checkbox
+                      checked={isChecked}
+                      onChange={(e) => setIsChecked(e.target.checked)}
+                    >
+                      <Text className='text-gray-500 text-sm'>
+                        {t('storeDetail.agreeBy')}{' '}
+                        <Link
+                          to='/legal/privacy'
+                          target='_blank'
+                          className='text-blue-500 hover:underline'
+                        >
+                          {t('footer.policy')}
+                        </Link>
+                      </Text>
+                    </Checkbox>
+                  </div>
+                </div>
+
+                <Button
+                  type='primary'
+                  htmlType='submit'
+                  disabled={!isChecked}
+                  loading={createStoreMutation.isPending}
+                  className='w-full md:w-48'
+                  size='large'
+                >
+                  {t('button.submit')}
+                </Button>
+              </div>
+            </div>
           </div>
-        </div>
-      </form>
+        </Form>
+      </Spin>
     </div>
   )
 }

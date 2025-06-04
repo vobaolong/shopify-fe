@@ -2,13 +2,12 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { getToken } from '../../../apis/auth.api'
 import { createBrand, checkBrandNameExist } from '../../../apis/brand.api'
-import Input from '../../ui/Input'
-import Loading from '../../ui/Loading'
+import { Spin, Alert } from 'antd'
 import ConfirmDialog from '../../ui/ConfirmDialog'
 import MultiCategorySelector from '../../selector/MultiCategorySelector'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Form, Button, notification, Upload } from 'antd'
+import { Form, Button, notification, Upload, Input } from 'antd'
 import { CategoryType } from '../../../@types/entity.types'
 import { UploadOutlined } from '@ant-design/icons'
 
@@ -87,10 +86,9 @@ const AdminCreateBrandForm = ({
     navigate('/admin/brands')
     setIsConfirmingBack(false)
   }
-
   return (
     <div className='container-fluid position-relative'>
-      {createBrandMutation.isPending && <Loading />}
+      {createBrandMutation.isPending && <Spin size='large' />}
       {isConfirming && (
         <ConfirmDialog
           title={t('brandDetail.add')}

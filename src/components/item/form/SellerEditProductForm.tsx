@@ -1,10 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { getToken } from '../../../apis/auth.api'
 import { getProductByIdForManager } from '../../../apis/product.api'
-import Loading from '../../ui/Loading'
+import { Spin, Alert } from 'antd'
 import SellerEditProductProfileForm from './SellerEditProductProfileForm'
 import SellerEditProductImagesForm from './SellerEditProductImagesForm'
-import Error from '../../ui/Error'
 import { useQuery } from '@tanstack/react-query'
 
 interface SellerEditProductFormProps {
@@ -29,11 +28,10 @@ const SellerEditProductForm = ({
   const errorMsg = error
     ? (error as any).message || 'Server Error'
     : data?.error || ''
-
   return (
     <div className='container-fluid position-relative'>
-      {isLoading && <Loading />}
-      {errorMsg && <Error msg={errorMsg} />}
+      {isLoading && <Spin size='large' />}
+      {errorMsg && <Alert message={errorMsg} type='error' />}
       <div className='row bg-body box-shadow rounded-2 p-3 mb-3'>
         <SellerEditProductImagesForm
           product={product}

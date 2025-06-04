@@ -9,8 +9,7 @@ import {
   getStoreFollowerCount,
   checkFollowingStore
 } from '../../apis/followStore.api'
-import Error from '../ui/Error'
-import Loading from '../ui/Loading'
+import { Spin, Alert } from 'antd'
 import defaultImage from '../../assets/default.webp'
 import { addStore } from '../../store/slices/storeSlice'
 
@@ -79,10 +78,9 @@ const StoreInit = ({ store, actions }: StoreInitProps) => {
   useEffect(() => {
     if (!store || store._id !== storeId) init()
   }, [storeId])
-
   return isLoading ? (
     <div className='cus-position-relative-loading'>
-      <Loading size='small' />
+      <Spin size='small' />
     </div>
   ) : (
     <div className='your-store-card btn btn-outline-light cus-outline ripple'>
@@ -91,10 +89,10 @@ const StoreInit = ({ store, actions }: StoreInitProps) => {
         src={store.avatar || defaultImage}
         className='your-store-img'
         alt='Store avatar'
-      />
+      />{' '}
       <span className='your-store-name unselect res-hide-md'>
         {store.name}
-        {error && <Error msg={error} />}
+        {error && <Alert message={error} type='error' showIcon />}
       </span>
     </div>
   )

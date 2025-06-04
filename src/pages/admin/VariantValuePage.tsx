@@ -22,7 +22,7 @@ const VariantValuesPage = () => {
           to='/admin/variant'
           className='text-decoration-none cus-link-hover'
         >
-          <i className='fa-solid fa-angle-left'></i> {t('button.back')}
+          <i className='fa-solid fa-angle-left' /> {t('button.back')}
         </Link>
       </div>
     </AdminLayout>

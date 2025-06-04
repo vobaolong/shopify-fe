@@ -11,7 +11,7 @@ const HotSaleLabel = ({ className = '' }) => {
       }}
       className={`badge rounded-2 ${className}`}
     >
-      <i className='fa-solid fa-bolt-lightning me-1'></i>
+      <i className='fa-solid fa-bolt-lightning me-1' />
       <span
         style={{ fontSize: '0.6rem', fontWeight: '700' }}
         className='text-uppercase'

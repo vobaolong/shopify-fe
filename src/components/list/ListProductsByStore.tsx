@@ -1,8 +1,7 @@
 import { listSellingProductsByStore } from '../../apis/product.api'
-import Loading from '../ui/Loading'
+import { Spin, Alert } from 'antd'
 import ProductCard from '../card/ProductCard'
 import Slider from 'react-slick'
-import Error from '../ui/Error'
 import { useQuery } from '@tanstack/react-query'
 import { useAntdApp } from '../../hooks/useAntdApp'
 
@@ -69,20 +68,60 @@ const ListProductsByStore = ({
         },
         storeId
       )
-        .then((res) => res.data)
+        .then((res) => {
+          console.log('ListProductsByStore API Response:', res)
+          console.log(
+            'ListProductsByStore API Response products:',
+            res?.products
+          )
+          console.log(
+            'ListProductsByStore API Response products length:',
+            res?.products?.length
+          )
+          return res || { products: [] }
+        })
         .catch((err) => {
+          console.error('ListProductsByStore API Error:', err)
           notification.error({ message: err?.message || 'Server Error' })
-          return {}
+          return { products: [] }
         })
   })
+
   const products: any[] = data?.products || []
 
+  console.log('ListProductsByStore - Final products:', products)
+  console.log('ListProductsByStore - Products length:', products.length)
+  console.log('ListProductsByStore - Data:', data)
+  console.log(
+    'ListProductsByStore - Data keys:',
+    data ? Object.keys(data) : 'no data'
+  )
+
+  console.log('ListProductsByStore - Final products:', products)
+  console.log('ListProductsByStore - Data:', data)
+  console.log('ListProductsByStore - storeId:', storeId)
   return (
     <div className='position-relative bg-body box-shadow rounded-2 p-3'>
+      {' '}
       {heading && <h5 style={{ color: 'var(--muted-color)' }}>{heading}</h5>}
-      {isLoading && <Loading />}
-      {isError && <Error msg={error?.message || 'Server Error'} />}
-
+      {isLoading && <Spin size='large' />}
+      {isError && (
+        <Alert message={error?.message || 'Server Error'} type='error' />
+      )}
+      {/* Debug info */}
+      <div
+        style={{
+          background: '#f0f0f0',
+          padding: '10px',
+          margin: '10px 0',
+          fontSize: '12px'
+        }}
+      >
+        <div>Products count: {products?.length || 0}</div>
+        <div>Store ID: {storeId}</div>
+        <div>Is Loading: {isLoading ? 'Yes' : 'No'}</div>
+        <div>Has Error: {isError ? 'Yes' : 'No'}</div>
+      </div>
       <div className='slider-container'>
         <Slider {...settings}>
           {products?.map((product: any, index: number) => (
@@ -92,6 +131,12 @@ const ListProductsByStore = ({
           ))}
         </Slider>
       </div>
+      {/* Fallback when no products */}
+      {!isLoading && (!products || products.length === 0) && (
+        <div style={{ textAlign: 'center', padding: '20px', color: '#999' }}>
+          No products found for this store
+        </div>
+      )}
     </div>
   )
 }

@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { getToken } from '../../../apis/auth.api'
 import { addToCart } from '../../../apis/cart.api'
-import Loading from '../../ui/Loading'
 import VariantValueSelector from '../../selector/VariantValueSelector'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
-import Error from '../../ui/Error'
+import { Button, Alert, Spin } from 'antd'
+import { ShoppingCartOutlined } from '@ant-design/icons'
+import { useMutation } from '@tanstack/react-query'
 
 interface VariantValue {
   _id: string
@@ -30,10 +31,30 @@ interface CartItem {
 
 const AddToCartForm: React.FC<{ product: Product }> = ({ product }) => {
   const { t } = useTranslation()
-  const [isLoading, setIsLoading] = useState(false)
   const [updateDispatch] = useUpdateDispatch()
   const [error, setError] = useState('')
   const [cartItem, setCartItem] = useState<CartItem>({})
+
+  const addToCartMutation = useMutation({
+    mutationFn: (cartData: CartItem) => {
+      const { _id } = getToken()
+      return addToCart(_id, cartData)
+    },
+    onSuccess: (data: any) => {
+      if (data.error) {
+        setError(data.error)
+        setTimeout(() => setError(''), 3000)
+      } else {
+        updateDispatch('account', data.user)
+        toast.success(t('toastSuccess.cart.add'))
+        setCartItem({})
+      }
+    },
+    onError: () => {
+      setError('Server Error')
+      setTimeout(() => setError(''), 3000)
+    }
+  })
 
   useEffect(() => {
     let defaultList: VariantValue[][] = []
@@ -66,7 +87,6 @@ const AddToCartForm: React.FC<{ product: Product }> = ({ product }) => {
       count: 1
     })
   }, [product])
-
   const handleSet = (values: VariantValue[]) => {
     setCartItem({
       ...cartItem,
@@ -76,68 +96,39 @@ const AddToCartForm: React.FC<{ product: Product }> = ({ product }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit()
-  }
-  const onSubmit = () => {
-    const { _id } = getToken()
     setError('')
-    setIsLoading(true)
-    addToCart(_id, cartItem)
-      .then((data: any) => {
-        if (data.error) {
-          setError(data.error)
-        } else {
-          updateDispatch('account', data.user)
-          toast.success(t('toastSuccess.cart.add'))
-        }
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-        setTimeout(() => {
-          setCartItem({})
-        }, 1000)
-        setIsLoading(false)
-      })
-      .catch(() => {
-        setError('Server Error')
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-        setIsLoading(false)
-      })
+    addToCartMutation.mutate(cartItem)
   }
-
   return (
-    <div className='position-relative'>
-      {isLoading && <Loading />}
-      <form className='row'>
-        <div className='col-12'>
-          <VariantValueSelector
-            listValues={product.variantValueIds}
-            isEditable={true}
-            defaultValue={cartItem.defaultVariantValues}
-            onSet={(values: VariantValue[]) => handleSet(values)}
-          />
-        </div>
-        {error && (
-          <div className='col-12'>
-            <Error msg={error} />
+    <div className='relative'>
+      <Spin spinning={addToCartMutation.isPending}>
+        <form className='space-y-4'>
+          <div>
+            <VariantValueSelector
+              listValues={product.variantValueIds}
+              isEditable={true}
+              defaultValue={cartItem.defaultVariantValues}
+              onSet={(values: VariantValue[]) => handleSet(values)}
+            />
           </div>
-        )}
-        <div
-          className='col-md-12 d-grid mt-2'
-          style={{ maxWidth: 'fit-content' }}
-        >
-          <button
-            type='submit'
-            className='btn add-to-cart-btn rounded-1 ripple d-flex align-items-center justify-content-center'
-            onClick={handleSubmit}
-          >
-            <i className='fa-solid fa-cart-plus'></i>
-            <span className='ms-2 fs-6'>{t('productDetail.addToCart')}</span>
-          </button>
-        </div>
-      </form>
+
+          {error && (
+            <Alert message={error} type='error' showIcon className='mb-4' />
+          )}
+
+          <div className='flex justify-start'>
+            <Button
+              type='primary'
+              icon={<ShoppingCartOutlined />}
+              onClick={handleSubmit}
+              loading={addToCartMutation.isPending}
+              className='flex items-center gap-2 h-10 px-6 bg-orange-500 hover:bg-orange-600 border-orange-500 hover:border-orange-600'
+            >
+              <span className='text-base'>{t('productDetail.addToCart')}</span>
+            </Button>
+          </div>
+        </form>
+      </Spin>
     </div>
   )
 }

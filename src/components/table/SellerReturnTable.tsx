@@ -8,7 +8,7 @@ import {
 import { humanReadableDate } from '../../helper/humanReadable'
 import { formatPrice } from '../../helper/formatPrice'
 import Pagination from '../ui/Pagination'
-import Loading from '../ui/Loading'
+import { Spin, Alert } from 'antd'
 import SortByButton from './sub/SortByButton'
 import OrderReturnStatusLabel from '../label/OrderReturnStatusLabel'
 import OrderPaymentLabel from '../label/OrderPaymentLabel'
@@ -16,8 +16,11 @@ import UserSmallCard from '../card/UserSmallCard'
 import SearchInput from '../ui/SearchInput'
 import { useTranslation } from 'react-i18next'
 import ShowResult from '../ui/ShowResult'
-import Error from '../ui/Error'
 import noItem from '../../assets/noItem.png'
+import {
+  ReturnFilterState,
+  defaultReturnFilter
+} from '../../@types/filter.type'
 
 const SellerReturnTable = ({
   storeId = '',
@@ -28,35 +31,36 @@ const SellerReturnTable = ({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [displayError, setDisplayError] = useState(false)
-  const [orders, setOrders] = useState([])
+  const [orders, setOrders] = useState<any[]>([])
   const [pagination, setPagination] = useState({
-    size: 0
+    size: 0,
+    pageCurrent: 1,
+    pageCount: 1
   })
-  const [filter, setFilter] = useState({
-    search: '',
-    status,
-    sortBy: 'createdAt',
-    order: 'desc',
-    limit: 7,
-    page: 1
+  const [filter, setFilter] = useState<ReturnFilterState>({
+    ...defaultReturnFilter,
+    status
+  })
+  const [pendingFilter, setPendingFilter] = useState<ReturnFilterState>({
+    ...defaultReturnFilter,
+    status
   })
 
-  const { _id } = getToken()
-
+  const { _id, accessToken } = getToken()
   const init = () => {
     setError('')
     setIsLoading(true)
-    let timerId = null
+    let timerId: NodeJS.Timeout | null = null
     listReturnByStore(_id, filter, storeId)
       .then((data) => {
         console.log(data)
         if (data.error) setError(data.error)
         else {
-          setOrders(data.orders)
+          setOrders(data.orders || [])
           setPagination({
-            size: data.size,
-            pageCurrent: data.filter.pageCurrent,
-            pageCount: data.filter.pageCount
+            size: data.size || 0,
+            pageCurrent: data.filter?.pageCurrent || 1,
+            pageCount: data.filter?.pageCount || 1
           })
         }
         setIsLoading(false)
@@ -71,43 +75,47 @@ const SellerReturnTable = ({
       if (error) setDisplayError(true)
     }, 3000)
   }
-
   useEffect(() => {
-    setFilter({
+    const newFilter = {
       ...filter,
       status
-    })
+    }
+    setFilter(newFilter)
+    setPendingFilter(newFilter)
   }, [status])
 
   useEffect(() => {
     init()
   }, [filter, storeId])
 
-  const handleChangeKeyword = (keyword) => {
-    setFilter({
-      ...filter,
-      search: keyword,
-      page: 1
+  const handleChangeKeyword = (keyword: string) => {
+    setPendingFilter({
+      ...pendingFilter,
+      search: keyword
     })
   }
 
-  const handleChangePage = (newPage) => {
+  const handleSearch = () => {
+    setFilter({
+      ...pendingFilter,
+      page: 1
+    })
+  }
+  const handleChangePage = (newPage: number) => {
     setFilter({
       ...filter,
       page: newPage
     })
   }
-
-  const handleSetSortBy = (order, sortBy) => {
+  const handleSetSortBy = (order: string, sortBy: string) => {
     setFilter({
       ...filter,
       sortBy,
-      order
+      order: order as 'asc' | 'desc'
     })
   }
-
   //
-  const handleUpdateStatus = async (orderId, status) => {
+  const handleUpdateStatus = async (orderId: string, status: string) => {
     try {
       setIsLoading(true)
       setError('')
@@ -115,7 +123,6 @@ const SellerReturnTable = ({
 
       const result = await sellerUpdateReturnStatusOrder(
         _id,
-        accessToken,
         status,
         orderId,
         storeId
@@ -126,7 +133,7 @@ const SellerReturnTable = ({
       } else {
         throw new Error(result.error || 'Failed to update status')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating status:', error)
       setError(`Failed to update status: ${error.message}`)
       setDisplayError(true)
@@ -138,12 +145,16 @@ const SellerReturnTable = ({
 
   return (
     <div className='position-relative'>
-      {isLoading && <Loading />}
-      {error && <Error msg={error} />}
-      {displayError && <Error msg={error} />}
+      {isLoading && <Spin size='large' />}
+      {error && <Alert message={error} type='error' />}
+      {displayError && <Alert message={error} type='error' />}
 
       <div className='p-3 box-shadow bg-body rounded-2'>
-        <SearchInput onChange={handleChangeKeyword} />
+        <SearchInput
+          value={pendingFilter.search || ''}
+          onChange={handleChangeKeyword}
+          onSearch={handleSearch}
+        />
         {!isLoading && pagination.size === 0 ? (
           <div className='my-4 text-center'>
             <img className='mb-3' src={noItem} alt='noItem' width={'100px'} />
@@ -245,7 +256,9 @@ const SellerReturnTable = ({
                   {orders?.map((order, index) => (
                     <tr key={index}>
                       <th scope='row' className='text-center'>
-                        {index + 1 + (filter.page - 1) * filter.limit}
+                        {index +
+                          1 +
+                          ((filter.page || 1) - 1) * (filter.limit || 10)}
                       </th>
                       <td>
                         <small>{order._id}</small>

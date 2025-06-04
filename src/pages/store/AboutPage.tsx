@@ -3,7 +3,7 @@ import StoreLayout from '../../components/layout/StoreLayout'
 import StoreProfileInfo from '../../components/info/StoreProfileInfo'
 import StoreLevelInfo from '../../components/info/StoreLevelInfo'
 import MainLayout from '../../components/layout/MainLayout'
-import Error from '../../components/ui/Error'
+import { Alert } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { selectStoreStore } from '../../store/slices/storeSlice'
 
@@ -17,7 +17,7 @@ const AboutPage = () => {
   ]
   return typeof store.isActive === 'boolean' && !store.isActive ? (
     <MainLayout>
-      <Error msg={t('toastError.storeBanned')} />
+      <Alert message={t('toastError.storeBanned')} type='error' showIcon />
     </MainLayout>
   ) : (
     <StoreLayout store={store} paths={paths}>

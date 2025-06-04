@@ -3,14 +3,13 @@ import { getToken } from '../../apis/auth.api'
 import { deleteReview } from '../../apis/review.api'
 import StarRating from '../label/StarRating'
 import ProductSmallCard from '../card/ProductSmallCard'
-import Loading from '../ui/Loading'
+import { Spin, Alert } from 'antd'
 import ConfirmDialog from '../ui/ConfirmDialog'
 import EditReviewItem from '../item/EditReviewItem'
 import { humanReadableDate } from '../../helper/humanReadable'
 import { useTranslation } from 'react-i18next'
 import { calcTime } from '../../helper/calcTime'
 import { toast } from 'react-toastify'
-import Error from '../ui/Error'
 import { useMutation } from '@tanstack/react-query'
 
 interface ReviewInfoProps {
@@ -52,11 +51,16 @@ const ReviewInfo: React.FC<ReviewInfoProps> = ({
   }
   const hoursDifference = calcTime(review?.orderId?.updatedAt)
   const isReviewAllowed = hoursDifference < 720 //30days
-
   return (
     <div className='row py-2 border-bottom position-relative'>
-      {isPending && <Loading />}
-      {error && <Error msg={(error as any).message} />}
+      {isPending && (
+        <div className='d-flex justify-content-center p-2'>
+          <Spin size='small' />
+        </div>
+      )}
+      {error && (
+        <Alert message={(error as any).message} type='error' showIcon />
+      )}
       {isConfirming && (
         <ConfirmDialog
           title={t('reviewDetail.delete')}
@@ -83,7 +87,7 @@ const ReviewInfo: React.FC<ReviewInfoProps> = ({
             </span>
             {/* <span className='text-secondary'>{review?.productId?.name}</span> */}
             <span className='text-success rounded-1 px-1 bg-success-rgba my-auto'>
-              <i className='fa-regular fa-circle-check'></i>{' '}
+              <i className='fa-regular fa-circle-check' />{' '}
               {t('productDetail.purchased')}
             </span>
             {about && (
@@ -104,7 +108,7 @@ const ReviewInfo: React.FC<ReviewInfoProps> = ({
           <div className='d-flex justify-content-between'>
             <div className='menu-container'>
               <button className='btn menu-button' onClick={handleMenuToggle}>
-                <i className='fa fa-ellipsis-v'></i>
+                <i className='fa fa-ellipsis-v' />
               </button>
               {showMenu && (
                 <div className='menu d-flex flex-column gap-2 align-item-start p-2'>
@@ -115,7 +119,7 @@ const ReviewInfo: React.FC<ReviewInfoProps> = ({
                     className='btn rounded-1 btn-sm ripple rm-review w-100 text-start'
                     onClick={handleRemove}
                   >
-                    <i className='fa-solid fa-trash-alt me-2'></i>
+                    <i className='fa-solid fa-trash-alt me-2' />
                     {t('reviewDetail.delete')}
                   </button>
                 </div>

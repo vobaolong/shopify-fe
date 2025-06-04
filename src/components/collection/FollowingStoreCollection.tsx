@@ -2,8 +2,7 @@
 import { useState, useEffect } from 'react'
 import { getToken } from '../../apis/auth.api'
 import { listFollowingStores } from '../../apis/followStore.api'
-import Loading from '../ui/Loading'
-import Error from '../ui/Error'
+import { Spin, Alert } from 'antd'
 import StoreCard from '../card/StoreCard'
 import Pagination from '../ui/Pagination'
 import { useTranslation } from 'react-i18next'
@@ -64,11 +63,14 @@ const FollowingStoresCollection = ({ heading = false }) => {
       page: newPage
     })
   }
-
   return (
     <div className='position-relative'>
-      {isLoading && <Loading />}
-      {error && <Error msg={error} />}
+      {isLoading && (
+        <div className='d-flex justify-content-center p-4'>
+          <Spin size='large' />
+        </div>
+      )}
+      {error && <Alert message={error} type='error' showIcon />}
 
       {heading && <h4 className='text-center'>{t('favStore')}</h4>}
       <div className='p-3 box-shadow bg-body rounded-2'>

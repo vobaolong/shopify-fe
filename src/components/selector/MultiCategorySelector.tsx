@@ -2,11 +2,10 @@ import { useState, useEffect } from 'react'
 import { listCategories, listActiveCategories } from '../../apis/category.api'
 import SearchInput from '../ui/SearchInput'
 import CategorySmallCard from '../card/CategorySmallCard'
-import Error from '../ui/Error'
+import { Alert, Spin } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { CategoryFilter, CategoryType } from '../../@types/entity.types'
 import { useQuery } from '@tanstack/react-query'
-import { Spin } from 'antd'
 
 interface MultiCategorySelectorProps {
   defaultValue?: CategoryType[]
@@ -178,12 +177,15 @@ const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
     <div className='row'>
       <div className='col'>
         <SearchInput value={lv1Filter.search} onChange={handleChangeKeyword} />
-      </div>
-
+      </div>{' '}
       <div className='col-12 position-relative'>
         {(lv1Loading || lv2Loading || lv3Loading) && <Spin />}
         {(lv1Error || lv2Error || lv3Error) && (
-          <Error msg={String(lv1Error || lv2Error || lv3Error)} />
+          <Alert
+            message={String(lv1Error || lv2Error || lv3Error)}
+            type='error'
+            showIcon
+          />
         )}
 
         <div className='d-flex border p-1 mt-2 rounded-2 bg-value'>
@@ -206,7 +208,7 @@ const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
                   onClick={() => handleClick(lv2Filter, setLv2Filter, category)}
                 >
                   <span className='res-smaller-md'>{category.name}</span>
-                  <i className='fa-solid fa-angle-right res-smaller-lg res-hide'></i>
+                  <i className='fa-solid fa-angle-right res-smaller-lg res-hide' />
                 </button>
               </div>
             ))}
@@ -231,7 +233,7 @@ const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
                   onClick={() => handleClick(lv3Filter, setLv3Filter, category)}
                 >
                   <span className='res-smaller-md'>{category.name}</span>
-                  <i className='fa-solid fa-angle-right res-smaller-lg res-hide'></i>
+                  <i className='fa-solid fa-angle-right res-smaller-lg res-hide' />
                 </button>
               </div>
             ))}
@@ -267,7 +269,6 @@ const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
           </div>
         </div>
       </div>
-
       {isSelected && (
         <div className='col mt-2'>
           <div className='mt-4 position-relative'>
@@ -305,7 +306,7 @@ const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
                           className='btn btn-outline-danger btn-sm ripple ms-2 position-absolute'
                           onClick={() => handleRemove(index)}
                         >
-                          <i className='fa-solid fa-xmark'></i>
+                          <i className='fa-solid fa-xmark' />
                         </button>
                       </span>
                     )

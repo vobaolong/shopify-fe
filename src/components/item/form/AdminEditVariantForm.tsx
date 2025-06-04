@@ -1,15 +1,14 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { getToken } from '../../../apis/auth.api'
 import { updateVariant, getVariantById } from '../../../apis/variant.api'
-import { regexTest } from '../../../helper/test'
-import Input from '../../ui/Input'
-import Loading from '../../ui/Loading'
-import Error from '../../ui/Error'
 import MultiCategorySelector from '../../selector/MultiCategorySelector'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'react-toastify'
+import { Form, Input, Button, Card, Typography, Spin, Alert, Modal } from 'antd'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useAntdApp } from '../../../hooks/useAntdApp'
+
+const { Title } = Typography
 
 interface VariantType {
   _id: string
@@ -17,172 +16,155 @@ interface VariantType {
   categoryIds: { _id: string }[]
 }
 
-interface VariantState {
-  name: string
-  categoryIds: string[]
-  defaultParentCategories: { _id: string }[]
-  isValidName: boolean
-}
-
 const AdminEditVariantForm = ({ variantId = '' }: { variantId?: string }) => {
   const { t } = useTranslation()
+  const { notification } = useAntdApp()
+  const [form] = Form.useForm()
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [newVariant, setNewVariant] = useState<VariantState>({
-    name: '',
-    categoryIds: [],
-    defaultParentCategories: [],
-    isValidName: true
-  })
+  const [isConfirming, setIsConfirming] = useState(false)
+  const [selectedCategories, setSelectedCategories] = useState<any[]>([])
+  const queryClient = useQueryClient()
   const { _id } = getToken()
 
-  const init = () => {
+  // Load variant data
+  useEffect(() => {
     setError('')
-    setIsLoading(true)
+    setLoading(true)
     getVariantById(_id, variantId)
       .then((res: { data: { error?: string; variant?: VariantType } }) => {
         if (res.data.error) {
           setError(res.data.error)
         } else if (res.data.variant) {
-          setNewVariant({
-            name: res.data.variant.name,
-            defaultParentCategories: res.data.variant.categoryIds,
-            categoryIds: res.data.variant.categoryIds.map(
-              (category) => category._id
-            ),
-            isValidName: true
+          form.setFieldsValue({
+            name: res.data.variant.name
           })
+          setSelectedCategories(res.data.variant.categoryIds || [])
         }
-        setIsLoading(false)
+        setLoading(false)
       })
       .catch(() => {
         setError('Server Error')
-        setIsLoading(false)
+        setLoading(false)
       })
-  }
-
-  useEffect(() => {
-    init()
   }, [variantId])
 
-  const handleChange = (
-    name: keyof VariantState,
-    isValidName: keyof VariantState,
-    value: string | string[]
-  ) => {
-    setNewVariant({
-      ...newVariant,
-      [name]: value,
-      [isValidName]: true
-    })
-  }
-
-  const handleValidate = (isValidName: keyof VariantState, flag: boolean) => {
-    setNewVariant({
-      ...newVariant,
-      [isValidName]: flag
-    })
-  }
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const { name, categoryIds, isValidName } = newVariant
-    if (!name || !categoryIds || categoryIds.length === 0) {
-      setNewVariant({
-        ...newVariant,
-        isValidName: regexTest('anything', name)
-      })
-      return
+  // Mutation for updating variant
+  const updateVariantMutation = useMutation({
+    mutationFn: (values: { name: string; categoryIds: string[] }) =>
+      updateVariant(_id, variantId, values),
+    onSuccess: (res) => {
+      if (res.data.error) {
+        notification.error({ message: res.data.error })
+      } else {
+        notification.success({ message: t('toastSuccess.variant.update') })
+        queryClient.invalidateQueries({ queryKey: ['variant', variantId] })
+      }
+    },
+    onError: () => {
+      notification.error({ message: 'Server error' })
     }
-    if (!isValidName) return
-    onSubmit()
+  })
+
+  // Form handlers
+  const handleFinish = (values: { name: string }) => {
+    setIsConfirming(true)
   }
 
-  const onSubmit = () => {
-    setError('')
-    setIsLoading(true)
-    updateVariant(_id, variantId, newVariant)
-      .then((res: { data: { error?: string } }) => {
-        if (res.data.error) setError(res.data.error)
-        else toast.success(t('toastSuccess.variant.update'))
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
-      .catch(() => {
-        setError('Sever error')
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
+  const handleConfirmSubmit = () => {
+    const values = form.getFieldsValue()
+    const categoryIds = selectedCategories.map((cat) => cat._id)
+    updateVariantMutation.mutate({
+      ...values,
+      categoryIds
+    })
+    setIsConfirming(false)
   }
 
   return (
-    <div className='container-fluid position-relative'>
-      {isLoading && <Loading />}
-
-      <form
-        className='border bg-body rounded-1 row mb-2'
-        onSubmit={handleSubmit}
-      >
-        <div className='col-12 bg-primary rounded-top-1 px-4 py-3'>
-          <h1 className='text-white fs-5 m-0'>{t('variantDetail.edit')}</h1>
-        </div>
-
-        <div className='col-12 mt-4 px-4'>
-          {' '}
-          <MultiCategorySelector
-            label={t('categoryDetail.chosenParentCategory')}
-            isActive={false}
-            isRequired={true}
-            defaultValue={newVariant.defaultParentCategories as any}
-            onSet={(categories) =>
-              setNewVariant({
-                ...newVariant,
-                categoryIds: categories.map((category) => category._id)
-              })
-            }
-          />
-        </div>
-
-        <div className='col-12 px-4 mt-2'>
-          <Input
-            type='text'
-            required={true}
-            label={t('variantDetail.name')}
-            value={newVariant.name}
-            isValid={newVariant.isValidName}
-            feedback={t('categoryValid.validVariant')}
-            validator='anything'
-            onChange={(value) => handleChange('name', 'isValidName', value)}
-            onValidate={(flag) => handleValidate('isValidName', flag)}
-          />
-        </div>
-
+    <div className='w-full'>
+      <Spin spinning={loading || updateVariantMutation.isPending}>
         {error && (
-          <div className='col-12 px-4'>
-            <Error msg={error} />
-          </div>
+          <Alert message={error} type='error' showIcon className='mb-4' />
         )}
 
-        <div className='col-12 px-4 pb-3 d-flex justify-content-between align-items-center mt-4 res-flex-reverse-md'>
-          <Link
-            to='/admin/variant'
-            className='text-decoration-none cus-link-hover res-w-100-md my-2'
+        {isConfirming && (
+          <Modal
+            title={t('variantDetail.edit')}
+            open={isConfirming}
+            onOk={handleConfirmSubmit}
+            onCancel={() => setIsConfirming(false)}
+            okText={t('button.save')}
+            cancelText={t('button.cancel')}
           >
-            <i className='fa-solid fa-angle-left'></i> {t('button.back')}
-          </Link>
-          <button
-            type='submit'
-            className='btn btn-primary ripple res-w-100-md rounded-1'
-            style={{ width: '300px', maxWidth: '100%' }}
+            <p>{t('confirmDialog')}</p>
+          </Modal>
+        )}
+
+        <Form form={form} layout='vertical' onFinish={handleFinish}>
+          <Card className='mb-4'>
+            <div className='bg-primary p-3 mb-3 rounded'>
+              <Title level={5} className='text-white m-0'>
+                {t('variantDetail.edit')}
+              </Title>
+            </div>
+
+            <div className='mt-3 px-4'>
+              <span>{t('productDetail.chooseCategory')}</span>
+              <Form.Item
+                name='categoryIds'
+                rules={[
+                  { required: true, message: t('variantDetail.required') }
+                ]}
+              >
+                <MultiCategorySelector
+                  label={t('chosenCategory')}
+                  isActive={false}
+                  isRequired={true}
+                  defaultValue={selectedCategories}
+                  onSet={(categories) => {
+                    setSelectedCategories(categories)
+                  }}
+                />
+              </Form.Item>
+            </div>
+
+            <div className='px-4 my-3'>
+              <Form.Item
+                name='name'
+                label={t('variantDetail.name')}
+                rules={[
+                  { required: true, message: t('variantDetail.validName') }
+                ]}
+              >
+                <Input placeholder={t('variantDetail.name')} />
+              </Form.Item>
+            </div>
+          </Card>
+
+          <Card
+            style={{ position: 'sticky', bottom: '0', zIndex: 1 }}
+            className='shadow-sm'
           >
-            {t('button.save')}
-          </button>
-        </div>
-      </form>
+            <div className='flex justify-between items-center'>
+              <Link to='/admin/variant'>
+                <Button type='default'>
+                  <i className='fa-solid fa-angle-left mr-1' />{' '}
+                  {t('button.back')}
+                </Button>
+              </Link>
+              <Button
+                type='primary'
+                htmlType='submit'
+                style={{ width: '200px', maxWidth: '100%' }}
+                loading={updateVariantMutation.isPending}
+              >
+                {t('button.save')}
+              </Button>
+            </div>
+          </Card>
+        </Form>
+      </Spin>
     </div>
   )
 }

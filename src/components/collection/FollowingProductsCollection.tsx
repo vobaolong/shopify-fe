@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { getToken } from '../../apis/auth.api'
 import { useFavoriteProducts } from '../../hooks/useFavorite'
 import ProductCard from '../card/ProductCard'
-import Loading from '../ui/Loading'
-import Error from '../ui/Error'
+import { Spin, Alert } from 'antd'
 import Pagination from '../ui/Pagination'
 import { useTranslation } from 'react-i18next'
 import boxImg from '../../assets/box.svg'
@@ -40,11 +39,20 @@ const FollowingProductsCollection = ({ heading = false }) => {
       page: newPage
     })
   }
-
   return (
     <div className='position-relative'>
-      {isLoading && <Loading />}
-      {error && <Error msg={error?.message || 'Server Error'} />}
+      {isLoading && (
+        <div className='d-flex justify-content-center p-4'>
+          <Spin size='large' />
+        </div>
+      )}
+      {error && (
+        <Alert
+          message={error?.message || 'Server Error'}
+          type='error'
+          showIcon
+        />
+      )}
       {heading && <h4 className='text-center'>{t('favProduct')}</h4>}
       <div className='p-3 box-shadow bg-body rounded-2'>
         {!isLoading && pagination.size === 0 ? (
