@@ -4,7 +4,7 @@ export const getOrderByUser = async (
   userId: string,
   orderId: string
 ): Promise<any> => {
-  return await axiosClient.get(`/order/by/user/${orderId}/${userId}`)
+  return await axiosClient.get(`/order/user/${orderId}/${userId}`)
 }
 
 export const createReturnRequest = async (
@@ -40,7 +40,7 @@ export const listItemsByOrder = async (
   userId: string,
   orderId: string
 ): Promise<any> => {
-  return await axiosClient.get(`/order/items/by/user/${orderId}/${userId}`)
+  return await axiosClient.get(`/order/user/${userId}/${orderId}/items`)
 }
 
 export const listItemsByOrderByStore = async (
@@ -63,7 +63,7 @@ export const listOrdersByUser = async (
   userId: string,
   params: any
 ): Promise<any> => {
-  return await axiosClient.get(`/orders/by/user/${userId}`, {
+  return await axiosClient.get(`/order/user/${userId}`, {
     params
   })
 }

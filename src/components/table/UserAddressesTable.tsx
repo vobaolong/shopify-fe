@@ -12,10 +12,10 @@ import {
   Space,
   Spin,
   Alert,
-  Popconfirm,
-  Typography
+  Typography,
+  Tooltip
 } from 'antd'
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons'
+import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons'
 import { useMutation } from '@tanstack/react-query'
 import { useAntdApp } from '../../hooks/useAntdApp'
 
@@ -41,6 +41,7 @@ const UserAddressesTable: React.FC<UserAddressesTableProps> = ({
   })
   const [updateDispatch] = useUpdateDispatch()
   const { _id } = getToken()
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 })
 
   const handleEditAddress = (address: string, index: number) => {
     setSelectedAddress({
@@ -49,6 +50,7 @@ const UserAddressesTable: React.FC<UserAddressesTableProps> = ({
     })
     setIsEditModalOpen(true)
   }
+
   // Delete Address Mutation
   const deleteAddressMutation = useMutation({
     mutationFn: (index: number) => deleteAddresses(_id, index),
@@ -65,55 +67,71 @@ const UserAddressesTable: React.FC<UserAddressesTableProps> = ({
     }
   })
 
+  const showDeleteConfirm = (address: string, index: number) => {
+    Modal.confirm({
+      title: t('userDetail.delAddress'),
+      content: <Text>{address}</Text>,
+      okText: t('button.yes'),
+      cancelText: t('button.no'),
+      okType: 'danger',
+      onOk: () => deleteAddressMutation.mutate(index)
+    })
+  }
+
   const columns = [
     {
       title: '#',
       key: 'index',
       width: 50,
-      render: (_: any, _record: any, index: number) => index + 1
+      align: 'center' as const,
+      render: (_: any, _record: any, index: number) =>
+        (pagination.current - 1) * pagination.pageSize + index + 1
     },
     {
       title: t('userDetail.address'),
       dataIndex: 'address',
-      key: 'address'
+      key: 'address',
+      render: (text: string) => <Text>{text}</Text>
     },
     {
       title: t('action'),
       key: 'action',
       width: 150,
+      align: 'center' as const,
       render: (_: any, record: any, index: number) => (
         <Space>
-          <Button
-            type='primary'
-            size='small'
-            icon={<EditOutlined />}
-            onClick={() => handleEditAddress(record.address, index)}
-          >
-            {t('button.edit')}
-          </Button>
-          <Popconfirm
-            title={t('userDetail.delAddress')}
-            description={record.address}
-            onConfirm={() => deleteAddressMutation.mutate(index)}
-            okText={t('button.yes')}
-            cancelText={t('button.no')}
-          >
+          <Tooltip title={t('userDetail.editAddress')}>
             <Button
-              type='primary'
+              size='small'
+              icon={<EditOutlined />}
+              onClick={() =>
+                handleEditAddress(
+                  record.address,
+                  (pagination.current - 1) * pagination.pageSize + index
+                )
+              }
+            />
+          </Tooltip>
+          <Tooltip title={t('userDetail.deleteAddress')}>
+            <Button
               danger
               size='small'
               icon={<DeleteOutlined />}
-            >
-              {t('button.delete')}
-            </Button>
-          </Popconfirm>
+              onClick={() =>
+                showDeleteConfirm(
+                  record.address,
+                  (pagination.current - 1) * pagination.pageSize + index
+                )
+              }
+            />
+          </Tooltip>
         </Space>
       )
     }
   ]
 
-  const dataSource = addresses.map((address) => ({
-    key: address,
+  const dataSource = addresses.map((address, idx) => ({
+    key: idx,
     address
   }))
 
@@ -122,7 +140,7 @@ const UserAddressesTable: React.FC<UserAddressesTableProps> = ({
   }
 
   return (
-    <div className='w-full'>
+    <div className='w-full bg-white rounded-lg shadow-md p-4'>
       <Spin spinning={deleteAddressMutation.isPending}>
         {error && (
           <Alert
@@ -139,33 +157,32 @@ const UserAddressesTable: React.FC<UserAddressesTableProps> = ({
           <UserAddAddressItem heading={true} count={addresses?.length || 0} />
         </div>
 
-        {addresses.length === 0 ? (
-          <div className='py-8 text-center'>
-            <Text type='secondary' className='text-lg'>
-              {t('userDetail.noAddress')}
-            </Text>
-          </div>
-        ) : (
-          <Table
-            dataSource={dataSource}
-            columns={columns}
-            pagination={false}
-            size='middle'
-            footer={() => (
-              <Text type='secondary'>
-                {t('showing')} <Text strong>{addresses?.length || 0}</Text>{' '}
-                {t('result')}
+        <Table
+          dataSource={dataSource}
+          columns={columns}
+          pagination={{
+            ...pagination,
+            total: addresses.length,
+            showTotal: (total) => `${t('showing')} ${total} ${t('result')}`,
+            onChange: (page, pageSize) =>
+              setPagination({ current: page, pageSize })
+          }}
+          locale={{
+            emptyText: (
+              <Text type='secondary' className='text-lg'>
+                {t('userDetail.noAddress')}
               </Text>
-            )}
-          />
-        )}
+            )
+          }}
+          scroll={{ x: 'max-content' }}
+        />
 
         <Modal
           open={isEditModalOpen}
           onCancel={() => setIsEditModalOpen(false)}
           footer={null}
           title={t('userDetail.editAddress')}
-          destroyOnClose
+          destroyOnHidden
         >
           <UserEditAddressForm
             oldAddress={selectedAddress.address}

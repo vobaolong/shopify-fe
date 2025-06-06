@@ -20,7 +20,7 @@ const SellerEditProductImagesForm = ({
         <div className='col-12'>
           <h5 className='fw-bold'>{t('productDetail.editProImg')}</h5>
         </div>
-        <div className='col-12 px-4 my-3 d-flex flex-wrap justify-content-start align-items-end'>
+        <div className='col-12 px-4 my-3 flex flex-wrap justify-content-start align-items-end'>
           <div className='d-grid me-3'>
             <Avatar
               avatar={product.listImages && product.listImages[0]}

@@ -11,7 +11,7 @@ const UserNav = ({ user }: { user: UserType }) => {
       className='sticky-top-nav navbar navbar-expand-md navbar-light bg-body shadow rounded-bottom'
       style={{ margin: '0 auto' }}
     >
-      <div className='container-fluid res-d-flex-end-lg'>
+      <div className='container-fluid res-flex-end-lg'>
         <Link className='navbar-brand res-hide-md' to={`/user/${user._id}`}>
           <UserInit />
         </Link>

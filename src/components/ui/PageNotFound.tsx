@@ -4,7 +4,7 @@ import error from '../../assets/404.jpg'
 
 const PageNotFound = () => {
   return (
-    <div className='container-md d-flex flex-column justify-content-center align-items-center'>
+    <div className='container-md flex flex-column justify-content-center items-center'>
       <img loading='lazy' className='position-relative' src={error} alt='' />
       <Link
         className='btn btn-outline-light cus-outline ripple cus-tooltip position-absolute back py-2 px-3 mt-5 rounded text-center box-shadow text-white text-decoration-none bg-primary'

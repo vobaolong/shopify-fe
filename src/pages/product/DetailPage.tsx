@@ -138,7 +138,7 @@ const DetailPage = () => {
       <div className='position-relative'>
         {isLoading && <Spin size='large' />}
         {error ? (
-          <div className='pt-4 d-flex flex-column align-items-center'>
+          <div className='pt-4 flex flex-column items-center'>
             <img width={400} src={notFound} alt='product not found' />
             <Alert message={error} type='error' />
           </div>
@@ -192,7 +192,7 @@ const DetailPage = () => {
                     )}
                   </div>
                   <div className='col-lg-7 col-md-6 ps-4'>
-                    <div className='d-flex justify-content-between'>
+                    <div className='flex justify-content-between'>
                       <StoreSmallCard
                         isLoading={isLoading}
                         store={product.storeId}
@@ -239,7 +239,7 @@ const DetailPage = () => {
                     <h5 className='product-name text-dark-emphasis fs-12 mt-2'>
                       {isLoading ? <Skeleton height={30} /> : product.name}
                     </h5>
-                    <div className='d-flex'>
+                    <div className='flex'>
                       <span className='me-2 text-primary text-decoration-none'>
                         {isLoading ? <Skeleton width={50} /> : product.rating}
                       </span>
@@ -264,7 +264,7 @@ const DetailPage = () => {
                           Thương hiệu: {product.brandId.name}
                         </span>
                       )}
-                    <div className='price-div d-flex flex-wrap justify-content-start align-items-center mt-3 bg-light px-3 py-2 rounded-1'>
+                    <div className='price-div flex flex-wrap justify-content-start items-center mt-3 bg-light px-3 py-2 rounded-1'>
                       {isLoading ? (
                         <Skeleton width={100} />
                       ) : (
@@ -340,7 +340,7 @@ const DetailPage = () => {
                             {t('productDetail.offers')} (3)
                           </b>
                           <div className=' d-grid gap-1'>
-                            <span className='d-flex align-items-center'>
+                            <span className='flex items-center'>
                               <img
                                 src={refundImg}
                                 className='me-2'
@@ -352,7 +352,7 @@ const DetailPage = () => {
                               </span>
                             </span>
                             <hr className='my-0 opacity-100' />
-                            <span className='d-flex align-items-center'>
+                            <span className='flex items-center'>
                               <img
                                 src={returnImg}
                                 className='me-2'
@@ -364,7 +364,7 @@ const DetailPage = () => {
                               </span>
                             </span>
                             <hr className='my-0 opacity-100' />
-                            <span className='d-flex align-items-center'>
+                            <span className='flex items-center'>
                               <img
                                 src={checkImg}
                                 className='me-2'
@@ -385,7 +385,7 @@ const DetailPage = () => {
                           style={{ width: 'max-content' }}
                           className='my-3 text-secondary border rounded p-3'
                         >
-                          <span className='d-flex align-items-center gap-2'>
+                          <span className='flex items-center gap-2'>
                             <i className='fa-solid fa-truck me-2' />
                             <span className='d-grid gap-1 fs-9'>
                               <span className='text-dark-emphasis fw-bold'>
@@ -401,7 +401,7 @@ const DetailPage = () => {
                         </div>
                       )}
                       <hr />
-                      <div className='d-flex align-items-center gap-2'>
+                      <div className='flex items-center gap-2'>
                         {getToken() && getToken().role === 'user' && (
                           <>
                             <div className='me-2 px-3 border-end'>

@@ -687,7 +687,8 @@
     "avatar": "Ảnh nền",
     "cover": "Ảnh bìa",
     "contactPerson": "Người liên hệ",
-    "point": "Điểm"
+    "point": "Điểm",
+    "createStoreTitle": "Tạo cửa hàng"
   },
   "storeDetailValid": {
     "addressValid": "Vui lòng cung cấp địa chỉ phù hợp!",
@@ -786,6 +787,7 @@
   "point": "Điểm",
   "success/failure": "Tỷ lệ hoàn thành",
   "orderDetail": {
+    "status": "Trạng thái đơn hàng",
     "sentReturn": "Yêu cầu đã được gửi",
     "returnRequestDate": "Ngày yêu cầu",
     "reason": "Lý do trả hàng",
@@ -849,9 +851,17 @@
     "ward": "Phường/Xã",
     "selectProvince": "Chọn Tỉnh/Thành phố",
     "selectDistrict": "Chọn Quận/Huyện",
-    "selectWard": "Chọn Phường/Xã"
+    "selectWard": "Chọn Phường/Xã",
+    "errorLoadingProvinces": "Lỗi khi tải danh sách tỉnh/thành phố",
+    "errorLoadingDistricts": "Lỗi khi tải danh sách quận/huyện",
+    "errorLoadingWards": "Lỗi khi tải danh sách phường/xã"
   },
   "addressFormValid": {
+    "provinceRequired": "Vui lòng chọn tỉnh/thành phố!",
+    "districtRequired": "Vui lòng chọn quận/huyện!",
+    "wardRequired": "Vui lòng chọn phường/xã!",
+    "streetRequired": "Vui lòng nhập địa chỉ đường!",
+    "streetTooLong": "Địa chỉ đường không được vượt quá 100 ký tự!",
     "streetValid": "Vui lòng cung cấp số nhà/tên đường phù hợp (',' không được chấp nhận)!",
     "wardValid": "Vui lòng cung cấp phường/xã phù hợp (',' không được chấp nhận)!",
     "districtValid": "Vui lòng cung cấp quận/huyện phù hợp (','không được chấp nhận)!",

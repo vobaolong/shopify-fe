@@ -87,7 +87,7 @@ const ChangePasswordPage = () => {
   }
 
   return (
-    <div className='d-flex justify-content-center align-items-center mt-4'>
+    <div className='flex justify-content-center items-center mt-4'>
       <div
         className='position-relative'
         style={{ width: '460px', maxWidth: '100%' }}
@@ -96,7 +96,7 @@ const ChangePasswordPage = () => {
         {redirect && <Navigate to={redirect} />}
 
         {success ? (
-          <div className='p-2 rounded bg-body text-center d-flex flex-column align-items-center gap-2 p-5 box-shadow mt-3'>
+          <div className='p-2 rounded bg-body text-center flex flex-column items-center gap-2 p-5 box-shadow mt-3'>
             <img src={checkImg} className='w-20 mt-4' alt='checkimg' />
             <span className='fs-4 mt-2'>Mật khẩu đã được cập nhật</span>
             <p className='mt-3 fs-9'>

@@ -12,7 +12,7 @@ const SellerSideBar = ({ user, store }: SellerSideBarProps) => {
   const path = useLocation().pathname.split('/')[2]
 
   return (
-    <div className='sticky-sidebar d-flex flex-column flex-shrink-0 p-2 box-shadow bg-body rounded-1 res-account-sidebar'>
+    <div className='sticky-sidebar flex flex-column flex-shrink-0 p-2 box-shadow bg-body rounded-1 res-account-sidebar'>
       <ul className='nav nav-pills flex-column mb-auto justify-content-around gap-1'>
         <li className='nav-item'>
           <Link

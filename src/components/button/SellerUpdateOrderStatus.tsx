@@ -105,7 +105,7 @@ const SellerUpdateOrderStatus = ({
   return (
     <div className='position-relative'>
       {isPending && (
-        <div className='d-flex justify-content-center p-2'>
+        <div className='flex justify-content-center p-2'>
           <Spin size='small' />
         </div>
       )}

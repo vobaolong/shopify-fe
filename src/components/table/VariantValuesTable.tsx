@@ -156,7 +156,7 @@ const VariantValuesTable = ({
       )}
       {isLoading && <Spin size='large' />}
       <div className='p-3 box-shadow bg-body rounded-2'>
-        <div className=' d-flex align-items-center justify-content-between mb-3'>
+        <div className=' flex items-center justify-content-between mb-3'>
           {heading && (
             <h5 className='text-start'>
               {t('variantDetail.value.valueOf')}{' '}
@@ -247,7 +247,7 @@ const VariantValuesTable = ({
             </tbody>
           </table>
         </div>
-        <div className='d-flex justify-content-between align-items-center px-4'>
+        <div className='flex justify-content-between items-center px-4'>
           <small>
             {t('showing')} {variantValues.length || 0} {t('result')}
           </small>

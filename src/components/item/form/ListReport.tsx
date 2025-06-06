@@ -88,7 +88,7 @@ const ListReport: React.FC<ListReportProps> = ({
   return (
     <div className='position-relative'>
       <form onSubmit={handleSubmit}>
-        <div className='mb-3 d-flex flex-column'>
+        <div className='mb-3 flex flex-column'>
           <label className='form-label'>Chọn lý do báo cáo</label>
           {reasons.map((reason: Reason) => (
             <div className='form-check' key={reason.value}>
@@ -133,7 +133,7 @@ const ListReport: React.FC<ListReportProps> = ({
             />
           )}
         </div>
-        <div className='d-flex justify-content-end'>
+        <div className='flex justify-content-end'>
           <button
             type='submit'
             className='mt-3 btn btn-primary ripple text-nowrap rounded-1 w-50'

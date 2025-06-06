@@ -18,7 +18,7 @@ const ProductSmallCard = ({
   rating = false
 }: ProductSmallCardProps) => (
   <span
-    className={`d-inline-flex align-items-center ${
+    className={`d-inline-flex items-center ${
       borderName && 'bg-value rounded-1 px-1'
     }`}
   >

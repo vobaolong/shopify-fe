@@ -52,7 +52,7 @@ const ListReviews = ({ productId = '', storeId = '', userId = '' }) => {
       render.push(
         <div
           key={i}
-          className='form-check me-3 d-flex justify-content-start align-items-center'
+          className='form-check me-3 flex justify-content-start items-center'
         >
           <input
             className='form-check-input pointer'
@@ -104,8 +104,8 @@ const ListReviews = ({ productId = '', storeId = '', userId = '' }) => {
       )}
       <div className='bg-body rounded border p-3'>
         <span>Lọc theo</span>
-        <div className='d-flex justify-content-between align-items-end p-2 rounded-1 border-bottom'>
-          <div className='d-flex flex-wrap justify-content-start align-items-center'>
+        <div className='flex justify-content-between align-items-end p-2 rounded-1 border-bottom'>
+          <div className='flex flex-wrap justify-content-start items-center'>
             {renderFilterRating()}
           </div>
         </div>
@@ -123,7 +123,7 @@ const ListReviews = ({ productId = '', storeId = '', userId = '' }) => {
               ))}
             </div>
 
-            <div className='d-flex justify-content-between align-items-center px-4'>
+            <div className='flex justify-content-between items-center px-4'>
               <small className='text-nowrap res-hide'>
                 {t('showing')}{' '}
                 <b>

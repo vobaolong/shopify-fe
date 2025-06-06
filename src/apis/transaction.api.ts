@@ -1,7 +1,7 @@
 import axiosClient from './client.api'
 
 export const listTransactionsByUser = async (userId: string, params: any) => {
-  return await axiosClient.get(`/transactions/by/user/${userId}`, {
+  return await axiosClient.get(`/user/transactions/${userId}`, {
     params
   })
 }
@@ -11,7 +11,7 @@ export const listTransactionsByStore = async (
   params: any,
   storeId: string
 ) => {
-  return await axiosClient.get(`/transactions/by/store/${storeId}/${userId}`, {
+  return await axiosClient.get(`/store/transactions/${storeId}/${userId}`, {
     params
   })
 }
@@ -26,9 +26,7 @@ export const getTransactionByUser = async (
   userId: string,
   transactionId: string
 ) => {
-  return await axiosClient.get(
-    `/transaction/by/user/${transactionId}/${userId}`
-  )
+  return await axiosClient.get(`/user/transaction/${transactionId}/${userId}`)
 }
 
 export const getTransactionByStore = async (
@@ -37,7 +35,7 @@ export const getTransactionByStore = async (
   storeId: string
 ) => {
   return await axiosClient.get(
-    `/transaction/by/store/${transactionId}/${storeId}/${userId}`
+    `/store/transaction/${transactionId}/${storeId}/${userId}`
   )
 }
 
@@ -45,18 +43,13 @@ export const getTransactionForAdmin = async (
   userId: string,
   transactionId: string
 ) => {
-  return await axiosClient.get(
-    `/transaction/by/admin/${transactionId}/${userId}`
-  )
+  return await axiosClient.get(`/admin/transaction/${transactionId}/${userId}`)
 }
 export const createTransactionByUser = async (
   userId: string,
   transaction: any
 ) => {
-  return await axiosClient.post(
-    `/transaction/create/by/user/${userId}`,
-    transaction
-  )
+  return await axiosClient.post(`/user/transaction/${userId}`, transaction)
 }
 
 export const createTransactionByStore = async (
@@ -65,7 +58,7 @@ export const createTransactionByStore = async (
   storeId: string
 ) => {
   return await axiosClient.post(
-    `/transaction/create/by/store/${storeId}/${userId}`,
+    `/store/transaction/${storeId}/${userId}`,
     transaction
   )
 }

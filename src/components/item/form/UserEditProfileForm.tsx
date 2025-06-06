@@ -15,6 +15,7 @@ interface UserEditProfileFormProps {
   phone?: string
   id_card?: string
   googleId?: boolean
+  onSuccess?: () => void
 }
 
 const UserEditProfileForm = ({
@@ -23,27 +24,29 @@ const UserEditProfileForm = ({
   email = '',
   phone = '',
   id_card = '',
-  googleId = false
+  googleId = false,
+  onSuccess
 }: UserEditProfileFormProps) => {
   const { t } = useTranslation()
   const { notification } = useAntdApp()
   const [form] = Form.useForm()
   const { _id } = getToken()
   const invalidate = useInvalidate()
-
   const updateProfileMutation = useMutation({
     mutationFn: (user: UserType) => updateProfile(_id, user),
     onSuccess: () => {
-      // Invalidate all query keys để đảm bảo cache được cập nhật
       invalidate({ queryKey: ['userProfilePage', _id] })
       invalidate({ queryKey: ['userAccountInit', _id] })
       invalidate({ queryKey: ['adminProfilePage', _id] })
       notification.success({
         message: t('toastSuccess.userDetail.updateProfile')
       })
+      onSuccess?.()
     },
-    onError: () => {
-      notification.error({ message: 'Server error' })
+    onError: (error: any) => {
+      notification.error({
+        message: error.message || t('toastError.userDetail.updateProfile')
+      })
     }
   })
 
@@ -60,7 +63,7 @@ const UserEditProfileForm = ({
   const handleFinish = (values: any) => {
     Modal.confirm({
       title: t('userDetail.editProfile'),
-      content: t('userDetail.confirmEditProfile'),
+      content: t('confirmDialog'),
       okText: t('button.save'),
       cancelText: t('button.cancel'),
       onOk: () => {
@@ -84,7 +87,7 @@ const UserEditProfileForm = ({
   }
 
   return (
-    <div className='position-relative'>
+    <div className='relative'>
       {updateProfileMutation.isPending && <Spin />}
       <Form
         form={form}

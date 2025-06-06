@@ -252,7 +252,7 @@ const AdminCategoriesTable = () => {
       title: t('action'),
       key: 'action',
       render: (_: any, category: CategoryType) => (
-        <div className='text-nowrap d-flex align-items-center gap-2'>
+        <div className='text-nowrap flex items-center gap-2'>
           <Tooltip placement='top' title={t('button.edit')}>
             <Button
               type='primary'
@@ -351,8 +351,8 @@ const AdminCategoriesTable = () => {
             onSearch={handleSearch}
             loading={isLoading}
           />
-          <div className='d-flex gap-1'>
-            <div className='align-items-center d-flex justify-content-end'>
+          <div className='flex gap-1'>
+            <div className='items-center flex justify-content-end'>
               <div className='position-relative d-inline-block'>
                 <button
                   type='button'

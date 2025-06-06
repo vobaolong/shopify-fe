@@ -108,11 +108,8 @@ const MultiVariantValueSelector = ({
         <div className=''>
           {selectedValues?.length > 0 ? (
             selectedValues?.map((value, index) => (
-              <span
-                key={index}
-                className='mb-1 d-inline-flex align-items-center'
-              >
-                <span className='align-items-center bg-body border border-dark-subtle me-3 p-1 rounded-1'>
+              <span key={index} className='mb-1 d-inline-flex items-center'>
+                <span className='items-center bg-body border border-dark-subtle me-3 p-1 rounded-1'>
                   {value.name}
                   <button
                     type='button'

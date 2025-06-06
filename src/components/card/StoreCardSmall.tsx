@@ -99,7 +99,7 @@ const StoreCardSmall = ({
           <Skeleton height={40} />
         ) : (
           <small className='card-subtitle'>
-            <div className='d-flex justify-content-between align-items-center'>
+            <div className='flex justify-content-between items-center'>
               {getToken() && (
                 <FollowStoreButton
                   storeId={store._id}

@@ -36,17 +36,6 @@ const UserInit = ({ user, actions }: UserInitProps) => {
         } catch {
           newUser.level = {}
         }
-
-        try {
-          const res1 = await countOrder('Delivered', safeUserId, '')
-          const res2 = await countOrder('Cancelled', safeUserId, '')
-          newUser.numberOfSuccessfulOrders = res1.data.count
-          newUser.numberOfFailedOrders = res2.data.count
-        } catch {
-          newUser.numberOfSuccessfulOrders = 0
-          newUser.numberOfFailedOrders = 0
-        }
-
         actions(newUser)
         setIsLoading(false)
       }

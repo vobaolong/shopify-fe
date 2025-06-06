@@ -1,48 +1,65 @@
 import { useNavigate, Link } from 'react-router-dom'
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getToken, signout } from '../../apis/auth.api'
-import { getUserProfile } from '../../apis/user.api'
+import { getUser } from '../../apis/user.api'
 import { getUserLevel } from '../../apis/level.api'
 import { getCartCount } from '../../apis/cart.api'
-import { countOrder } from '../../apis/order.api'
 import { useTranslation } from 'react-i18next'
-import { Avatar, Dropdown, Menu, Modal, Spin } from 'antd'
+import { Alert, Avatar, Dropdown, Modal, Spin } from 'antd'
 import {
   UserOutlined,
   ShopOutlined,
   ShoppingOutlined,
   LogoutOutlined
 } from '@ant-design/icons'
-import defaultImage from '../../assets/default.webp'
-import { OrderStatus } from '../../enums/OrderStatus.enum'
+import { addAccount } from '../../store/slices/accountSlice'
+import { useEffect, useMemo } from 'react'
+import { useDispatch } from 'react-redux'
 
 const AccountInit = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
+  const queryClient = useQueryClient()
+  const dispatch = useDispatch()
   const token = getToken()
-  const _id = token._id
-  const refreshToken = token.refreshToken
-  const role = token.role
-  const { data, isLoading, error } = useQuery({
+  const _id = token ? token._id : null
+  const refreshToken = token ? token.refreshToken : null
+  const role = token ? token.role : null
+
+  const {
+    data: userData,
+    isLoading,
+    error
+  } = useQuery({
     queryKey: ['userAccountInit', _id],
     queryFn: async () => {
-      const res = await getUserProfile(_id)
-      const newUser = res.data || {}
+      if (!_id) return null
+
       try {
-        const levelRes = await getUserLevel(_id)
-        newUser.level = levelRes.data.level
-      } catch {
-        newUser.level = {}
+        const res = (await getUser(_id)) as any
+        const newUser = res.user
+        if (!newUser) {
+          throw new Error('User data not found')
+        }
+        try {
+          const levelRes = (await getUserLevel(_id)) as any
+          newUser.level = levelRes.level || {}
+        } catch {
+          newUser.level = {}
+        }
+        try {
+          const cartRes = (await getCartCount(_id)) as any
+          newUser.cartCount = cartRes.count || 0
+        } catch {
+          newUser.cartCount = 0
+        }
+        return newUser
+      } catch (error) {
+        throw error
       }
-      try {
-        const cartRes = await getCartCount(_id)
-        newUser.cartCount = cartRes.data.count
-      } catch {
-        newUser.cartCount = 0
-      }
-      return newUser
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: !!_id,
+    staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false
   })
@@ -53,6 +70,7 @@ const AccountInit = () => {
         navigate(0)
       }),
     onSuccess: () => {
+      queryClient.clear()
       navigate(0)
     }
   })
@@ -67,45 +85,71 @@ const AccountInit = () => {
     })
   }
 
-  const menuItems = [
-    {
-      key: 'profile',
-      icon: <UserOutlined />,
-      label: <Link to='/account/profile'>{t('userDetail.myAccount')}</Link>
-    },
-    ...(role === 'user'
-      ? [
-          {
-            key: 'store',
-            icon: <ShopOutlined />,
-            label: <Link to='/account/store'>{t('myStore')}</Link>
-          },
-          {
-            key: 'purchase',
-            icon: <ShoppingOutlined />,
-            label: (
-              <Link to='/account/purchase'>{t('userDetail.myPurchase')}</Link>
-            )
-          }
-        ]
-      : []),
-    {
-      key: 'logout',
-      icon: <LogoutOutlined />,
-      label: (
-        <span onClick={handleSignout} style={{ color: 'red' }}>
-          {t('button.logout')}
-        </span>
-      )
+  const menuItems = useMemo(
+    () => [
+      {
+        key: 'profile',
+        icon: <UserOutlined />,
+        label: (
+          <Link className='!no-underline p-2' to='/account/profile'>
+            {t('userDetail.myAccount')}
+          </Link>
+        )
+      },
+      ...(role === 'user'
+        ? [
+            {
+              key: 'store',
+              icon: <ShopOutlined />,
+              label: (
+                <Link className='!no-underline p-2' to='/account/store'>
+                  {t('myStore')}
+                </Link>
+              )
+            },
+            {
+              key: 'order',
+              icon: <ShoppingOutlined />,
+              label: (
+                <Link className='!no-underline p-2' to='/account/order'>
+                  {t('userDetail.myPurchase')}
+                </Link>
+              )
+            }
+          ]
+        : []),
+      {
+        key: 'logout',
+        icon: <LogoutOutlined />,
+        label: (
+          <span
+            onClick={handleSignout}
+            className='!no-underline p-2 text-red-600'
+          >
+            {t('button.logout')}
+          </span>
+        )
+      }
+    ],
+    [role, t]
+  )
+
+  useEffect(() => {
+    if (userData && Object.keys(userData).length > 0) {
+      const userDataWithId = { ...userData, _id }
+      queryClient.setQueryData(['accountUser'], userDataWithId)
+      dispatch(addAccount(userDataWithId))
     }
-  ]
+  }, [userData, _id, queryClient, dispatch])
 
   if (isLoading) {
     return <Spin size='small' />
   }
 
   if (error) {
-    return <div>Error: {error.message}</div>
+    return (
+      <Alert message={error.message} type='error' showIcon className='mb-4' />
+    )
   }
 
   return (
@@ -114,12 +158,7 @@ const AccountInit = () => {
       trigger={['click']}
       placement='bottomRight'
     >
-      <div style={{ cursor: 'pointer' }}>
-        <Avatar src={data?.avatar || defaultImage} size={32} />
-        <span className='ml-0 d-none d-sm-inline' style={{ marginLeft: 8 }}>
-          {t('userDetail.account')}
-        </span>
-      </div>
+      <Avatar className='cursor-pointer' src={userData?.avatar} size={32} />
     </Dropdown>
   )
 }

@@ -9,6 +9,7 @@ interface SearchInputProps {
   searchField?: string
   onFieldChange?: (field: string) => void
   fieldOptions?: { label: string; value: string }[]
+  placeholder?: string
 }
 
 const SearchInput = ({
@@ -18,7 +19,8 @@ const SearchInput = ({
   loading = false,
   searchField,
   onFieldChange,
-  fieldOptions
+  fieldOptions,
+  placeholder
 }: SearchInputProps) => {
   const { t } = useTranslation()
   return (
@@ -36,7 +38,7 @@ const SearchInput = ({
       )}
       <Input.Search
         type='search'
-        placeholder={t('search')}
+        placeholder={placeholder || t('search')}
         value={value}
         onChange={(e) => onChange && onChange(e.target.value)}
         onSearch={onSearch}

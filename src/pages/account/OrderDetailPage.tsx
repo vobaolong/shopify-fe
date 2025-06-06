@@ -10,7 +10,7 @@ const OrderDetailPage = () => {
   const { orderId } = useParams()
   const paths = [
     { name: t('breadcrumbs.home'), url: '/' },
-    { name: t('breadcrumbs.myPurchase'), url: '/account/purchase' }
+    { name: t('breadcrumbs.myPurchase'), url: '/account/order' }
   ]
   return (
     <AccountLayout user={user} paths={paths}>
@@ -18,7 +18,7 @@ const OrderDetailPage = () => {
         <OrderDetailInfo orderId={orderId as string} />
         <div>
           <Link
-            to='/account/purchase'
+            to='/account/order'
             className='text-decoration-none cus-link-hover'
           >
             <i className='fa-solid fa-angle-left me-2' />

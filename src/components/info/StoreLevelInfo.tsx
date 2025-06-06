@@ -133,7 +133,7 @@ const StoreLevelInfo = ({ store = {} }: StoreLevelInfoProps) => {
           {getToken() &&
             getToken().role === 'user' &&
             user._id !== store?.ownerId?._id && (
-              <div className='col-1 d-flex justify-content-end'>
+              <div className='col-1 flex justify-content-end'>
                 <div className='menu-container'>
                   <button
                     className='btn menu-button'

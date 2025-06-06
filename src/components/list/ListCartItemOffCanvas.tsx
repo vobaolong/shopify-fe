@@ -6,7 +6,7 @@ const ListCartItemOffCanvas = () => {
   return (
     <div style={{ width: '100%' }}>
       <div
-        className='d-flex align-items-center justify-content-between'
+        className='flex items-center justify-content-between'
         style={{ width: '100%' }}
       >
         <button

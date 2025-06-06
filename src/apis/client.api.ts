@@ -47,7 +47,13 @@ axiosClient.interceptors.response.use(
     return response.data
   },
   (error) => {
-    console.error('API error:', error)
+    if (error.response?.data) {
+      const errorMessage =
+        error.response.data.error || error.response.data.message
+      if (errorMessage) {
+        error.message = errorMessage
+      }
+    }
     return Promise.reject(error)
   }
 )
@@ -57,7 +63,14 @@ axiosClientImg.interceptors.response.use(
     return response.data
   },
   (error) => {
-    console.error('API error:', error)
+    if (error.response?.data) {
+      const errorMessage =
+        error.response.data.error || error.response.data.message
+      if (errorMessage) {
+        error.message = errorMessage
+      }
+    }
+
     return Promise.reject(error)
   }
 )

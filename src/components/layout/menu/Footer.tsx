@@ -71,7 +71,7 @@ const Footer = () => {
             <h6 className='text-dark-emphasis fw-bold'>
               {t('footer.payment')}
             </h6>
-            <div className='d-flex gap-1'>
+            <div className='flex gap-1'>
               <span style={{ width: '40px', height: '40px' }}>
                 <img
                   className='w-100 p-1 rounded-1 bg-body'

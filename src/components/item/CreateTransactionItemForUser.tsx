@@ -33,32 +33,38 @@ const CreateTransactionItemForUser = ({
     }
   }
 
-  const button = (
-    <Button
-      type='default'
-      disabled={eWallet <= 0}
-      onClick={showModal}
-      icon={<DollarOutlined />}
-      style={{ whiteSpace: 'nowrap' }}
-    >
-      {t('transactionDetail.draw')}
-    </Button>
-  )
-
   return (
-    <div style={{ position: 'relative', display: 'inline-block' }}>
+    <div>
       {eWallet <= 0 ? (
-        <Tooltip title={t('transactionDetail.empty')}>{button}</Tooltip>
+        <Tooltip title={t('transactionDetail.empty')}>
+          <Button
+            type='default'
+            variant='outlined'
+            disabled={eWallet <= 0}
+            onClick={showModal}
+            icon={<DollarOutlined />}
+          >
+            {t('transactionDetail.withdraw')}
+          </Button>
+        </Tooltip>
       ) : (
-        button
+        <Button
+          type='default'
+          variant='outlined'
+          disabled={eWallet <= 0}
+          onClick={showModal}
+          icon={<DollarOutlined />}
+        >
+          {t('transactionDetail.withdraw')}
+        </Button>
       )}
 
       <Modal
-        title={t('transactionDetail.draw')}
+        title={t('transactionDetail.withdraw')}
         open={isModalOpen}
         onCancel={handleCancel}
         footer={null}
-        destroyOnClose={true}
+        destroyOnHidden={true}
       >
         <CreateTransactionFormForUser eWallet={eWallet} onRun={handleSuccess} />
       </Modal>

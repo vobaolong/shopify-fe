@@ -66,7 +66,7 @@ const FollowingStoresCollection = ({ heading = false }) => {
   return (
     <div className='position-relative'>
       {isLoading && (
-        <div className='d-flex justify-content-center p-4'>
+        <div className='flex justify-content-center p-4'>
           <Spin size='large' />
         </div>
       )}
@@ -90,7 +90,7 @@ const FollowingStoresCollection = ({ heading = false }) => {
                 ))}
               </div>
             </div>
-            <div className='d-flex justify-content-between align-items-center px-4'>
+            <div className='flex justify-content-between items-center px-4'>
               <ShowResult
                 limit={filter.limit}
                 size={pagination.size}

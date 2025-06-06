@@ -1,148 +1,140 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import Avatar from '../../image/Avatar'
+import { Layout, Menu, Typography, Button, Avatar } from 'antd'
+import {
+  UserOutlined,
+  ShoppingOutlined,
+  EnvironmentOutlined,
+  WalletOutlined,
+  ShopOutlined,
+  HeartOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined
+} from '@ant-design/icons'
 import { UserType } from '../../../@types/entity.types'
+import { UserIcon } from 'lucide-react'
+
+const { Sider } = Layout
+const { Text } = Typography
 
 interface AccountSideBarProps {
-  user: UserType
+  user?: UserType
   isCollapsed?: boolean
   onToggle?: () => void
 }
 
 const AccountSideBar = ({
   user,
-  isCollapsed,
+  isCollapsed = false,
   onToggle
 }: AccountSideBarProps) => {
   const { t } = useTranslation()
-  const path = useLocation().pathname.split('/')[2]
+  const location = useLocation()
+  const path = location.pathname.split('/')[2]
+
+  const menuItems = [
+    {
+      key: 'profile',
+      icon: <UserOutlined />,
+      label: (
+        <Link to='/account/profile' className='!no-underline'>
+          {t('userDetail.myAccount')}
+        </Link>
+      )
+    },
+    {
+      key: 'order',
+      icon: <ShoppingOutlined />,
+      label: (
+        <Link to='/account/order' className='!no-underline'>
+          {t('userDetail.myPurchase')}
+        </Link>
+      )
+    },
+    {
+      key: 'addresses',
+      icon: <EnvironmentOutlined />,
+      label: (
+        <Link to='/account/addresses' className='!no-underline'>
+          {t('userDetail.address')}
+        </Link>
+      )
+    },
+    {
+      key: 'wallet',
+      icon: <WalletOutlined />,
+      label: (
+        <Link to='/account/wallet' className='!no-underline'>
+          {t('wallet')}
+        </Link>
+      )
+    },
+    {
+      key: 'store',
+      icon: <ShopOutlined />,
+      label: (
+        <Link to='/account/store' className='!no-underline'>
+          {t('manageStore')}
+        </Link>
+      )
+    },
+    {
+      key: 'following',
+      icon: <HeartOutlined />,
+      label: (
+        <Link to='/account/following' className='!no-underline'>
+          {t('favorite')}
+        </Link>
+      )
+    }
+  ]
+
+  if (!user) return null
+
   return (
-    <>
-      {user.role === 'user' && (
-        <div className='sticky-sidebar d-flex flex-column flex-shrink-0 p-2 box-shadow bg-body rounded-1 res-account-sidebar mt-md-4 mt-sm-0'>
-          <ul className='nav nav-pills flex-column mb-auto justify-content-around gap-1'>
-            <div className='res-hide-lg text-wrap d-flex gap-2 align-items-center'>
-              <Avatar name=' ' avatar={user.avatar} size='small' />
-              <div>
-                <small className='fw-light'>Tài khoản của</small>
-                <p>{user.userName + ' ' + user.name}</p>
-              </div>
+    <Sider
+      collapsible
+      collapsed={isCollapsed}
+      onCollapse={onToggle}
+      width={240}
+      collapsedWidth={60}
+      trigger={null}
+      className='bg-white rounded-lg shadow-md overflow-hidden h-screen sticky top-0'
+    >
+      {!isCollapsed && (
+        <div className='p-3 border-b border-gray-100'>
+          <div className='flex items-center justify-between'>
+            <div className='flex items-center gap-2'>
+              <Avatar src={user.avatar} />
+              <Text className='text-sm font-medium'>{user.userName}</Text>
             </div>
-
-            <hr className='res-hide-lg my-2' />
-            <li className='nav-item'>
-              <Link
-                to='/account/profile'
-                className={`nav-link cus-sidebar-item ripple link-dark ${
-                  path === 'profile' ? 'active' : ''
-                }`}
-              >
-                <i
-                  className={`${
-                    path === 'profile' ? 'fa-solid' : 'fa-light'
-                  } text-start fa-user`}
-                />
-                <span className='ms-2 res-hide-xl'>
-                  {t('userDetail.myAccount')}
-                </span>
-                <span className='ms-2 d-none res-dis-inline-xl res-hide-lg'>
-                  {t('userDetail.myAccount')}
-                </span>
-              </Link>
-            </li>
-
-            <li className='nav-item'>
-              <Link
-                to='/account/purchase'
-                className={`nav-link cus-sidebar-item ripple link-dark ${
-                  path === 'purchase' ? 'active' : ''
-                }`}
-              >
-                <i
-                  className={`${
-                    path === 'purchase' ? 'fa-solid' : 'fa-light'
-                  } w-10 text-start fa-receipt`}
-                />
-                <span className='ms-2 res-hide-xl'>
-                  {t('userDetail.myPurchase')}
-                </span>
-                <span className='ms-2 d-none res-dis-inline-xl res-hide-lg'>
-                  {t('userDetail.myPurchase')}
-                </span>
-              </Link>
-            </li>
-            <li className='nav-item'>
-              <Link
-                to='/account/addresses'
-                className={`nav-link cus-sidebar-item ripple link-dark ${
-                  path === 'addresses' ? 'active' : ''
-                }`}
-              >
-                <i
-                  className={`${
-                    path === 'addresses' ? 'fa-solid' : 'fa-light'
-                  } w-10 text-start fa-location-dot`}
-                />
-                <span className='ms-2 res-hide-xl'>
-                  {t('userDetail.address')}
-                </span>
-                <span className='ms-2 d-none res-dis-inline-xl res-hide-lg'>
-                  {t('userDetail.address')}
-                </span>
-              </Link>
-            </li>
-            <li className='nav-item'>
-              <Link
-                to='/account/wallet'
-                className={`nav-link cus-sidebar-item ripple link-dark ${
-                  path === 'wallet' ? 'active' : ''
-                }`}
-              >
-                <i
-                  className={`${
-                    path === 'wallet' ? 'fa-solid' : 'fa-light'
-                  } w-10 text-start fa-wallet`}
-                />
-                <span className='ms-2 res-hide-lg'>{t('wallet')}</span>
-              </Link>
-            </li>
-            <li className='nav-item'>
-              <Link
-                to='/account/store'
-                className={`nav-link cus-sidebar-item ripple link-dark ${
-                  path === 'store' ? 'active' : ''
-                }`}
-              >
-                <i
-                  className={`${
-                    path === 'store' ? 'fa-solid' : 'fa-light'
-                  } w-10 text-start fa-store`}
-                />
-                <span className='ms-2 res-hide-xl'>{t('manageStore')}</span>
-                <span className='ms-2 d-none res-dis-inline-xl res-hide-lg'>
-                  {t('manageStore')}
-                </span>
-              </Link>
-            </li>
-            <li className='nav-item'>
-              <Link
-                to='/account/following'
-                className={`nav-link cus-sidebar-item ripple link-dark ${
-                  path === 'following' ? 'active' : ''
-                }`}
-              >
-                <i
-                  className={`${
-                    path === 'following' ? 'fa-solid' : 'fa-light'
-                  } w-10 text-start fa-heart`}
-                />
-                <span className='ms-2 res-hide-lg'>{t('favorite')}</span>
-              </Link>
-            </li>
-          </ul>
+            <Button
+              type='text'
+              icon={<MenuFoldOutlined />}
+              onClick={onToggle}
+              size='small'
+              className='hover:bg-blue-50 hover:text-blue-600 border-none shadow-none'
+            />
+          </div>
         </div>
       )}
-    </>
+      {isCollapsed && (
+        <div className='p-3 border-b border-gray-100'>
+          <div className='flex items-center justify-between'>
+            <div className='flex items-center gap-2'>
+              <Button
+                type='text'
+                icon={<MenuUnfoldOutlined />}
+                onClick={onToggle}
+                size='small'
+                className='hover:bg-blue-50 hover:text-blue-600 border-none shadow-none'
+              />
+            </div>
+          </div>
+        </div>
+      )}
+      <Menu mode='inline' selectedKeys={[path]} items={menuItems} />
+    </Sider>
   )
 }
 

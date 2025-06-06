@@ -120,7 +120,7 @@ const SellerEditProductProfileForm = ({
   return (
     <div className='position-relative'>
       {updateProductMutation.isPending && (
-        <div className='d-flex justify-content-center p-4'>
+        <div className='flex justify-content-center p-4'>
           <Spin size='large' />
         </div>
       )}
@@ -254,7 +254,7 @@ const SellerEditProductProfileForm = ({
           className={`bg-body ${false ? 'shadow' : 'box-shadow'} rounded-1 row px-4 my-3 p-3`}
           style={{ position: 'sticky', bottom: '0' }}
         >
-          <div className='d-flex justify-content-between align-items-center'>
+          <div className='flex justify-content-between items-center'>
             <Button
               type='default'
               className='text-decoration-none cus-link-hover'

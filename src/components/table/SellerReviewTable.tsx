@@ -234,7 +234,7 @@ const SellerReviewTable = ({
             </table>
           </div>
         )}
-        <div className='d-flex justify-content-between align-items-center px-4'>
+        <div className='flex justify-content-between items-center px-4'>
           <ShowResult
             limit={filter.limit}
             size={pagination.size}

@@ -78,7 +78,7 @@ const UserSearchPage = () => {
         {' '}
         {isLoading && <Spin size='large' />}
         {error && <Alert message={error} type='error' />}
-        <div className='d-flex justify-content-end'>
+        <div className='flex justify-content-end'>
           <small className='text-nowrap res-hide'>
             {t('showing')}{' '}
             <b>

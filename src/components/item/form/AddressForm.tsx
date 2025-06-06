@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -13,6 +12,7 @@ import {
   Province,
   Ward
 } from '../../../@types/address.type'
+import { useQuery } from '@tanstack/react-query'
 
 interface AddressFormProps {
   addressDetail?: AddressDetail
@@ -24,72 +24,52 @@ const AddressForm: React.FC<AddressFormProps> = ({
   onChange
 }) => {
   const { t } = useTranslation()
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-
   const [address, setAddress] = useState({
     province: addressDetail?.provinceID ?? '',
     provinceName: addressDetail?.provinceName ?? '',
     district: addressDetail?.districtID ?? '',
     districtName: addressDetail?.districtName ?? '',
-    ward: addressDetail?.wardID ?? '',
+    ward: addressDetail?.wardCode ?? '',
     wardName: addressDetail?.wardName ?? '',
     street: addressDetail?.address?.split(', ')[0] ?? ''
   })
-  const [provinces, setProvinces] = useState<Province[]>([])
-  const [districts, setDistricts] = useState<District[]>([])
-  const [wards, setWards] = useState<Ward[]>([])
 
-  const fetchProvinces = async () => {
-    try {
-      setIsLoading(true)
-      const provinces = await getProvincesGHN()
-      setProvinces(provinces)
-    } catch (error) {
-      console.error('Error fetching provinces:', error)
-      setError('Không thể tải danh sách tỉnh/thành')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  // TanStack Query
+  const {
+    data: provinces = [],
+    isLoading: isProvincesLoading,
+    error: provincesError
+  } = useQuery({
+    queryKey: ['provinces'],
+    queryFn: getProvincesGHN
+  })
 
-  const fetchDistricts = async (provinceId: string) => {
-    if (!provinceId) return
-    try {
-      setIsLoading(true)
-      const districts = await getDistrictsGHN(provinceId)
-      setDistricts(districts)
-    } catch (error) {
-      console.error('Error fetching districts:', error)
-      setError('Không thể tải danh sách quận/huyện')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const {
+    data: districts = [],
+    isLoading: isDistrictsLoading,
+    error: districtsError
+  } = useQuery({
+    queryKey: ['districts', address.province],
+    queryFn: () =>
+      address.province
+        ? getDistrictsGHN(address.province)
+        : Promise.resolve([]),
+    enabled: !!address.province
+  })
 
-  const fetchWards = async (districtId: string) => {
-    if (!districtId) return
-    try {
-      setIsLoading(true)
-      const wards = await getWardsGHN(districtId)
-      setWards(wards)
-    } catch (error) {
-      console.error('Error fetching wards:', error)
-      setError('Không thể tải danh sách phường/xã')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const {
+    data: wards = [],
+    isLoading: isWardsLoading,
+    error: wardsError
+  } = useQuery({
+    queryKey: ['wards', address.district],
+    queryFn: () =>
+      address.district ? getWardsGHN(address.district) : Promise.resolve([]),
+    enabled: !!address.district
+  })
 
-  useEffect(() => {
-    fetchProvinces()
-    if (addressDetail?.provinceID) {
-      fetchDistricts(addressDetail.provinceID)
-    }
-    if (addressDetail?.districtID) {
-      fetchWards(addressDetail.districtID)
-    }
-  }, [])
+  const isLoading = isProvincesLoading || isDistrictsLoading || isWardsLoading
+  const error = provincesError || districtsError || wardsError
 
   const handleProvinceChange = (value: string, option: any) => {
     const name = option?.label || ''
@@ -102,12 +82,6 @@ const AddressForm: React.FC<AddressFormProps> = ({
       ward: '',
       wardName: ''
     })
-    setWards([])
-    if (value) {
-      fetchDistricts(value)
-    } else {
-      setDistricts([])
-    }
   }
 
   const handleDistrictChange = (value: string, option: any) => {
@@ -119,11 +93,6 @@ const AddressForm: React.FC<AddressFormProps> = ({
       ward: '',
       wardName: ''
     })
-    if (value) {
-      fetchWards(value)
-    } else {
-      setWards([])
-    }
   }
 
   const handleWardChange = (value: string, option: any) => {
@@ -145,9 +114,14 @@ const AddressForm: React.FC<AddressFormProps> = ({
   return (
     <Spin spinning={isLoading}>
       <div className='grid grid-cols-1 gap-4'>
-        {error && <Alert message={error} type='error' showIcon />}
-
-        <Form.Item label={t('addressForm.province')} required className='mb-4'>
+        {error && (
+          <Alert
+            message={error.message || 'Lỗi tải dữ liệu'}
+            type='error'
+            showIcon
+          />
+        )}
+        <Form.Item label={t('addressForm.province')} required>
           <Select
             placeholder={t('addressForm.selectProvince')}
             value={address.province || undefined}
@@ -158,17 +132,20 @@ const AddressForm: React.FC<AddressFormProps> = ({
             filterOption={(input, option) =>
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
+            dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+            virtual={false}
             options={provinces
               .slice()
-              .sort((a, b) => a.ProvinceName.localeCompare(b.ProvinceName))
-              .map((province) => ({
+              .sort((a: Province, b: Province) =>
+                a.ProvinceName.localeCompare(b.ProvinceName)
+              )
+              .map((province: Province) => ({
                 value: province.ProvinceID,
                 label: province.ProvinceName
               }))}
           />
         </Form.Item>
-
-        <Form.Item label={t('addressForm.district')} required className='mb-4'>
+        <Form.Item label={t('addressForm.district')} required>
           <Select
             placeholder={t('addressForm.selectDistrict')}
             value={address.district || undefined}
@@ -184,17 +161,20 @@ const AddressForm: React.FC<AddressFormProps> = ({
             filterOption={(input, option) =>
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
+            dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+            virtual={false}
             options={districts
               .slice()
-              .sort((a, b) => a.DistrictName.localeCompare(b.DistrictName))
-              .map((district) => ({
+              .sort((a: District, b: District) =>
+                a.DistrictName.localeCompare(b.DistrictName)
+              )
+              .map((district: District) => ({
                 value: district.DistrictID,
                 label: district.DistrictName
               }))}
           />
         </Form.Item>
-
-        <Form.Item label={t('addressForm.ward')} required className='mb-4'>
+        <Form.Item label={t('addressForm.ward')} required>
           <Select
             placeholder={t('addressForm.selectWard')}
             value={address.ward || undefined}
@@ -208,16 +188,17 @@ const AddressForm: React.FC<AddressFormProps> = ({
             filterOption={(input, option) =>
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
+            dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+            virtual={false}
             options={wards
               .slice()
-              .sort((a, b) => a.WardName.localeCompare(b.WardName))
-              .map((ward) => ({
-                value: ward.WardID,
+              .sort((a: Ward, b: Ward) => a.WardName.localeCompare(b.WardName))
+              .map((ward: Ward) => ({
+                value: ward.WardCode,
                 label: ward.WardName
               }))}
           />
         </Form.Item>
-
         <Form.Item
           label={t('addressForm.street')}
           required
@@ -235,13 +216,13 @@ const AddressForm: React.FC<AddressFormProps> = ({
           }
         >
           <Input
-            disabled={
-              !(
-                address.districtName &&
-                address.provinceName &&
-                address.wardName
-              )
-            }
+            // disabled={
+            //   !(
+            //     address.provinceName &&
+            //     address.districtName &&
+            //     address.wardName
+            //   )
+            // }
             value={address.street}
             onChange={handleChange}
             maxLength={100}

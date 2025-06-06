@@ -69,8 +69,8 @@ const ProfilePage = () => {
           </div>
         )}
 
-        <div className='align-items-center bg-white box-shadow d-flex justify-content-between my-3 px-4 py-3 rounded-1'>
-          <div className='d-flex justify-content-between align-items-start'>
+        <div className='items-center bg-white box-shadow flex justify-content-between my-3 px-4 py-3 rounded-1'>
+          <div className='flex justify-content-between align-items-start'>
             <StoreAddFeaturedImageItem
               count={store.featured_images?.length}
               storeId={store._id}
@@ -90,8 +90,8 @@ const ProfilePage = () => {
           </Link>
         </div>
 
-        <div className='align-items-center bg-white box-shadow d-flex justify-content-between my-3 p-4 rounded-1'>
-          <div className='d-flex align-items-center gap-3'>
+        <div className='items-center bg-white box-shadow flex justify-content-between my-3 p-4 rounded-1'>
+          <div className='flex items-center gap-3'>
             <div className='d-grid'>
               <span style={{ fontSize: '1.1rem' }}>
                 {t('storeDetail.vacationMode')}{' '}

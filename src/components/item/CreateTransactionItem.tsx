@@ -49,7 +49,7 @@ const CreateTransactionItem = ({
         title={
           eWallet <= 0
             ? t('transactionDetail.empty')
-            : t('transactionDetail.draw')
+            : t('transactionDetail.withdraw')
         }
       >
         <Button
@@ -59,7 +59,7 @@ const CreateTransactionItem = ({
           disabled={eWallet <= 0}
           className='border-red-500 text-red-500 hover:bg-red-50 hover:border-red-600 hover:text-red-600 disabled:border-gray-300 disabled:text-gray-300'
         >
-          {t('transactionDetail.draw')}
+          {t('transactionDetail.withdraw')}
         </Button>
       </Tooltip>
 
@@ -79,7 +79,7 @@ const CreateTransactionItem = ({
       </Modal>
 
       <Modal
-        title={t('transactionDetail.draw')}
+        title={t('transactionDetail.withdraw')}
         open={isWithdrawModalOpen}
         onCancel={hideWithdrawModal}
         footer={null}

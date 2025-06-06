@@ -118,7 +118,7 @@ const AdminStoreLevelForm = ({
   return (
     <div className='position-relative'>
       {isLoading && (
-        <div className='d-flex justify-content-center p-4'>
+        <div className='flex justify-content-center p-4'>
           <Spin size='large' />
         </div>
       )}

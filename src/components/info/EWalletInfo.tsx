@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next'
 import { formatPrice } from '../../helper/formatPrice'
-import { useState } from 'react'
 
 interface EWalletInfoProps {
   eWallet?: number
@@ -8,27 +7,13 @@ interface EWalletInfoProps {
 
 const EWalletInfo = ({ eWallet = 0 }: EWalletInfoProps) => {
   const { t } = useTranslation()
-  const [hide, setHide] = useState(false)
-  const handleHide = () => {
-    setHide(!hide)
-  }
+
   return (
-    <div className='d-inline-flex justify-content-start align-items-center text-dark-emphasis fs-5'>
-      <span className='fs-6'>{t('myBalance')}: </span>
+    <div className='inline-flex justify-start items-center text-gray-800 text-xl'>
+      <span className='text-base'>{t('myBalance')}: </span>
       <span className='mx-2'>
-        {hide ? formatPrice(eWallet) : '**********'}
+        {formatPrice(eWallet)}
         <sup>₫</sup>
-      </span>
-      <span
-        title={!hide ? t('button.show') : t('button.hide')}
-        className='pointer'
-        onClick={handleHide}
-      >
-        {hide ? (
-          <i className='fa-solid fa-eye' />
-        ) : (
-          <i className='fa-solid fa-eye-slash' />
-        )}
       </span>
     </div>
   )

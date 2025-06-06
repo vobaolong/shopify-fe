@@ -92,7 +92,10 @@ const AdminOrdersTable = ({ status = '' }: { status?: string }) => {
       page: 1
     })
   }
-  const handleDateRangeChange = (dates: any, dateStrings: [string, string]) => {
+  const handleDateRangeChange = (
+    dates: any,
+    _dateStrings: [string, string]
+  ) => {
     setDateRange(dates)
     setPendingFilter({
       ...pendingFilter,
@@ -114,7 +117,7 @@ const AdminOrdersTable = ({ status = '' }: { status?: string }) => {
 
   const handleTableChange = (
     paginationConfig: any,
-    filters: any,
+    _filters: any,
     sorter: any
   ) => {
     setFilter((prev) => ({
@@ -303,11 +306,6 @@ const AdminOrdersTable = ({ status = '' }: { status?: string }) => {
     { label: t('orderDetail.buyer'), value: 'buyerName' },
     { label: t('seller'), value: 'storeName' }
   ]
-
-  const handleQuickView = (orderId: string) => {
-    setSelectedOrderId(orderId)
-    setDrawerOpen(true)
-  }
 
   const handleCloseDrawer = () => {
     setDrawerOpen(false)

@@ -105,7 +105,7 @@ const DropDownMenu: React.FC<DropDownMenuProps> = ({
         }}
       >
         <span
-          className={`d-inline-flex justify-content-start align-items-center ${
+          className={`d-inline-flex justify-content-start items-center ${
             size === 'lg' ? 'flex-grow-1 text-start' : ''
           }`}
         >

@@ -89,7 +89,7 @@ const CollectionPage = () => {
     <StoreLayout store={store} paths={paths}>
       <div className='position-relative'>
         {isLoading && (
-          <div className='d-flex justify-content-center p-4'>
+          <div className='flex justify-content-center p-4'>
             <Spin size='large' />
           </div>
         )}
@@ -108,11 +108,11 @@ const CollectionPage = () => {
           ))}
         </div>
         {!isLoading && pagination.size === 0 && (
-          <div className='d-flex justify-content-center mt-5 text-primary text-center'>
+          <div className='flex justify-content-center mt-5 text-primary text-center'>
             <h5>{t('productDetail.noProduct')}</h5>
           </div>
         )}
-        <div className='d-flex px-5 align-items-center justify-content-between'>
+        <div className='flex px-5 items-center justify-content-between'>
           <ShowResult
             limit={filter.limit}
             size={pagination.size}

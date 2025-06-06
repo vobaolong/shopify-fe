@@ -78,28 +78,11 @@ const useUpdateDispatch = (): [
               data.cartCount = account?.cartCount
             }
 
-            // Get count orders
-            try {
-              const res1 = await countOrder(OrderStatus.DELIVERED, _id, '')
-              const res2 = await countOrder(OrderStatus.CANCELLED, _id, '')
-              data.numberOfSuccessfulOrders = (res1 as any)?.count
-              data.numberOfFailedOrders = (res2 as any)?.count
-            } catch {
-              data.numberOfSuccessfulOrders = account?.numberOfSuccessfulOrders
-              data.numberOfFailedOrders = account?.numberOfFailedOrders
-            }
-
-            // Nếu data chỉ có 1-2 trường, cảnh báo dev
             const dataKeys = Object.keys(data)
             if (dataKeys.length <= 2) {
-              console.warn(
-                '[useUpdateDispatch] Cảnh báo: updateDispatch("account", data) chỉ nhận được',
-                dataKeys,
-                'Có thể gây mất thông tin user. Hãy truyền object user đầy đủ.'
-              )
+              console.warn(dataKeys)
             }
 
-            // Merge với user cũ để không mất trường
             const mergedUser = mergeUser(account, data)
             dispatch(addAccount(mergedUser))
             break

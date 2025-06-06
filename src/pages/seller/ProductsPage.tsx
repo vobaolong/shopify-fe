@@ -35,7 +35,7 @@ const ProductsPage = () => {
 
   return (
     <SellerLayout user={user} store={store} paths={paths}>
-      <div className='d-flex align-items-start justify-content-between mb-3'>
+      <div className='flex align-items-start justify-content-between mb-3'>
         <h4>Danh sách sản phẩm</h4>
         <Link
           type='button'

@@ -72,7 +72,7 @@ const CartPage = () => {
               from: _id,
               to: storeId
             })
-            navigate('/account/purchase')
+            navigate('/account/order')
             toast.success(t('toastSuccess.order.create'))
           }
           setIsLoading(false)
@@ -99,7 +99,7 @@ const CartPage = () => {
         {cartCount === 0 ? (
           <div className=''>
             <h5>{t('cart')}</h5>
-            <div className='bg-white pb-3 mb-3 box-shadow rounded-2 align-items-center justify-content-center d-flex flex-column gap-2'>
+            <div className='bg-white pb-3 mb-3 box-shadow rounded-2 items-center justify-content-center flex flex-column gap-2'>
               <img
                 loading='lazy'
                 src={cartEmpty}
@@ -124,7 +124,7 @@ const CartPage = () => {
                     {t('cartDetail.products')})
                   </label>
                 </div>
-                <div className='col-7 d-flex'>
+                <div className='col-7 flex'>
                   <div className='col-5 text-secondary text-center fs-9'>
                     {t('cartDetail.unitPrice')}
                   </div>

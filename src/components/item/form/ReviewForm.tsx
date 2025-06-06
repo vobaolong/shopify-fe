@@ -107,7 +107,7 @@ const ReviewForm = ({
           initialValues={{ rating: 4, content: '' }}
         >
           <div className='col-12'>
-            <div className='d-flex mb-4'>
+            <div className='flex mb-4'>
               <img
                 className='w-15 rounded-1 me-2'
                 alt={productName}

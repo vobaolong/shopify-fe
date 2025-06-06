@@ -184,7 +184,7 @@ const StoreStaffTable = ({
           </div>
         ) : (
           <div className='table-scroll my-2'>
-            <table className='store-staff-table table align-middle align-items-center table-hover table-sm text-start'>
+            <table className='store-staff-table table align-middle items-center table-hover table-sm text-start'>
               <thead>
                 <tr>
                   <th scope='col' className='text-center'>
@@ -271,7 +271,7 @@ const StoreStaffTable = ({
             </table>
           </div>
         )}
-        <div className='d-flex justify-content-between align-items-center px-4'>
+        <div className='flex justify-content-between items-center px-4'>
           {' '}
           {pagination.size !== 0 && (
             <ShowResult

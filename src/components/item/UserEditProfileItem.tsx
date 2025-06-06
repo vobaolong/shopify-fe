@@ -29,6 +29,7 @@ const UserEditProfileItem = ({ user }: UserEditProfileItemProps) => {
         title={t('userDetail.editProfile')}
         destroyOnHidden
       >
+        {' '}
         <UserEditProfileForm
           userName={user.userName}
           name={user.name}
@@ -36,6 +37,7 @@ const UserEditProfileItem = ({ user }: UserEditProfileItemProps) => {
           phone={user.phone}
           id_card={user.id_card}
           googleId={Boolean(user.googleId)}
+          onSuccess={() => setOpen(false)}
         />
       </Modal>
     </div>

@@ -79,7 +79,7 @@ const StoreCard = ({ store, onRun }: StoreCardProps) => {
       bodyStyle={{ padding: '0.75rem' }}
     >
       <div className='row g-0'>
-        <div className='col-md-4 d-flex align-items-center justify-content-center'>
+        <div className='col-md-4 flex items-center justify-content-center'>
           {isLoading ? (
             <Skeleton.Avatar active size={100} shape='square' />
           ) : (
@@ -115,7 +115,7 @@ const StoreCard = ({ store, onRun }: StoreCardProps) => {
                   size='small'
                   style={{ width: '100%' }}
                 >
-                  <div className='d-flex'>
+                  <div className='flex'>
                     <StarRating stars={storeValue.rating || 0} />
                     <span className='card-text rating-text ms-2'>
                       {storeValue.rating ? storeValue.rating.toFixed(1) : 0}
@@ -124,7 +124,7 @@ const StoreCard = ({ store, onRun }: StoreCardProps) => {
                     <span>{storeValue.numberOfFollowers || 0} followers</span>
                   </div>
 
-                  <div className='d-flex gap-2 align-items-center'>
+                  <div className='flex gap-2 items-center'>
                     <StoreFollowLabel
                       numberOfFollowers={storeValue.numberOfFollowers || 0}
                     />

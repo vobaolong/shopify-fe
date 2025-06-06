@@ -111,7 +111,7 @@ const AdminBrandsTable = () => {
   const brands: BrandType[] = data?.brands || []
   const pagination: PaginationType = {
     size: data?.size || 0,
-    pageCurrent: data?.filter?.pageCurrent || filter.page,
+    pageCurrent: data?.filter?.pageCurrent || filter.page || 1,
     pageCount: data?.filter?.pageCount || 1
   }
 
@@ -238,7 +238,7 @@ const AdminBrandsTable = () => {
       dataIndex: 'index',
       key: 'index',
       render: (_: any, __: any, index: number) =>
-        index + 1 + (filter.page - 1) * filter.limit,
+        index + 1 + (filter.page || 1) * (filter.limit || 10),
       width: 50
     },
     {
@@ -350,9 +350,8 @@ const AdminBrandsTable = () => {
         <div className='p-3 bg-white rounded-md'>
           <div className='flex justify-between items-center'>
             <div className='flex gap-3 items-center flex-wrap'>
-              {' '}
               <SearchInput
-                value={pendingFilter.search}
+                value={pendingFilter.search || ''}
                 onChange={(keyword) =>
                   setPendingFilter((prev) => ({
                     ...prev,

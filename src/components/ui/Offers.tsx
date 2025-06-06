@@ -7,24 +7,24 @@ const Offers = () => {
   const { t } = useTranslation()
 
   return (
-    <div className='mb-4 text-dark-emphasis d-flex res-hide res-flex-column justify-content-between gap-1 bg-white rounded-2 box-shadow p-3'>
+    <div className='mb-4 text-dark-emphasis flex res-hide res-flex-column justify-content-between gap-1 bg-white rounded-2 box-shadow p-3'>
       <div
         style={{ flex: 1 }}
-        className='d-flex align-items-center justify-content-center'
+        className='flex items-center justify-content-center'
       >
         <img src={refundImg} className='me-2' style={{ width: '10%' }} alt='' />
         <span className=''>{t('services.refund')}</span>
       </div>
       <div
         style={{ flex: 1 }}
-        className='d-flex align-items-center justify-content-center'
+        className='flex items-center justify-content-center'
       >
         <img src={returnImg} className='me-2' style={{ width: '10%' }} alt='' />
         <span>{t('services.return')}</span>
       </div>
       <div
         style={{ flex: 1 }}
-        className='d-flex align-items-center justify-content-center'
+        className='flex items-center justify-content-center'
       >
         <img src={checkImg} className='me-2' style={{ width: '10%' }} alt='' />
         <span>{t('services.checkPackage')}</span>

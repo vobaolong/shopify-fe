@@ -300,7 +300,7 @@ const Routers = () => {
             }
           />
           <Route
-            path='/account/purchase'
+            path='/account/order'
             element={
               <PrivateRoute>
                 <AccountOrderPage />
@@ -308,7 +308,7 @@ const Routers = () => {
             }
           />
           <Route
-            path='/account/purchase/detail/:orderId'
+            path='/account/order/detail/:orderId'
             element={
               <PrivateRoute>
                 <AccountOrderDetailPage />

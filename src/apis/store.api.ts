@@ -29,7 +29,7 @@ export const getStoresByUser = async (
   userId: string,
   params: any
 ): Promise<any> => {
-  return await axiosClient.get(`/stores/by/user/${userId}`, {
+  return await axiosClient.get(`/user/stores/${userId}`, {
     params
   })
 }

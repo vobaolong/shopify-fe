@@ -42,7 +42,7 @@ const MainNav = ({ navFor = 'user' }: MainNavProps) => {
   return (
     <header
       className={clsx(
-        `d-flex flex-column align-items-center justify-content-center main-nav cus-nav navbar fixed-top navbar-expand-md navbar-dark box-shadow ${
+        `flex flex-column items-center justify-content-center main-nav cus-nav navbar fixed-top navbar-expand-md navbar-dark box-shadow ${
           navFor !== 'user' ? 'bg-body text-dark' : 'bg-primary text-white'
         }`
       )}
@@ -90,8 +90,8 @@ const MainNav = ({ navFor = 'user' }: MainNavProps) => {
             </li>
           </ul>
         ) : (
-          <div className='d-flex justify-content-end'>
-            <ul className='nav cus-sub-nav d-flex justify-content-end res-hide-md gap-1'>
+          <div className='flex justify-content-end'>
+            <ul className='nav cus-sub-nav flex justify-content-end res-hide-md gap-1'>
               <Language />
               <BellButton navFor={navFor} />
               {navFor === 'seller' && (

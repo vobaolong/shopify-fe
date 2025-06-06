@@ -70,7 +70,7 @@ const VariantValueSelector = ({
   }
 
   return (
-    <div className='d-flex flex-column'>
+    <div className='flex flex-column'>
       {values.map((list, index) => (
         <ValueSelectorItem
           key={index}

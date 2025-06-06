@@ -132,7 +132,7 @@ const ListCartItems = ({
       {items.map((item: any, index: number) => (
         <div
           key={index}
-          className={`d-flex py-2 align-items-center gap-2 item${
+          className={`flex py-2 items-center gap-2 item${
             index === items.length - 1 ? ' last-item' : ''
           }
 					${
@@ -149,7 +149,7 @@ const ListCartItems = ({
               : ''
           }`}
         >
-          <div className='d-flex py-1 justify-content-around align-items-start w-auto'>
+          <div className='flex py-1 justify-content-around align-items-start w-auto'>
             <div
               style={{
                 position: 'relative',
@@ -177,9 +177,9 @@ const ListCartItems = ({
               />
             </div>
           </div>
-          <div className='d-flex res-flex-column w-100 justify-content-between gap-1'>
+          <div className='flex res-flex-column w-100 justify-content-between gap-1'>
             <div className='res-product-name'>
-              <div className='d-flex gap-2'>
+              <div className='flex gap-2'>
                 <MallLabel />
                 {calcPercent(item.productId?.price, item.productId?.salePrice) >
                   20 && <HotSaleLabel />}
@@ -203,7 +203,7 @@ const ListCartItems = ({
               </div>
             </div>
 
-            <div className='d-inline-flex flex-lg-row flex-md-column flex-sm-row gap-2 justify-content-center align-items-center res-price'>
+            <div className='d-inline-flex flex-lg-row flex-md-column flex-sm-row gap-2 justify-content-center items-center res-price'>
               <del className='text-secondary text-end'>
                 {formatPrice(item.productId?.price?.$numberDecimal)}
                 <sup>₫</sup>
@@ -217,7 +217,7 @@ const ListCartItems = ({
               </span>
             </div>
 
-            <div className='d-flex flex-lg-column flex-sm-row justify-content-center align-items-center res-quantity'>
+            <div className='flex flex-lg-column flex-sm-row justify-content-center items-center res-quantity'>
               {item.productId?.isActive &&
                 item.productId?.isSelling &&
                 item.productId?.quantity > 0 && (
@@ -278,7 +278,7 @@ const ListCartItems = ({
                 )}
             </div>
             <div
-              className='d-flex justify-content-between gap-2 text-danger my-auto align-items-center res-total-price'
+              className='flex justify-content-between gap-2 text-danger my-auto items-center res-total-price'
               style={{ fontWeight: '500' }}
             >
               <span>
@@ -311,10 +311,10 @@ const ListCartItems = ({
           item.productId?.quantity >= item.count,
         true
       ) && (
-        <div className='d-flex flex-wrap justify-content-end align-items-center mt-1 pt-3 border-top'>
+        <div className='flex flex-wrap justify-content-end items-center mt-1 pt-3 border-top'>
           {!showCheckoutFlag && (
-            <div className='me-4 d-flex flex-column fs-9 gap-1'>
-              <div className='d-flex justify-content-between gap-4'>
+            <div className='me-4 flex flex-column fs-9 gap-1'>
+              <div className='flex justify-content-between gap-4'>
                 <span className='text-secondary'>
                   {t('cartDetail.subTotal')}:{' '}
                 </span>
@@ -324,7 +324,7 @@ const ListCartItems = ({
                 </span>
               </div>
               {level?.discount?.$numberDecimal > 0 && (
-                <div className='d-flex justify-content-between gap-4'>
+                <div className='flex justify-content-between gap-4'>
                   <span className='text-secondary'>
                     {t('cartDetail.ShopBaseDiscount')} (
                     {level?.discount?.$numberDecimal}%):{' '}
@@ -340,7 +340,7 @@ const ListCartItems = ({
                   </span>
                 </div>
               )}
-              <div className='d-flex justify-content-between gap-4'>
+              <div className='flex justify-content-between gap-4'>
                 <span className='text-secondary'>
                   {t('cartDetail.totalPrice')}:{' '}
                 </span>

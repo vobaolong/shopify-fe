@@ -22,7 +22,7 @@ const StoreNav = ({ store }: { store: StoreType }) => {
       className='store-nav navbar sticky-top-nav navbar-expand-md navbar-light bg-body shadow-sticky rounded-bottom border-top'
       style={{ margin: '0 auto' }}
     >
-      <div className='container-fluid res-d-flex-end-lg'>
+      <div className='container-fluid res-flex-end-lg'>
         <Link className='navbar-brand res-hide-md' to={`/store/${store._id}`}>
           <StoreInit />
         </Link>

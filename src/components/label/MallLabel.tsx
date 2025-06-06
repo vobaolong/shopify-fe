@@ -1,23 +1,14 @@
 import { useTranslation } from 'react-i18next'
+import { Tag } from 'antd'
+import { CheckCircleOutlined } from '@ant-design/icons'
 
 const MallLabel = () => {
   const { t } = useTranslation()
   return (
-    <span
-      style={{
-        backgroundColor: '#F3F7FF',
-        maxWidth: 'max-content'
-      }}
-      className={`badge rounded-2 text-primary`}
-    >
-      <i className='fa-regular fa-circle-check me-1' />
-      <span
-        style={{ fontSize: '0.6rem', fontWeight: '700' }}
-        className='text-uppercase'
-      >
-        {t('productDetail.mall')}
-      </span>
-    </span>
+    <Tag color='processing' icon={<CheckCircleOutlined />} className='text-sm'>
+      {t('productDetail.mall')}
+    </Tag>
   )
 }
+
 export default MallLabel

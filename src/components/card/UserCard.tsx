@@ -44,7 +44,7 @@ const UserCard = ({ user }: UserCardProps) => {
 
       <div className='card-body border-top border-secondary'>
         <small className='card-subtitle'>
-          <div className='d-flex align-items-center'>
+          <div className='flex items-center'>
             <span className='me-1'>
               <UserRoleLabel role={userValue.role} detail={false} />
             </span>{' '}

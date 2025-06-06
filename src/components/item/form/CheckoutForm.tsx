@@ -353,7 +353,7 @@ const CheckoutForm = ({
             from: _id,
             to: storeId
           })
-          navigate('/account/purchase')
+          navigate('/account/order')
           toast.success(t('toastSuccess.order.create'))
         }
         setIsLoading(false)
@@ -369,7 +369,7 @@ const CheckoutForm = ({
   return (
     <div className='position-relative'>
       {isLoading && (
-        <div className='d-flex justify-content-center p-4'>
+        <div className='flex justify-content-center p-4'>
           <Spin size='large' />
         </div>
       )}
@@ -385,7 +385,7 @@ const CheckoutForm = ({
                 {t('orderDetail.userReceiver')}
               </span>
               <hr className='my-2' />{' '}
-              <div className='col-6 d-flex justify-content-between align-items-end'>
+              <div className='col-6 flex justify-content-between align-items-end'>
                 <div className='flex-grow-1'>
                   <div className='mb-3'>
                     <label className='form-label fw-medium'>
@@ -417,7 +417,7 @@ const CheckoutForm = ({
                   </div>
                 </div>
               </div>{' '}
-              <div className='col-6 d-flex justify-content-between align-items-end'>
+              <div className='col-6 flex justify-content-between align-items-end'>
                 <div className='flex-grow-1'>
                   <div className='mb-3'>
                     <label className='form-label fw-medium'>
@@ -485,7 +485,7 @@ const CheckoutForm = ({
                   </small>
                 </div>
               </div>{' '}
-              <div className='col-12 mt-2 d-flex justify-content-between align-items-end'>
+              <div className='col-12 mt-2 flex justify-content-between align-items-end'>
                 <div className='flex-grow-1'>
                   <div className='mb-3'>
                     <label className='form-label fw-medium'>
@@ -553,7 +553,7 @@ const CheckoutForm = ({
                   </small>
                 </div>
               </div>
-              <div className='col-12 mt-2 d-flex justify-content-between align-items-end'>
+              <div className='col-12 mt-2 flex justify-content-between align-items-end'>
                 <div className='flex-grow-1'>
                   <DropDownMenu
                     borderBtn={false}
@@ -644,7 +644,7 @@ const CheckoutForm = ({
               <dl className='row px-2'>
                 {items.map((item) => (
                   <>
-                    <dt className='col-8 text-secondary fw-normal d-flex align-items-start gap-1 mb-1'>
+                    <dt className='col-8 text-secondary fw-normal flex align-items-start gap-1 mb-1'>
                       <img
                         src={item.productId?.listImages[0] && defaultImg}
                         alt=''

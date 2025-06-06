@@ -32,7 +32,7 @@ const Language: React.FC<LanguageProps> = ({ vertical = true }) => {
       {vertical ? (
         <div className='ms-2 inherit'>
           <div className='your-account'>
-            <div className='d-flex align-items-center justify-content-center rounded-1 p-2 inherit lang'>
+            <div className='flex items-center justify-content-center rounded-1 p-2 inherit lang'>
               <img
                 loading='lazy'
                 style={{ maxWidth: '30px', width: '100%' }}
@@ -64,7 +64,7 @@ const Language: React.FC<LanguageProps> = ({ vertical = true }) => {
           </div>
         </div>
       ) : (
-        <div className='d-flex align-items-center justify-content-between gap-2'>
+        <div className='flex items-center justify-content-between gap-2'>
           <button
             className={`btn rounded-1 btn-with-img ${
               activeLang === 'en' ? 'btn-value' : 'btn-outline-value'

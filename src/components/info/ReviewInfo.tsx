@@ -54,7 +54,7 @@ const ReviewInfo: React.FC<ReviewInfoProps> = ({
   return (
     <div className='row py-2 border-bottom position-relative'>
       {isPending && (
-        <div className='d-flex justify-content-center p-2'>
+        <div className='flex justify-content-center p-2'>
           <Spin size='small' />
         </div>
       )}
@@ -71,8 +71,8 @@ const ReviewInfo: React.FC<ReviewInfoProps> = ({
         />
       )}
 
-      <div className='col-12 px-1 d-flex justify-content-between align-items-center'>
-        <div className='d-flex justify-content-between flex-grow-1'>
+      <div className='col-12 px-1 flex justify-content-between items-center'>
+        <div className='flex justify-content-between flex-grow-1'>
           <small className='hidden-avatar d-inline-flex gap-2'>
             <StarRating stars={review.rating} />
             <small className='text-secondary'>
@@ -104,14 +104,14 @@ const ReviewInfo: React.FC<ReviewInfoProps> = ({
         <span style={{ fontSize: '0.9rem' }}>{review.content}</span>
       </div>
       {getToken()?._id === review.userId?._id && isReviewAllowed && (
-        <div className='col-2 d-flex justify-content-end align-items-end flex-wrap px-1 mt-1'>
-          <div className='d-flex justify-content-between'>
+        <div className='col-2 flex justify-content-end align-items-end flex-wrap px-1 mt-1'>
+          <div className='flex justify-content-between'>
             <div className='menu-container'>
               <button className='btn menu-button' onClick={handleMenuToggle}>
                 <i className='fa fa-ellipsis-v' />
               </button>
               {showMenu && (
-                <div className='menu d-flex flex-column gap-2 align-item-start p-2'>
+                <div className='menu flex flex-column gap-2 align-item-start p-2'>
                   <EditReviewItem oldReview={review} onRun={onRun} />
                   <hr className='m-0' />
                   <button

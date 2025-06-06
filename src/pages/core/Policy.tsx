@@ -12,7 +12,7 @@ const Policy = () => {
       <MetaData title={`${t('footer.policy')} | ShopBase Việt Nam`} />
 
       <header className='main-nav cus-nav navbar fixed-top navbar-expand-md navbar-dark bg-primary'>
-        <div className='container-md d-flex justify-content-start text-white'>
+        <div className='container-md flex justify-content-start text-white'>
           <Link
             className='navbar-brand cus-navbar-brand me-2 ripple res-hide-md'
             to='/'

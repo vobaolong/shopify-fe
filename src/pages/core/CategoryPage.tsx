@@ -133,7 +133,7 @@ const CategoryPage = () => {
         <div className='mb-4'>
           <ListCategories categoryId={categoryId} heading={false} />
         </div>
-        <div className='d-flex justify-content-between align-items-end'>
+        <div className='flex justify-content-between align-items-end'>
           <ProductFilter filter={filter} setFilter={setFilter} />
         </div>
         <div className='product-search-list row mt-3'>

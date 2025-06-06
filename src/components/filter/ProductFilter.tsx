@@ -150,7 +150,7 @@ const ProductFilter: React.FC<ProductFilterProps> = ({ filter, setFilter }) => {
   return (
     <div style={{ width: '100%' }}>
       <div
-        className='d-flex align-items-center justify-content-between'
+        className='flex items-center justify-content-between'
         style={{ width: '100%' }}
       >
         <button
@@ -207,9 +207,9 @@ const ProductFilter: React.FC<ProductFilterProps> = ({ filter, setFilter }) => {
           ></button>
         </div>
         <div className='offcanvas-body'>
-          <div className='d-flex flex-column gap-2'>
+          <div className='flex flex-column gap-2'>
             <p>{t('filters.shippedFrom')}</p>
-            <div className='d-flex gap-3'>
+            <div className='flex gap-3'>
               <input
                 type='checkbox'
                 checked={provincesChecked.length === 0}
@@ -220,7 +220,7 @@ const ProductFilter: React.FC<ProductFilterProps> = ({ filter, setFilter }) => {
               <p>{t('filters.all')}</p>
             </div>
             {provinces.slice(0, displayLimit).map((value: any) => (
-              <div key={value} className='d-flex gap-3'>
+              <div key={value} className='flex gap-3'>
                 <input
                   type='checkbox'
                   checked={provincesChecked.includes(value)}

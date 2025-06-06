@@ -124,6 +124,10 @@ input:focus {
 	color: var(--black-color);
 }
 
+.ant-card-body {
+	padding: .8rem !important;
+}
+
 .fs-9 {
 	font-size: 0.9rem !important;
 }

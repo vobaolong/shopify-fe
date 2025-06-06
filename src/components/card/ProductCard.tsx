@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { getToken } from '../../apis/auth.api'
 import { formatPrice } from '../../helper/formatPrice'
@@ -13,6 +13,7 @@ import MallLabel from '../label/MallLabel'
 import defaultImage from '../../assets/default.webp'
 import { Card, Skeleton, Typography, Rate, Tag, Badge } from 'antd'
 import { ProductType } from '../../@types/entity.types'
+import clsx from 'clsx'
 
 const { Text, Title } = Typography
 
@@ -23,7 +24,6 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, onRun }: ProductCardProps) => {
   const [productValue, setProductValue] = useState<ProductType>(product)
-  const [isHovered, setIsHovered] = useState(false)
   const { t } = useTranslation()
   const { _id: userId } = getToken() || {}
 
@@ -60,11 +60,7 @@ const ProductCard = ({ product, onRun }: ProductCardProps) => {
   if (isLoading) {
     return (
       <Card className='card border-0 m-auto' bordered={false}>
-        <Skeleton.Image
-          className='card-img-top'
-          active
-          style={{ width: '100%', height: 220 }}
-        />
+        <Skeleton.Image className='card-img-top' active />
         <Card.Meta
           className='card-body'
           title={<Skeleton.Input active style={{ width: 94 }} />}
@@ -84,93 +80,58 @@ const ProductCard = ({ product, onRun }: ProductCardProps) => {
       hoverable
       className='card border-0 m-auto'
       cover={
-        <div className='product-image-container'>
-          <Link
-            className='text-reset text-decoration-none product-card'
-            to={`/product/${productValue._id}`}
-            title={productValue.name}
+        <div className='position-relative'>
+          <Badge.Ribbon
+            placement='start'
+            text={
+              salePercent > 0
+                ? `-${salePercent}% ${t('productDetail.sale')}`
+                : ''
+            }
+            color='red'
+            className={clsx(salePercent > 0 ? 'd-block' : 'd-none')}
           >
-            <div
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-              className='card-img-top cus-card-img-top position-relative'
-              style={{ position: 'relative' }}
+            <Link
+              className='text-reset text-decoration-none product-card'
+              to={`/product/${productValue._id}`}
+              title={productValue.name}
             >
-              <img
-                src={productValue.listImages[0] || defaultImage}
-                className='cus-card-img'
-                alt={productValue.name}
-                style={{
-                  opacity: isHovered ? 0 : 1,
-                  transition: 'opacity 0.5s ease'
-                }}
-              />
-              <img
-                src={productValue.listImages[1] || defaultImage}
-                className='cus-card-img'
-                alt={productValue.name}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  opacity: isHovered ? 1 : 0,
-                  transition: 'opacity 0.5s ease'
-                }}
-              />
-            </div>
-            {salePercent > 0 && (
-              <Badge.Ribbon
-                text={`-${salePercent}% ${t('productDetail.sale')}`}
-                color='red'
-                className='text-sm absolute'
-              />
-            )}
-            {productValue.numberOfFollowers &&
-              productValue.numberOfFollowers > 2 && (
-                <Tag color='blue' className='fav-tag'>
-                  {t('favorite')}
-                </Tag>
-              )}
-          </Link>
+              <div
+                className='card-img-top cus-card-img-top position-relative'
+                style={{ position: 'relative' }}
+              >
+                <img
+                  src={productValue.listImages[0] || defaultImage}
+                  className='cus-card-img'
+                  alt={productValue.name}
+                />
+                {/* {productValue.numberOfFollowers &&
+                  productValue.numberOfFollowers > 2 && (
+                    <Tag
+                      color='blue'
+                      className='fav-tag'
+                      style={{
+                        position: 'absolute',
+                        bottom: '8px',
+                        left: '8px',
+                        margin: 0
+                      }}
+                    >
+                      {t('favorite')}
+                    </Tag>
+                  )} */}
+              </div>
+            </Link>
+          </Badge.Ribbon>
         </div>
       }
     >
       <Card.Meta
-        className='card-body'
-        title={
-          <div className='mb-2'>
-            <MallLabel />
-          </div>
-        }
+        title={<MallLabel />}
         description={
           <>
-            <div className='card-subtitle'>
-              {productValue.rating ? (
-                <Rate
-                  disabled
-                  defaultValue={productValue.rating}
-                  style={{ fontSize: '14px' }}
-                />
-              ) : (
-                <Skeleton.Input style={{ width: 120 }} active />
-              )}{' '}
-              <Text type='secondary'>
-                {productValue.sold} {t('productDetail.sold')}
-              </Text>
-            </div>
-
-            <Link
-              className='text-reset link-hover d-block mt-1 mb-2'
-              to={`/product/${productValue._id}`}
-              title={productValue.name}
-            >
-              <Title level={5} className='card-title product-name'>
-                {productValue.name}
-              </Title>
-            </Link>
-
-            <div className='card-subtitle d-flex justify-content-between align-items-center'>
-              <Text type='danger' strong style={{ fontSize: '18px' }}>
+            <div className='flex justify-between align-center'>
+              <Text type='danger' strong className='!text-lg'>
                 {productValue.salePrice &&
                   formatPrice(productValue.salePrice.$numberDecimal)}
                 <sup>₫</sup>
@@ -183,8 +144,27 @@ const ProductCard = ({ product, onRun }: ProductCardProps) => {
                 </Text>
               )}
             </div>
-
-            <div className='d-flex justify-content-end'>
+            <Link
+              className='!no-underline'
+              to={`/product/${productValue._id}`}
+              title={productValue.name}
+            >
+              <Title level={5} className='product-name'>
+                {productValue.name}
+              </Title>
+            </Link>
+            <div>
+              <Rate
+                allowHalf
+                disabled
+                defaultValue={productValue.rating}
+                className='!text-xs'
+              />{' '}
+              <Text type='secondary'>
+                {productValue.sold} {t('productDetail.sold')}
+              </Text>
+            </div>
+            <div className='flex justify-end'>
               {userId && (
                 <FollowProductButton
                   productId={productValue._id}

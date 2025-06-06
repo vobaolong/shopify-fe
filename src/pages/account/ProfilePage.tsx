@@ -84,7 +84,7 @@ const ProfilePage = () => {
 
   return (
     <AccountLayout user={user} paths={paths}>
-      <div className='mt-8 bg-white rounded-lg shadow-lg p-6 grid gap-10 w-4/5'>
+      <div className='mt-8 bg-white rounded-lg shadow-lg p-6 grid gap-10'>
         <div className='relative mb-8'>
           <Cover cover={user.cover} alt={user.userName} isEditStore={false} />
           <div className='absolute left-10 -bottom-12'>

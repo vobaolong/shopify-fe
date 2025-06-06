@@ -5,7 +5,16 @@ import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
 import { useTranslation } from 'react-i18next'
 import { useAntdApp } from '../../../hooks/useAntdApp'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Form, Input, Button, Spin, Alert, Modal } from 'antd'
+import { Form, Input, Button, Spin, Alert, Modal, AutoComplete } from 'antd'
+
+// Hàm fetch gợi ý địa chỉ từ Nominatim
+async function fetchAddressSuggestions(query: string) {
+  if (!query) return []
+  const res = await fetch(
+    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`
+  )
+  return await res.json()
+}
 
 interface UserEditAddressFormProps {
   oldAddress?: string
@@ -23,6 +32,8 @@ const UserEditAddressForm: React.FC<UserEditAddressFormProps> = ({
   const [form] = Form.useForm()
   const [isConfirming, setIsConfirming] = useState(false)
   const [error, setError] = useState('')
+  const [options, setOptions] = useState<any[]>([])
+  const [fetching, setFetching] = useState(false)
 
   const [updateDispatch] = useUpdateDispatch()
   const { _id } = getToken()
@@ -71,6 +82,32 @@ const UserEditAddressForm: React.FC<UserEditAddressFormProps> = ({
     setIsConfirming(false)
   }
 
+  // Xử lý gợi ý địa chỉ
+  const handleSearch = async (value: string) => {
+    if (!value) {
+      setOptions([])
+      return
+    }
+    setFetching(true)
+    const suggestions = await fetchAddressSuggestions(value)
+    setOptions(
+      suggestions.map((item: any) => ({
+        value: item.display_name,
+        label: (
+          <div>
+            <span style={{ fontWeight: 600 }}>
+              {item.display_name.split(',')[0]}
+            </span>
+            <span style={{ color: '#888', marginLeft: 8 }}>
+              {item.display_name.replace(item.display_name.split(',')[0], '')}
+            </span>
+          </div>
+        )
+      }))
+    )
+    setFetching(false)
+  }
+
   return (
     <div className='w-full'>
       <Spin spinning={updateAddressMutation.isPending}>
@@ -107,7 +144,15 @@ const UserEditAddressForm: React.FC<UserEditAddressFormProps> = ({
               { max: 100, message: t('addressFormValid.streetTooLong') }
             ]}
           >
-            <Input placeholder='Ví dụ: Số 58 Đường số 1' />
+            <AutoComplete
+              options={options}
+              onSearch={handleSearch}
+              placeholder='Ví dụ: 33 M3'
+              notFoundContent={fetching ? <Spin size='small' /> : null}
+              filterOption={false}
+            >
+              <Input />
+            </AutoComplete>
           </Form.Item>
 
           <Form.Item

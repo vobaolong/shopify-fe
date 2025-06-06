@@ -452,7 +452,7 @@
     "level": "Level",
     "account": "Account",
     "myAccount": "My account",
-    "myPurchase": "My purchase",
+    "myPurchase": "My order",
     "profile": "Profile",
     "editProfile": "Edit Profile",
     "address": "Address",
@@ -712,6 +712,7 @@
   "point": "Point",
   "success/failure": "Order Completion Rate",
   "orderDetail": {
+    "status": "Order Status",
     "useRegisterFirstName": "se registered first name",
     "useRegisterLastName": "Use registered last name",
     "useRegisterPhone": "Use registered phone",
@@ -768,13 +769,25 @@
     "street": "Street",
     "ward": "Ward",
     "district": "District",
-    "province": "Province/Province"
+    "province": "Province/Province",
+    "selectProvince": "Select Province/City",
+    "selectDistrict": "Select District",
+    "selectWard": "Select Ward",
+    "errorLoadingProvinces": "Error loading provinces",
+    "errorLoadingDistricts": "Error loading districts",
+    "errorLoadingWards": "Error loading wards"
   },
   "addressFormValid": {
+    "provinceRequired": "Please select a province!",
+    "districtRequired": "Please select a district!",
+    "wardRequired": "Please select a ward!",
+    "streetRequired": "Please enter street address!",
+    "streetTooLong": "Street address must not exceed 100 characters!",
     "streetValid": "Please provide a valid street address (',' is not allowed)!",
     "wardValid": "Please provide a valid ward (','' is not allowed)!",
     "districtValid": "Please provide a valid province/district (',' is not allowed)!",
-    "provinceValid": "Please provide a valid province/province (',' is not allowed)!"
+    "provinceValid": "Please provide a valid province/province (',' is not allowed)!",
+    "allFields": "Please fill in all address information!"
   },
 
   "services": {

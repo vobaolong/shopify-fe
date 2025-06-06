@@ -11,66 +11,82 @@ import ReviewItem from '../item/ReviewItem'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 
+interface ListOrderItemsProps {
+  orderId?: string
+  status?: string
+  storeId?: string
+  by?: string
+  items?: any[]
+  isLoading?: boolean
+}
+
 const ListOrderItems = ({
   orderId = '',
   status = '',
   storeId = '',
-  by = 'user'
-}) => {
+  by = 'user',
+  items: propItems,
+  isLoading: propIsLoading
+}: ListOrderItemsProps) => {
   const { t } = useTranslation()
   const { _id } = getToken()
-  const { data, isLoading, isError, error } = useQuery({
+
+  const {
+    data: queryItems,
+    isLoading: isQueryLoading,
+    isError,
+    error
+  } = useQuery({
     queryKey: ['orderItems', _id, orderId, storeId, by],
     queryFn: async () => {
-      if (by === 'store') {
-        return listItemsByOrderByStore(_id, orderId, storeId).then(
-          (res) => res.data
-        )
-      } else if (by === 'admin') {
-        return listItemsByOrderForAdmin(orderId).then((res) => res.data)
-      } else {
-        return listItemsByOrder(_id, orderId).then((res) => res.data)
+      try {
+        let response
+        if (by === 'store') {
+          response = await listItemsByOrderByStore(_id, orderId, storeId)
+        } else if (by === 'admin') {
+          response = await listItemsByOrderForAdmin(orderId)
+        } else {
+          response = await listItemsByOrder(_id, orderId)
+        }
+        return response?.items || []
+      } catch (error: any) {
+        console.error('Error fetching order items:', {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status
+        })
+        return []
       }
     },
-    enabled: !!orderId
+    enabled: !propItems && !!orderId && !!_id
   })
-  const items: any[] = data?.items || []
+
+  const items = propItems || queryItems || []
+  const isLoading = propIsLoading || isQueryLoading
+
+  if (isLoading) {
+    return <Spin size='large' />
+  }
+
+  if (isError) {
+    return <Alert message={error?.message || 'Server Error'} type='error' />
+  }
+
   return (
     <div className='list-order-items position-relative py-1'>
-      {isLoading && <Spin size='large' />}
-      {isError && (
-        <Alert message={error?.message || 'Server Error'} type='error' />
-      )}
       <small className='text-muted d-inline-block'>
         {t('orderDetail.note')}
       </small>
-      <div className='flex-column d-flex  justify-content-between'>
+      <div className='flex-column flex justify-content-between'>
         {items.map((item: any, index: number) => (
           <div key={index} className='list-item-container'>
-            <div className='d-flex align-items-center'>
-              <div
-                className='border rounded-1'
-                style={{
-                  position: 'relative',
-                  paddingBottom: '80px',
-                  maxWidth: '80px',
-                  width: '100%',
-                  height: '0'
-                }}
-              >
+            <div className='flex items-center'>
+              <div className='!relative !pb-20 !max-w-[80px] !w-full !h-0 rounded-1 border'>
                 <img
                   loading='lazy'
-                  className='rounded-1'
                   src={item.productId?.listImages[0]}
                   alt={item.productId?.name}
-                  style={{
-                    position: 'absolute',
-                    width: '100%',
-                    height: '100%',
-                    top: '0',
-                    left: '0',
-                    objectFit: 'contain'
-                  }}
+                  className='absolute w-full h-full top-0 left-0 object-contain'
                 />
               </div>
 
@@ -93,16 +109,12 @@ const ListOrderItems = ({
                 )}
                 <div className='mt-1'>
                   {item.variantValueIds?.map((value: any, index: number) => (
-                    <p
-                      className='text-muted'
-                      style={{ fontSize: '0.9rem' }}
-                      key={index}
-                    >
+                    <p className='!text-nowrap text-sm' key={index}>
                       {value.variantId?.name}: {value.name}
                     </p>
                   ))}
                 </div>
-                <div className='mt-1 d-flex gap-4'>
+                <div className='mt-1 flex gap-4'>
                   <p className='text-decoration-line-through text-muted'>
                     {formatPrice(item.productId?.price?.$numberDecimal)}
                     <sup>₫</sup>
@@ -136,7 +148,7 @@ const ListOrderItems = ({
               </div>
 
               {by === 'user' && status === 'Delivered' && (
-                <div className='d-flex justify-content-between align-items-center my-2'>
+                <div className='flex justify-between items-center my-2'>
                   <ReviewItem
                     orderId={item?.orderId}
                     storeId={item?.productId?.storeId?._id}

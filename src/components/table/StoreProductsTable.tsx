@@ -252,7 +252,7 @@ const StoreProductsTable = ({ storeId = '', selectedOption = 'all' }) => {
       ) : null}
 
       {isLoading && (
-        <div className='d-flex justify-content-center p-3'>
+        <div className='flex justify-content-center p-3'>
           <div className='spinner-border' />
         </div>
       )}
@@ -270,7 +270,7 @@ const StoreProductsTable = ({ storeId = '', selectedOption = 'all' }) => {
       )}
 
       <div className='p-3 box-shadow bg-body rounded-2'>
-        <div className='mb-3 d-flex justify-content-between'>
+        <div className='mb-3 flex justify-content-between'>
           <SearchInput
             value={pendingFilter.search || ''}
             onChange={handleChangeKeyword}
@@ -475,7 +475,7 @@ const StoreProductsTable = ({ storeId = '', selectedOption = 'all' }) => {
                       <td>{product.sold}</td>
                       <td style={{ whiteSpace: 'normal' }}>
                         <div
-                          className='d-flex flex-wrap justify-content-start align-items-center gap-1'
+                          className='flex flex-wrap justify-content-start items-center gap-1'
                           style={{
                             width: '250px',
                             maxHeight: '120px',
@@ -511,7 +511,7 @@ const StoreProductsTable = ({ storeId = '', selectedOption = 'all' }) => {
                         <small>{humanReadableDate(product.createdAt)}</small>
                       </td>
                       <td>
-                        <div className='d-flex justify-content-start align-items-center'>
+                        <div className='flex justify-content-start items-center'>
                           <div className='position-relative d-inline-block'>
                             <Link
                               type='button'
@@ -552,7 +552,7 @@ const StoreProductsTable = ({ storeId = '', selectedOption = 'all' }) => {
               </table>
             </div>
 
-            <div className='d-flex justify-content-between align-items-center px-4'>
+            <div className='flex justify-content-between items-center px-4'>
               <ShowResult
                 limit={filter.limit}
                 size={pagination.size}

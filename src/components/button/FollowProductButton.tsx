@@ -55,7 +55,7 @@ const FollowProductButton = ({
   return (
     <div className='d-grid' style={style}>
       <span
-        className={`d-flex align-items-center rounded-circle justify-content-center position-relative ${
+        className={`flex items-center rounded-circle justify-content-center position-relative ${
           isFollowing ? 'text-danger' : 'text-secondary'
         } ${className}`}
         onClick={handleFollowProduct}

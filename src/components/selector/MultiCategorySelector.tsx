@@ -188,7 +188,7 @@ const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
           />
         )}
 
-        <div className='d-flex border p-1 mt-2 rounded-2 bg-value'>
+        <div className='flex border p-1 mt-2 rounded-2 bg-value'>
           <div
             className='list-group m-1'
             style={{
@@ -202,7 +202,7 @@ const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
               <div key={category._id || index}>
                 <button
                   type='button'
-                  className={`list-group-item ripple list-group-item-action d-flex justify-content-between align-items-center ${
+                  className={`list-group-item ripple list-group-item-action flex justify-content-between items-center ${
                     category._id === lv2Filter.categoryId && 'active'
                   }`}
                   onClick={() => handleClick(lv2Filter, setLv2Filter, category)}
@@ -227,7 +227,7 @@ const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
               <div key={category._id || index}>
                 <button
                   type='button'
-                  className={`list-group-item ripple list-group-item-action d-flex justify-content-between align-items-center  ${
+                  className={`list-group-item ripple list-group-item-action flex justify-content-between items-center  ${
                     category._id === lv3Filter.categoryId && 'active'
                   }`}
                   onClick={() => handleClick(lv3Filter, setLv3Filter, category)}
@@ -285,7 +285,7 @@ const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
 
             <div
               style={{ height: '100%', maxHeight: '300px', overflow: 'auto' }}
-              className='form-control border bg-light-subtle d-flex flex-column gap-3'
+              className='form-control border bg-light-subtle flex flex-column gap-3'
             >
               {selectedCategories &&
                 (Array.isArray(selectedCategories) ? (
@@ -293,7 +293,7 @@ const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
                     (category: CategoryType, index: number) => (
                       <span
                         key={index}
-                        className='d-flex align-items-center position-relative'
+                        className='flex items-center position-relative'
                       >
                         <CategorySmallCard category={category} />
                         <button

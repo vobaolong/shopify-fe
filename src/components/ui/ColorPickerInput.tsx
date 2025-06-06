@@ -26,7 +26,7 @@ const ColorPickerInput: React.FC<ColorPickerInputProps> = ({
       <small className='text-secondary ms-1'>
         {label} {required && <small className='text-danger'>*</small>}
       </small>
-      <div className='d-flex align-items-center ms-2'>
+      <div className='flex items-center ms-2'>
         <span className='me-2'>{t('pickColor')} </span>
         <ColorPicker value={color} onChange={handleChange} />
       </div>

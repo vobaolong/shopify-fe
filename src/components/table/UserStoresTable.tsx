@@ -1,32 +1,25 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { getToken } from '../../apis/auth.api'
 import { getStoresByUser } from '../../apis/store.api'
 import StoreSmallCard from '../card/StoreSmallCard'
 import ManagerRoleLabel from '../label/ManagerRoleLabel'
 import StoreActiveLabel from '../label/StoreActiveLabel'
 import StoreStatusLabel from '../label/StoreStatusLabel'
-import Pagination from '../ui/Pagination'
 import SearchInput from '../ui/SearchInput'
-import { Spin, Alert, Table, Button } from 'antd'
+import UserCreateStoreForm from '../item/form/UserCreateStoreForm'
+import { Alert, Table, Button, Typography, Empty, Divider, Drawer } from 'antd'
+import { PlusOutlined, EyeOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
-import SortByButton from './sub/SortByButton'
 import { useTranslation } from 'react-i18next'
-import ShowResult from '../ui/ShowResult'
 import { formatDate } from '../../helper/humanReadable'
-import boxImg from '../../assets/box.svg'
 
-const UserStoresTable = ({ heading = false }) => {
+const UserStoresTable = () => {
   const { t } = useTranslation()
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [stores, setStores] = useState([])
-  const [pagination, setPagination] = useState({
-    size: 0,
-    pageCurrent: 1,
-    pageCount: 1
-  })
+  const { _id } = getToken()
+  const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false)
+
   const [filter, setFilter] = useState({
     search: '',
     sortBy: 'point',
@@ -35,44 +28,34 @@ const UserStoresTable = ({ heading = false }) => {
     limit: 8,
     page: 1
   })
-  const [pendingFilter, setPendingFilter] = useState({
-    search: '',
-    sortBy: 'point',
-    sortMoreBy: 'rating',
-    order: 'desc',
-    limit: 8,
-    page: 1
+  const [pendingFilter, setPendingFilter] = useState(filter)
+
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['userStores', _id, filter],
+    queryFn: () => getStoresByUser(_id, filter),
+    select: (response) => {
+      if (response.error) {
+        throw new Error(response.error)
+      }
+      return {
+        stores: response.stores || [],
+        pagination: {
+          size: response.size || 0,
+          pageCurrent: response.filter?.pageCurrent || 1,
+          pageCount: response.filter?.pageCount || 1
+        }
+      }
+    }
   })
 
-  const { _id } = getToken()
-
-  const init = () => {
-    setIsLoading(true)
-    getStoresByUser(_id, filter)
-      .then((data) => {
-        if (data.error) setError(data.error)
-        else {
-          setStores(data.stores)
-          setPagination({
-            size: data.size,
-            pageCurrent: data.filter.pageCurrent,
-            pageCount: data.filter.pageCount
-          })
-        }
-        setIsLoading(false)
-        setTimeout(() => setError(''), 3000)
-      })
-      .catch(() => {
-        setError('Server Error')
-        setIsLoading(false)
-        setTimeout(() => setError(''), 3000)
-      })
+  const stores = data?.stores || []
+  const pagination = data?.pagination || {
+    size: 0,
+    pageCurrent: 1,
+    pageCount: 1
   }
 
-  useEffect(() => {
-    init()
-  }, [filter])
-  const handleChangeKeyword = (keyword) => {
+  const handleChangeKeyword = (keyword: string) => {
     setPendingFilter({
       ...pendingFilter,
       search: keyword,
@@ -84,62 +67,55 @@ const UserStoresTable = ({ heading = false }) => {
     setFilter({ ...pendingFilter })
   }
 
-  const handleChangePage = (newPage) => {
-    setFilter({
+  const handleTableChange = (
+    paginationInfo: any,
+    _filters: any,
+    sorter: any
+  ) => {
+    const newFilter = {
       ...filter,
-      page: newPage
-    })
-  }
+      page: paginationInfo.current || 1,
+      limit: paginationInfo.pageSize || 8
+    }
 
-  const handleSetSortBy = (order, sortBy) => {
-    setFilter({
-      ...filter,
-      sortBy,
-      order
-    })
-  }
+    if (sorter.order) {
+      newFilter.sortBy = sorter.field
+      newFilter.order = sorter.order === 'ascend' ? 'asc' : 'desc'
+    }
 
-  // Define columns for Antd Table
+    setFilter(newFilter)
+  }
   const columns: ColumnsType<any> = [
     {
       title: '#',
       key: 'index',
       width: 60,
       align: 'center',
-      render: (_, __, index) => index + 1 + (filter.page - 1) * filter.limit
-    },
-    {
-      title: t('storeDetail.avatar'),
-      key: 'avatar',
-      width: 100,
-      render: (_, store) => <StoreSmallCard store={store} />
+      render: (_, __, index) =>
+        index + 1 + (pagination.pageCurrent - 1) * filter.limit
     },
     {
       title: t('storeDetail.storeName'),
       key: 'name',
-      sorter: true,
       render: (_, store) => <StoreSmallCard store={store} />
     },
     {
       title: t('storeDetail.role'),
       key: 'role',
-      sorter: true,
       render: (_, store) => (
         <ManagerRoleLabel
-          role={_id === store.ownerId._id ? 'owner' : 'staff'}
+          role={_id === store.ownerId?._id ? 'owner' : 'staff'}
         />
       )
     },
     {
       title: t('status.active'),
       key: 'isActive',
-      sorter: true,
       render: (_, store) => <StoreActiveLabel isActive={store.isActive} />
     },
     {
       title: t('status.status'),
       key: 'isOpen',
-      sorter: true,
       render: (_, store) => <StoreStatusLabel isOpen={store.isOpen} />
     },
     {
@@ -152,88 +128,99 @@ const UserStoresTable = ({ heading = false }) => {
       title: t('action'),
       key: 'action',
       width: 120,
+      align: 'center',
       render: (_, store) => (
-        <Link
-          className='btn btn-sm btn-outline-primary ripple rounded-1'
-          to={`/seller/${store._id}`}
-          title={t('storeDetail.manage')}
-        >
-          <i className='fa-solid fa-eye me-2' />
-          <span className='res-hide'>{t('storeDetail.manage')}</span>
+        <Link to={`/seller/${store._id}`}>
+          <Button
+            type='primary'
+            size='small'
+            icon={<EyeOutlined />}
+            title={t('storeDetail.manage')}
+          >
+            <span className='hidden sm:inline'>{t('storeDetail.manage')}</span>
+          </Button>
         </Link>
       )
     }
   ]
-
-  const handleTableChange = (
-    paginationInfo: any,
-    filters: any,
-    sorter: any
-  ) => {
-    if (sorter.order) {
-      handleSetSortBy(sorter.order === 'ascend' ? 'asc' : 'desc', sorter.field)
-    }
-  }
-
   return (
-    <div className='position-relative'>
-      {heading && <h5 className='text-start'>{t('myStore')}</h5>}{' '}
-      {isLoading && <Spin size='large' />}
-      {error && <Alert message={error} type='error' />}
-      <div className='p-3 bg-white rounded-md'>
-        {' '}
-        <div className='flex gap-3 items-center flex-wrap'>
+    <div className='relative'>
+      {error && (
+        <Alert
+          message={error.message || 'Server Error'}
+          type='error'
+          showIcon
+          className='mb-4'
+        />
+      )}
+      <div className='p-4 bg-white rounded-lg shadow-sm'>
+        <div className='flex gap-3 items-center justify-between mb-4'>
           <SearchInput
             value={pendingFilter.search || ''}
             onChange={handleChangeKeyword}
             onSearch={handleSearch}
+            loading={isLoading}
           />
-          <div className='ms-2 flex-1'>
-            <Link
-              type='button'
-              className='btn btn-primary ripple text-nowrap rounded-1'
-              to='/account/store/create'
-            >
-              <i className='fa-light fa-plus' />
-              <span className='ms-2 res-hide'>{t('createStore')}</span>
-            </Link>
-          </div>
+          <Button
+            type='primary'
+            icon={<PlusOutlined />}
+            className='flex items-center'
+            onClick={() => setIsCreateDrawerOpen(true)}
+          >
+            <span className='hidden sm:inline ml-1'>{t('createStore')}</span>
+          </Button>
         </div>
-        {!isLoading && stores.length === 0 ? (
-          <div className='my-3 text-center'>
-            <img className='mb-3' src={boxImg} alt='boxImg' width={'80px'} />
-            <h5>{t('storeDetail.noStores')}</h5>
-          </div>
-        ) : (
-          <>
-            <div className='table-scroll my-2'>
-              <Table
-                columns={columns}
-                dataSource={stores}
-                pagination={false}
-                onChange={handleTableChange}
-                rowKey='_id'
-                scroll={{ x: 800 }}
-                size='small'
-              />
-            </div>
-
-            <div className='d-flex justify-content-between align-items-center px-4'>
-              <ShowResult
-                limit={filter.limit}
-                size={pagination.size}
-                pageCurrent={pagination.pageCurrent}
-              />
-              {pagination.size !== 0 && (
-                <Pagination
-                  pagination={pagination}
-                  onChangePage={handleChangePage}
-                />
-              )}
-            </div>
-          </>
-        )}
-      </div>
+        <Divider />
+        <Table
+          columns={columns}
+          dataSource={stores}
+          loading={isLoading}
+          onChange={handleTableChange}
+          rowKey='_id'
+          scroll={{ x: 800 }}
+          size='middle'
+          pagination={{
+            current: pagination.pageCurrent,
+            pageSize: filter.limit,
+            total: pagination.size,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} ${t('of')} ${total} ${t('result')}`,
+            pageSizeOptions: ['8', '16', '24', '32']
+          }}
+          locale={{
+            emptyText: (
+              <Empty
+                description={
+                  <p className='text-gray-500 text-lg font-medium'>
+                    {t('storeDetail.noStores')}
+                  </p>
+                }
+              ></Empty>
+            )
+          }}
+        />
+      </div>{' '}
+      {/* Create Store Drawer */}
+      <Drawer
+        title={t('storeDetail.createStoreTitle')}
+        placement='right'
+        onClose={() => setIsCreateDrawerOpen(false)}
+        open={isCreateDrawerOpen}
+        width={600}
+        maskClosable={true}
+        destroyOnHidden={true}
+        closable={true}
+        zIndex={9999}
+      >
+        <UserCreateStoreForm
+          onSuccess={() => {
+            setIsCreateDrawerOpen(false)
+            refetch()
+          }}
+        />
+      </Drawer>
     </div>
   )
 }

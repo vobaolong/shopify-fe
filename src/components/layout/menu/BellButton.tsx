@@ -115,7 +115,7 @@ const BellButton = ({ navFor = '' }: BellButtonProps) => {
             onClick={() => handleNotificationClick(l._id)}
             to={
               navFor === 'user'
-                ? `/account/purchase/detail/${l.objectId}`
+                ? `/account/order/detail/${l.objectId}`
                 : navFor === 'seller'
                   ? `/seller/orders/detail/${l.objectId}/${store._id}`
                   : navFor === 'admin'
@@ -129,7 +129,7 @@ const BellButton = ({ navFor = '' }: BellButtonProps) => {
             } nolink cus-dropdown w-100 px-3 py-2 border-top`}
           >
             {l.message} <p>{l.objectId}</p>
-            <p className='d-flex justify-content-between'>
+            <p className='flex justify-content-between'>
               <span>{timeAgo(l.createdAt)}</span>
               <small>{humanReadableDate(l.createdAt)}</small>
             </p>
@@ -142,7 +142,7 @@ const BellButton = ({ navFor = '' }: BellButtonProps) => {
       {list.length !== 0 && (
         <>
           <hr className='m-0' />
-          <div className='d-flex justify-content-center'>
+          <div className='flex justify-content-center'>
             <button
               className='btn rounded-0 w-100 btn-primary'
               onClick={handleDelete}

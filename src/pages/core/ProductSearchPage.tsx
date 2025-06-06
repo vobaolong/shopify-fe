@@ -79,7 +79,7 @@ const ProductSearchPage = () => {
         {' '}
         {isLoading && <Spin size='large' />}
         {error && <Alert message={error} type='error' />}
-        <div className='d-flex justify-content-between align-items-end'>
+        <div className='flex justify-content-between align-items-end'>
           <ProductFilter filter={filter} setFilter={setFilter} />
         </div>
         <div className='row mt-3'>
@@ -93,7 +93,7 @@ const ProductSearchPage = () => {
               </div>
             ))}
         </div>
-        <div className='d-flex justify-content-between align-items-center px-4'>
+        <div className='flex justify-content-between items-center px-4'>
           <ShowResult
             size={pagination.size}
             limit={filter.limit}

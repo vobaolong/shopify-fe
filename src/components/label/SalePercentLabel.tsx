@@ -7,7 +7,7 @@ const SalePercentLabel = ({ salePercent }: { salePercent: number }) => {
       className='badge bg-danger rounded-1 text-center ms-3'
       style={{ width: '70px' }}
     >
-      <small className='d-flex justify-content-center'>
+      <small className='flex justify-content-center'>
         {salePercent}% {t('productDetail.sale')}
       </small>
     </small>

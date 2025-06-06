@@ -328,7 +328,7 @@ const SellerReturnTable = ({
                 </tbody>
               </table>
             </div>
-            <div className='d-flex justify-content-between align-items-center px-4'>
+            <div className='flex justify-content-between items-center px-4'>
               {pagination.size !== 0 && (
                 <ShowResult
                   limit={filter.limit}

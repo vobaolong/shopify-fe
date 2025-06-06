@@ -2,11 +2,19 @@ import { createSlice } from '@reduxjs/toolkit'
 
 interface AccountState {
   user: {
+    _id?: string
     id?: string
     name?: string
     avatar?: string
     cartCount?: number
     role?: string
+    level?: {
+      name?: string
+      point?: number
+      [key: string]: any
+    }
+    numberOfSuccessfulOrders?: number
+    numberOfFailedOrders?: number
     [key: string]: any
   }
 }
@@ -32,6 +40,6 @@ export const { addAccount, updateAvatar } = accountSlice.actions
 
 export default accountSlice.reducer
 
-// Selector
-export const selectAccountUser = (state: { account: AccountState }) =>
-  state.account.user
+export const selectAccountUser = (state: { account: AccountState }) => {
+  return state.account.user
+}

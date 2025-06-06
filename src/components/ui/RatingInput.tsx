@@ -21,11 +21,11 @@ const RatingInput: React.FC<RatingInputProps> = ({
   const { t } = useTranslation()
 
   return (
-    <div className='mt-3 d-flex gap-2 align-items-center'>
+    <div className='mt-3 flex gap-2 items-center'>
       <span style={{ fontSize: '0.9rem' }} className='text-dark-emphasis'>
         {label}
       </span>
-      <div className='cus-rating border-0 d-flex flex-row-reverse justify-content-center'>
+      <div className='cus-rating border-0 flex flex-row-reverse justify-content-center'>
         <span>
           <input
             className='visually-hidden'

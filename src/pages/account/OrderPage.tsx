@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { useSelector } from 'react-redux'
 import AccountLayout from '../../components/layout/AccountLayout'
 import UserOrdersTable from '../../components/table/UserOrdersTable'
 import { useTranslation } from 'react-i18next'
 import MetaData from '../../components/layout/meta/MetaData'
+import { useSelector } from 'react-redux'
+import { Tabs } from 'antd'
+import type { TabsProps } from 'antd'
 
 const OrderPage = () => {
   const user = useSelector((state: any) => state.account.user)
@@ -29,32 +31,28 @@ const OrderPage = () => {
   const handleStatusChange = (status: string) => {
     setSelectedStatus(status)
   }
+
+  const items: TabsProps['items'] = orderStatus.map((status) => ({
+    key: status.value,
+    label: status.label,
+    children: <UserOrdersTable heading={false} status={status.value} />
+  }))
+
   const paths = [
     { name: t('breadcrumbs.home'), url: '/' },
-    { name: t('breadcrumbs.myPurchase'), url: '/account/purchase' }
+    { name: t('breadcrumbs.myPurchase'), url: '/account/order' }
   ]
+
   return (
     <AccountLayout user={user} paths={paths}>
       <MetaData title={`${t('helmet.myPurchase')} | ShopBase Việt Nam`} />
-      <div className='nav nav-tabs bg-body rounded-top-1 box-shadow mb-2'>
-        {orderStatus.map((status) => (
-          <li
-            className='nav-item flex-grow-1 text-center pointer'
-            key={status.value}
-          >
-            <span
-              className={`nav-link h-100 text-dark-emphasis ${
-                selectedStatus === status.value ? `active` : ``
-              }`}
-              onClick={() => handleStatusChange(status.value)}
-            >
-              {status.label}
-            </span>
-          </li>
-        ))}
+      <div className='bg-white rounded-lg shadow-sm p-4'>
+        <Tabs
+          defaultActiveKey={selectedStatus}
+          items={items}
+          onChange={handleStatusChange}
+        />
       </div>
-
-      <UserOrdersTable heading={false} status={selectedStatus} />
     </AccountLayout>
   )
 }

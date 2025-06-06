@@ -8,6 +8,7 @@ import { calcTime } from '../../helper/calcTime'
 import { useTranslation } from 'react-i18next'
 import { Button, Modal, Spin, Tooltip } from 'antd'
 import { CommentOutlined } from '@ant-design/icons'
+import { useQuery } from '@tanstack/react-query'
 
 interface ReviewItemProps {
   orderId?: string
@@ -35,8 +36,7 @@ const ReviewItem = ({
   onRun
 }: ReviewItemProps) => {
   const { t } = useTranslation()
-  const [isLoading, setIsLoading] = useState(false)
-  const [isReviewed, setIsReviewed] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const [deliveredDate, setDeliveredDate] = useState<Date>(
     date ? new Date(date) : new Date()
   )
@@ -47,24 +47,18 @@ const ReviewItem = ({
     setDeliveredDate(newDate)
   }, [date])
 
-  const init = () => {
-    const { _id } = getToken()
-    setIsLoading(true)
-    checkReview(_id, { orderId, productId })
-      .then((res) => {
-        if (res.data.success) setIsReviewed(true)
-        else setIsReviewed(false)
-        setIsLoading(false)
-      })
-      .catch((error) => {
-        setIsReviewed(false)
-        setIsLoading(false)
-      })
-  }
-  useEffect(() => {
-    init()
-  }, [orderId, storeId, productId])
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const { _id } = getToken()
+
+  const { data: reviewData, isLoading } = useQuery({
+    queryKey: ['checkReview', _id, orderId, productId],
+    queryFn: async () => {
+      const response = await checkReview(_id, { orderId, productId })
+      return response.data.success
+    },
+    enabled: !!_id && !!orderId && !!productId
+  })
+
+  const isReviewed = reviewData || false
 
   const showModal = () => {
     setIsModalOpen(true)
@@ -76,7 +70,6 @@ const ReviewItem = ({
 
   const handleReviewSuccess = () => {
     setIsModalOpen(false)
-    setIsReviewed(true)
     if (onRun) onRun()
   }
 
@@ -94,6 +87,7 @@ const ReviewItem = ({
             }
           >
             <Button
+              size='small'
               type='primary'
               icon={<CommentOutlined />}
               disabled={isReviewed || calcTime(deliveredDate) > 0}
@@ -128,7 +122,7 @@ const ReviewItem = ({
             onCancel={handleCancel}
             footer={null}
             title={t('productDetail.productReview')}
-            destroyOnClose
+            destroyOnHidden
           >
             <ReviewForm
               orderId={orderId}

@@ -183,7 +183,7 @@ const AdminEditVariantForm = ({ variantId = '' }: { variantId?: string }) => {
           )}
         </div>
 
-        <div className='col-12 px-4 pb-3 d-flex justify-content-between align-items-center mt-4 res-flex-reverse-md'>
+        <div className='col-12 px-4 pb-3 flex justify-content-between items-center mt-4 res-flex-reverse-md'>
           <Link
             to='/admin/variant'
             className='text-decoration-none cus-link-hover res-w-100-md my-2'

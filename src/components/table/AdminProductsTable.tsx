@@ -114,7 +114,7 @@ const AdminProductsTable = () => {
   const handleChangePage = (page: number, pageSize: number) => {
     setFilter((prev) => ({ ...prev, page, limit: pageSize }))
   }
-  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
+  const handleTableChange = (pagination: any, _filters: any, sorter: any) => {
     setFilter((prev) => ({
       ...prev,
       page: pagination.current,
@@ -274,7 +274,7 @@ const AdminProductsTable = () => {
         confirmLoading={mutation.isPending}
       />
       <div className='p-3 bg-white rounded-md'>
-        <div className='mb-3 d-flex gap-3 items-center flex-wrap'>
+        <div className='mb-3 flex gap-3 items-center flex-wrap'>
           <SearchInput
             value={pendingFilter.search || ''}
             onChange={handleChangeKeyword}

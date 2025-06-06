@@ -78,7 +78,7 @@ const StoreCarouselUpload = ({
   return (
     <>
       {isLoading && (
-        <div className='d-flex justify-content-center p-2'>
+        <div className='flex justify-content-center p-2'>
           <Spin />
         </div>
       )}
@@ -93,7 +93,7 @@ const StoreCarouselUpload = ({
       )}
 
       <div className='cus-carousel-icon-wrap'>
-        <div className='d-flex flex-column'>
+        <div className='flex flex-column'>
           <div className=''>
             <label
               htmlFor={`uploadFeaturedImage-${index}`}

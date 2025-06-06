@@ -230,15 +230,15 @@ const TransactionsTable = ({
   ].filter(Boolean) as ColumnType<TransactionType>[]
 
   return (
-    <div className='position-relative'>
+    <div className='w-full'>
       {error && <Alert message={error.message} type='error' />}
       <div className='p-3 bg-white rounded-md'>
-        <div className='mb-3 d-flex gap-4 items-center flex-wrap'>
+        <div className='mb-3 flex items-center justify-between'>
           {by === 'store' && (
             <>
               <EWalletInfo eWallet={eWallet} />
               {owner && (owner as OwnerType)._id && (
-                <div className='ms-3'>
+                <div className='ms-auto'>
                   <CreateTransactionItem
                     storeId={storeId}
                     eWallet={eWallet}
@@ -251,7 +251,7 @@ const TransactionsTable = ({
           {by === 'user' && (
             <>
               <EWalletInfo eWallet={eWallet} />
-              <div className='ms-3'>
+              <div className='ms-auto'>
                 <CreateTransactionItemForUser
                   eWallet={eWallet}
                   onRun={() => refetch()}
@@ -260,7 +260,7 @@ const TransactionsTable = ({
             </>
           )}
         </div>
-        <div className='mb-3 d-flex gap-3 items-center flex-wrap'>
+        <div className='mb-3 flex gap-3 items-center flex-wrap'>
           <SearchInput
             value={pendingFilter.search || ''}
             onChange={handleChangeKeyword}
@@ -308,7 +308,6 @@ const TransactionsTable = ({
           />
         </div>
         <Divider />
-
         <Table
           columns={columns}
           dataSource={transactions}

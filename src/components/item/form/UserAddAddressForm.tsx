@@ -202,6 +202,14 @@ const UserAddAddressForm: React.FC<AddressFormProps> = ({ onSuccess }) => {
               placeholder={t('addressForm.selectProvince')}
               loading={isLoadingProvinces}
               onChange={handleProvinceChange}
+              showSearch
+              filterOption={(input, option) =>
+                (option?.children?.toString() ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              styles={{ popup: { root: { maxHeight: 400, overflow: 'auto' } } }}
+              virtual={false}
             >
               {provinces
                 .slice()
@@ -213,7 +221,6 @@ const UserAddAddressForm: React.FC<AddressFormProps> = ({ onSuccess }) => {
                 ))}
             </Select>
           </Form.Item>
-
           <Form.Item
             name='district'
             label={t('addressForm.district')}
@@ -229,6 +236,14 @@ const UserAddAddressForm: React.FC<AddressFormProps> = ({ onSuccess }) => {
               disabled={districts.length === 0}
               loading={isLoadingDistricts}
               onChange={handleDistrictChange}
+              showSearch
+              filterOption={(input, option) =>
+                (option?.children?.toString() ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              styles={{ popup: { root: { maxHeight: 400, overflow: 'auto' } } }}
+              virtual={false}
             >
               {districts
                 .slice()
@@ -240,7 +255,6 @@ const UserAddAddressForm: React.FC<AddressFormProps> = ({ onSuccess }) => {
                 ))}
             </Select>
           </Form.Item>
-
           <Form.Item
             name='ward'
             label={t('addressForm.ward')}
@@ -252,6 +266,14 @@ const UserAddAddressForm: React.FC<AddressFormProps> = ({ onSuccess }) => {
               placeholder={t('addressForm.selectWard')}
               disabled={wards.length === 0}
               loading={isLoadingWards}
+              showSearch
+              filterOption={(input, option) =>
+                (option?.children?.toString() ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              styles={{ popup: { root: { maxHeight: 400, overflow: 'auto' } } }}
+              virtual={false}
             >
               {wards
                 .slice()
@@ -263,7 +285,6 @@ const UserAddAddressForm: React.FC<AddressFormProps> = ({ onSuccess }) => {
                 ))}
             </Select>
           </Form.Item>
-
           <Form.Item
             name='street'
             label={t('addressForm.street')}
@@ -274,10 +295,9 @@ const UserAddAddressForm: React.FC<AddressFormProps> = ({ onSuccess }) => {
           >
             <Input
               placeholder='Ví dụ: Số 58 Đường số 1'
-              disabled={!form.getFieldValue('ward')}
+              disabled={wards.length === 0}
             />
           </Form.Item>
-
           <Form.Item>
             <Button
               type='primary'

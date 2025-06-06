@@ -20,7 +20,7 @@ const StoreProfileInfo = ({
       <div className='row p-3 py-4 box-shadow rounded-1 bg-body'>
         {showProfile && <h5>{t('storeDetail.profile')}</h5>}
         {showProfile && <hr />}
-        <div className='col-12 d-flex flex-column justify-content-center gap-2'>
+        <div className='col-12 flex flex-column justify-content-center gap-2'>
           {showProfile && (
             <p className='text-justify fs-9'>
               <i className='fa-solid fa-store text-muted me-1' />
@@ -48,7 +48,7 @@ const StoreProfileInfo = ({
           )}
         </div>
         {isEditable && (
-          <div className='col-12 d-flex justify-content-end'>
+          <div className='col-12 flex justify-content-end'>
             <StoreEditProfileItem store={store} />
           </div>
         )}
@@ -57,7 +57,7 @@ const StoreProfileInfo = ({
         <div className='row mt-3 p-3 py-4 box-shadow rounded-1 bg-body'>
           <h5>{t('storeDetail.contractNPoint')}</h5>
           <hr />
-          <div className='col-12 d-flex flex-column justify-content-center gap-2'>
+          <div className='col-12 flex flex-column justify-content-center gap-2'>
             <p className='text-justify fs-9'>
               <i className='fa-solid fa-store text-muted me-1' />
               <span className='text-dark-emphasis fw-bolder'>

@@ -27,7 +27,7 @@ const OrderDetailPage = () => {
           isEditable={true}
         />
 
-        <div className='align-items-center justify-content-between d-flex'>
+        <div className='items-center justify-content-between flex'>
           <Link
             to={`/seller/orders/${storeId}`}
             className='text-decoration-none link-hover'

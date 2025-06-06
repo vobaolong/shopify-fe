@@ -9,15 +9,22 @@ import OrderStatusLabel from '../label/OrderStatusLabel'
 import OrderPaymentLabel from '../label/OrderPaymentLabel'
 import SearchInput from '../ui/SearchInput'
 import { useTranslation } from 'react-i18next'
-import noItem from '../../assets/noItem.png'
-import { Table, Spin, Alert, Button, Typography, Empty } from 'antd'
+import {
+  Table,
+  Spin,
+  Alert,
+  Button,
+  Typography,
+  Empty,
+  Divider,
+  Drawer
+} from 'antd'
 import { EyeOutlined, SyncOutlined } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
 import { ColumnsType } from 'antd/es/table'
 import { OrderType } from '../../@types/entity.types'
-
+import OrderDetailInfo from '../info/OrderDetailInfo'
 const { Text, Title } = Typography
-
 interface UserOrdersTableProps {
   heading?: boolean
   status?: string
@@ -30,33 +37,26 @@ const UserOrdersTable: React.FC<UserOrdersTableProps> = ({
   const { t } = useTranslation()
   const [filter, setFilter] = useState({
     search: '',
-    status,
     sortBy: 'createdAt',
     order: 'desc',
-    limit: 10,
+    status: status || '',
+    limit: 5,
     page: 1
   })
-  const [pendingFilter, setPendingFilter] = useState({
-    search: '',
-    status,
-    sortBy: 'createdAt',
-    order: 'desc',
-    limit: 10,
-    page: 1
-  })
-
+  const [pendingFilter, setPendingFilter] = useState(filter)
   const { _id } = getToken()
-
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['userOrders', _id, filter],
     queryFn: () => listOrdersByUser(_id, filter),
     enabled: !!_id
   })
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
 
   const orders = data?.orders || []
   const pagination = {
     size: data?.size || 0,
-    pageCurrent: data?.filter?.pageCurrent || 1,
+    pageCurrent: data?.filter?.pageCurrent || filter.page,
     pageCount: data?.filter?.pageCount || 1
   }
 
@@ -72,37 +72,19 @@ const UserOrdersTable: React.FC<UserOrdersTableProps> = ({
     setFilter({ ...pendingFilter })
   }
 
-  const handleChangePage = (newPage: number) => {
-    setFilter({
-      ...filter,
-      page: newPage
-    })
-  }
-
-  const handleTableChange = (_pagination: any, _filters: any, sorter: any) => {
-    setFilter({
-      ...filter,
-      sortBy: sorter.field || filter.sortBy,
+  const handleTableChange = (pagination: any, _filters: any, sorter: any) => {
+    setFilter((prev) => ({
+      ...prev,
+      page: pagination.current,
+      limit: pagination.pageSize,
+      sortBy: sorter.field || prev.sortBy,
       order:
         sorter.order === 'ascend'
           ? 'asc'
           : sorter.order === 'descend'
             ? 'desc'
-            : filter.order
-    })
-  }
-
-  const getStatusTitle = () => {
-    if (status === 'Pending|Processing|Shipped|Delivered|Cancelled|Returned') {
-      return t('title.allOrders')
-    }
-    if (status === 'Pending') return t('title.notProcessedOrders')
-    if (status === 'Processing') return t('title.processingOrders')
-    if (status === 'Shipped') return t('title.shippedOrders')
-    if (status === 'Delivered') return t('title.deliveredOrders')
-    if (status === 'Cancelled') return t('title.cancelledOrders')
-    if (status === 'Returned') return t('title.ReturnOrders')
-    return ''
+            : prev.order
+    }))
   }
 
   const columns: ColumnsType<OrderType> = [
@@ -124,7 +106,8 @@ const UserOrdersTable: React.FC<UserOrdersTableProps> = ({
       render: (createdAt: string) => (
         <Text className='text-xs'>{humanReadableDate(createdAt)}</Text>
       ),
-      width: 150
+      width: 150,
+      align: 'right'
     },
     {
       title: t('orderDetail.total'),
@@ -145,7 +128,9 @@ const UserOrdersTable: React.FC<UserOrdersTableProps> = ({
       dataIndex: 'storeId',
       key: 'storeId',
       sorter: true,
-      render: (storeId: any) => <StoreSmallCard store={storeId} />,
+      render: (storeId: any) => (
+        <StoreSmallCard isAvatar={false} store={storeId} />
+      ),
       width: 200
     },
     {
@@ -172,23 +157,30 @@ const UserOrdersTable: React.FC<UserOrdersTableProps> = ({
       fixed: 'right',
       width: 80,
       render: (_: any, record: OrderType) => (
-        <Link to={`/account/purchase/detail/${record._id}`}>
-          <Button
-            type='primary'
-            size='small'
-            icon={<EyeOutlined />}
-            title={t('button.detail')}
-          />
-        </Link>
+        <Button
+          type='primary'
+          size='small'
+          icon={<EyeOutlined />}
+          title={t('button.detail')}
+          onClick={() => {
+            setSelectedOrderId(record._id)
+            setDrawerOpen(true)
+          }}
+        />
       )
     }
   ]
 
+  const handleCloseDrawer = () => {
+    setDrawerOpen(false)
+    setSelectedOrderId(null)
+  }
+
   return (
     <div className='w-full'>
-      {heading && getStatusTitle() && (
+      {heading && (
         <Title level={5} className='mb-4'>
-          {getStatusTitle()}
+          {t('userDetail.myPurchase')}
         </Title>
       )}
 
@@ -202,56 +194,61 @@ const UserOrdersTable: React.FC<UserOrdersTableProps> = ({
       )}
 
       <div className='p-3 bg-white rounded-md'>
-        <div className='flex gap-3 items-center mb-4'>
+        <div className='flex gap-3 items-center flex-wrap mb-3'>
           <SearchInput
             value={pendingFilter.search || ''}
             onChange={handleChangeKeyword}
             onSearch={handleSearch}
             loading={isLoading}
           />
+          <Button type='primary' onClick={handleSearch}>
+            {t('search')}
+          </Button>
           <Button
             onClick={() => refetch()}
-            icon={<SyncOutlined spin={isLoading} />}
+            className='!w-10 flex items-center justify-center'
+            type='default'
             loading={isLoading}
-            title={t('button.refresh')}
+            icon={<SyncOutlined spin={isLoading} />}
           />
         </div>
-
-        {orders.length === 0 && !isLoading ? (
-          <div className='my-8 text-center'>
-            <img className='mb-3' src={noItem} alt='noItem' width={'100px'} />
-            <Title level={5}>{t('orderDetail.noOrder')}</Title>
-          </div>
-        ) : (
+        <Divider />
+        <Spin spinning={isLoading}>
           <Table
             columns={columns}
             dataSource={orders}
             rowKey='_id'
-            loading={isLoading}
             pagination={{
               current: pagination.pageCurrent,
-              pageSize: filter.limit,
               total: pagination.size,
-              onChange: handleChangePage,
+              pageSize: filter.limit,
               showTotal: (total, range) =>
-                `${range[0]}-${range[1]} ${t('of')} ${total} ${t('result')}`,
-              pageSizeOptions: [5, 10, 20, 50],
+                `${range[0]}-${range[1]} of ${total} items`,
+              pageSizeOptions: ['5', '10', '20', '50'],
               showSizeChanger: true
             }}
             onChange={handleTableChange}
             scroll={{ x: 'max-content' }}
+            bordered
             size='small'
             locale={{
-              emptyText: (
-                <Empty
-                  image={Empty.PRESENTED_IMAGE_SIMPLE}
-                  description={t('orderDetail.noOrder')}
-                />
-              )
+              emptyText: <Empty description={t('orderDetail.noOrder')} />
             }}
           />
-        )}
+        </Spin>
       </div>
+
+      <Drawer
+        title={t('orderDetail.quickview')}
+        open={drawerOpen}
+        onClose={handleCloseDrawer}
+        width={600}
+        destroyOnClose
+      >
+        {selectedOrderId && (
+          <OrderDetailInfo orderId={selectedOrderId} by='user' />
+        )}
+      </Drawer>
     </div>
   )
 }

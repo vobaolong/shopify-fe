@@ -122,7 +122,7 @@ const AdminUserLevelForm = ({
   return (
     <div className={isEditMode ? 'p-4' : 'position-relative'}>
       {isLoading && (
-        <div className='d-flex justify-content-center p-4'>
+        <div className='flex justify-content-center p-4'>
           <Spin size='large' />
         </div>
       )}
