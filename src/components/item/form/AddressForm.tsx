@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  getProvincesGHN,
-  getDistrictsGHN,
-  getWardsGHN
-} from '../../../apis/address.api'
 import { Input, Select, Form, Spin, Alert } from 'antd'
 import {
   AddressDetail,
@@ -13,10 +8,21 @@ import {
   Ward
 } from '../../../@types/address.type'
 import { useQuery } from '@tanstack/react-query'
+import AddressService from '../../../services/address.service'
 
 interface AddressFormProps {
   addressDetail?: AddressDetail
   onChange: (address: any) => void
+}
+
+interface AddressState {
+  province: string
+  provinceName: string
+  district: string
+  districtName: string
+  ward: string
+  wardName: string
+  street: string
 }
 
 const AddressForm: React.FC<AddressFormProps> = ({
@@ -24,35 +30,36 @@ const AddressForm: React.FC<AddressFormProps> = ({
   onChange
 }) => {
   const { t } = useTranslation()
-  const [address, setAddress] = useState({
+  const [address, setAddress] = useState<AddressState>({
     province: addressDetail?.provinceID ?? '',
     provinceName: addressDetail?.provinceName ?? '',
     district: addressDetail?.districtID ?? '',
     districtName: addressDetail?.districtName ?? '',
     ward: addressDetail?.wardCode ?? '',
     wardName: addressDetail?.wardName ?? '',
-    street: addressDetail?.address?.split(', ')[0] ?? ''
+    street:
+      addressDetail?.address && typeof addressDetail.address === 'string'
+        ? addressDetail.address.split(', ')[0]
+        : ''
   })
-
-  // TanStack Query
   const {
     data: provinces = [],
     isLoading: isProvincesLoading,
     error: provincesError
-  } = useQuery({
+  } = useQuery<Province[]>({
     queryKey: ['provinces'],
-    queryFn: getProvincesGHN
+    queryFn: () => AddressService.getProvinces()
   })
 
   const {
     data: districts = [],
     isLoading: isDistrictsLoading,
     error: districtsError
-  } = useQuery({
+  } = useQuery<District[]>({
     queryKey: ['districts', address.province],
     queryFn: () =>
       address.province
-        ? getDistrictsGHN(address.province)
+        ? AddressService.getDistricts(address.province)
         : Promise.resolve([]),
     enabled: !!address.province
   })
@@ -61,10 +68,12 @@ const AddressForm: React.FC<AddressFormProps> = ({
     data: wards = [],
     isLoading: isWardsLoading,
     error: wardsError
-  } = useQuery({
+  } = useQuery<Ward[]>({
     queryKey: ['wards', address.district],
     queryFn: () =>
-      address.district ? getWardsGHN(address.district) : Promise.resolve([]),
+      address.district
+        ? AddressService.getWards(address.district)
+        : Promise.resolve([]),
     enabled: !!address.district
   })
 
@@ -99,10 +108,11 @@ const AddressForm: React.FC<AddressFormProps> = ({
     const name = option?.label || ''
     setAddress({ ...address, ward: value, wardName: name })
   }
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     if (address.provinceName && address.districtName && address.wardName) {
-      setAddress((prev) => ({
+      setAddress((prev: AddressState) => ({
         ...prev,
         street: value
       }))
@@ -135,9 +145,10 @@ const AddressForm: React.FC<AddressFormProps> = ({
             dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
             virtual={false}
             options={provinces
+              .filter((province: Province) => province.ProvinceName)
               .slice()
               .sort((a: Province, b: Province) =>
-                a.ProvinceName.localeCompare(b.ProvinceName)
+                (a.ProvinceName || '').localeCompare(b.ProvinceName || '')
               )
               .map((province: Province) => ({
                 value: province.ProvinceID,
@@ -164,9 +175,10 @@ const AddressForm: React.FC<AddressFormProps> = ({
             dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
             virtual={false}
             options={districts
+              .filter((district: District) => district.DistrictName)
               .slice()
               .sort((a: District, b: District) =>
-                a.DistrictName.localeCompare(b.DistrictName)
+                (a.DistrictName || '').localeCompare(b.DistrictName || '')
               )
               .map((district: District) => ({
                 value: district.DistrictID,
@@ -191,8 +203,11 @@ const AddressForm: React.FC<AddressFormProps> = ({
             dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
             virtual={false}
             options={wards
+              .filter((ward: Ward) => ward.WardName)
               .slice()
-              .sort((a: Ward, b: Ward) => a.WardName.localeCompare(b.WardName))
+              .sort((a: Ward, b: Ward) =>
+                (a.WardName || '').localeCompare(b.WardName || '')
+              )
               .map((ward: Ward) => ({
                 value: ward.WardCode,
                 label: ward.WardName

@@ -1,79 +1,52 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { connect } from 'react-redux'
-import { Spin, Alert } from 'antd'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useDispatch } from 'react-redux'
 import { getUserLevel } from '../../apis/level.api'
-import { countOrder } from '../../apis/order.api'
 import { getUser } from '../../apis/user.api'
+import { Spin, Alert, Avatar } from 'antd'
 import defaultImage from '../../assets/default.webp'
 import { addUser } from '../../store/slices/userSlice'
 
-interface UserInitProps {
-  user: any
-  actions: (user: any) => void
-}
-
-const UserInit = ({ user, actions }: UserInitProps) => {
-  const [isLoading, setIsLoading] = useState(false)
+const UserInit = () => {
+  const dispatch = useDispatch()
+  const queryClient = useQueryClient()
   const { userId } = useParams()
-  const [error, setError] = useState('')
   const safeUserId = userId || ''
 
-  const init = async () => {
-    setError('')
-    setIsLoading(true)
-    try {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['user-init', safeUserId],
+    queryFn: async () => {
       const res = await getUser(safeUserId)
-      const data = res.data
-      if (data.error) {
-        setError(data.error)
-        setIsLoading(false)
-      } else {
-        const newUser = data.user
-        try {
-          const res = await getUserLevel(safeUserId)
-          newUser.level = res.data.level
-        } catch {
-          newUser.level = {}
-        }
-        actions(newUser)
-        setIsLoading(false)
+      const userData = res.data.user
+      try {
+        const levelRes = await getUserLevel(safeUserId)
+        userData.level = levelRes.data.level || {}
+      } catch {
+        userData.level = {}
       }
-    } catch {
-      setError('Server Error')
-      setIsLoading(false)
-    }
-  }
+      return userData
+    },
+    enabled: !!safeUserId,
+    staleTime: 5 * 60 * 1000
+  })
 
   useEffect(() => {
-    if (!user || user._id !== userId) init()
-  }, [userId])
-  return isLoading ? (
-    <div className='cus-position-relative-loading'>
-      <Spin size='small' />
-    </div>
-  ) : (
+    if (data) {
+      dispatch(addUser(data))
+      queryClient.setQueryData(['user-init', safeUserId], data)
+    }
+  }, [data, dispatch, queryClient, safeUserId])
+
+  if (isLoading) return <Spin size='small' />
+  if (error) return <Alert message={error.message} type='error' showIcon />
+
+  return (
     <div className='your-store-card btn btn-outline-light cus-outline ripple'>
-      <img
-        loading='lazy'
-        src={user.avatar || defaultImage}
-        className='your-store-img'
-        alt='avatar'
-      />{' '}
-      <span className='your-store-name unselect'>
-        {user.userName}
-        {error && <Alert message={error} type='error' showIcon />}
-      </span>
+      <Avatar src={data?.avatar || defaultImage} />
+      <span className='your-store-name unselect'>{data?.userName}</span>
     </div>
   )
 }
 
-function mapStateToProps(state: any) {
-  return { user: state.user.user }
-}
-
-function mapDispatchToProps(dispatch: any) {
-  return { actions: (user: any) => dispatch(addUser(user)) }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(UserInit)
+export default UserInit

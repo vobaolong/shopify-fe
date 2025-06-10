@@ -27,6 +27,11 @@ export interface VariantFilterState extends BaseFilterState {
   status?: string
 }
 
+export interface VariantValueFilterState extends BaseFilterState {
+  status?: string
+  variantId?: string
+}
+
 export interface StoreFilterState extends BaseFilterState {
   isActive?: boolean
   commissionId?: string
@@ -88,7 +93,7 @@ export const createDefaultFilter = <T extends BaseFilterState>(
     search: '',
     sortBy: 'createdAt',
     order: 'desc',
-    limit: 10,
+    limit: 8,
     page: 1,
     ...overrides
   } as T
@@ -103,18 +108,26 @@ export const defaultTableFilter: TableFilterState =
 export const defaultOrderFilter: OrderFilterState =
   createDefaultFilter<OrderFilterState>({
     sortBy: 'createdAt',
-    limit: 7,
+    limit: 8,
     status: 'all'
   })
 
 export const defaultTransactionFilter: TransactionFilterState =
   createDefaultFilter<TransactionFilterState>({
     sortBy: 'createdAt',
-    limit: 10
+    limit: 8
   })
 
 export const defaultVariantFilter: VariantFilterState =
   createDefaultFilter<VariantFilterState>({
+    sortBy: 'name',
+    order: 'asc',
+    limit: 8,
+    status: 'all'
+  })
+
+export const defaultVariantValueFilter: VariantValueFilterState =
+  createDefaultFilter<VariantValueFilterState>({
     sortBy: 'name',
     order: 'asc',
     limit: 8,
@@ -131,7 +144,7 @@ export const defaultUserFilter: UserFilterState =
   createDefaultFilter<UserFilterState>({
     sortBy: 'point',
     role: 'customer',
-    limit: 10
+    limit: 8
   })
 
 export const defaultProductFilter: ProductFilterState =
@@ -153,14 +166,14 @@ export const defaultCategoryFilter: CategoryFilterState =
   createDefaultFilter<CategoryFilterState>({
     sortBy: 'categoryId',
     order: 'asc',
-    limit: 5
+    limit: 8
   })
 
 export const defaultCommissionFilter: CommissionFilterState =
   createDefaultFilter<CommissionFilterState>({
     sortBy: 'name',
     order: 'asc',
-    limit: 10,
+    limit: 8,
     status: 'all'
   })
 
@@ -168,14 +181,14 @@ export const defaultLevelFilter: LevelFilterState =
   createDefaultFilter<LevelFilterState>({
     sortBy: 'point',
     order: 'asc',
-    limit: 6,
+    limit: 8,
     status: 'all'
   })
 
 export const defaultReportFilter: ReportFilterState =
   createDefaultFilter<ReportFilterState>({
     sortBy: 'createdAt',
-    limit: 10,
+    limit: 8,
     activeTab: 'stores',
     isStore: true,
     field: '_id'
@@ -185,7 +198,7 @@ export const defaultReturnFilter: ReturnFilterState =
   createDefaultFilter<ReturnFilterState>({
     sortBy: 'createdAt',
     order: 'desc',
-    limit: 7,
+    limit: 8,
     status: ''
   })
 
@@ -193,5 +206,5 @@ export const defaultStaffFilter: StaffFilterState =
   createDefaultFilter<StaffFilterState>({
     sortBy: 'name',
     order: 'asc',
-    limit: 6
+    limit: 8
   })

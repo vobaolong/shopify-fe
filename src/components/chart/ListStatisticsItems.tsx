@@ -62,8 +62,7 @@ const ListStatisticsItems = ({
     sliceEnd: 6,
     type: 'line'
   })
-  const { _id } = getToken()
-
+  console.log(storeId)
   const titles: Record<string, string> = {
     order: t('admin.adDashboard.salesStatisticsByOrders'),
     product: t('admin.adDashboard.statisticsByProducts'),
@@ -147,20 +146,15 @@ const ListStatisticsItems = ({
       }
     } else {
       const [orderData, productData] = await Promise.all([
-        listOrdersByStore(
-          _id,
-          {
-            search: '',
-            limit: 1000,
-            sortBy: 'createdAt',
-            order: 'desc',
-            page: 1,
-            status: OrderStatus.DELIVERED
-          },
-          storeId
-        ),
+        listOrdersByStore(storeId, {
+          search: '',
+          limit: 1000,
+          sortBy: 'createdAt',
+          order: 'desc',
+          page: 1,
+          status: OrderStatus.DELIVERED
+        }),
         listProductsForManager(
-          _id,
           {
             search: '',
             sortBy: 'sold',
@@ -187,12 +181,11 @@ const ListStatisticsItems = ({
     }
   }
 
-  const { data, isLoading, error, refetch } = useQuery<
-    AdminStats | SellerStats
-  >({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['statistics', by, storeId],
     queryFn: fetchStats,
-    refetchInterval: 60000 // 1 phút
+    enabled: !!storeId,
+    refetchInterval: 60000
   })
 
   // Dropdown menu for flag

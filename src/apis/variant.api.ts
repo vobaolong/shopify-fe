@@ -1,17 +1,19 @@
 import axiosClient from './client.api'
 
-export const getVariantById = async (userId: string, variantId: string) => {
-  return await axiosClient.get(`/variant/by/id/${variantId}/${userId}`)
+export const getVariantById = async (variantId: any) => {
+  return await axiosClient.get(`/admin/variant/${variantId}`)
 }
 
-export const listVariants = async (userId: string, params: any) => {
-  return await axiosClient.get(`/variants/${userId}`, {
+export const listVariants = async (params: any): Promise<any> => {
+  return await axiosClient.get(`/admin/variants`, {
     params
   })
 }
 
-export const listVariantByCategory = async (categoryId: string) => {
-  return await axiosClient.get('/active/variants', {
+export const listVariantByCategory = async (
+  categoryId: string
+): Promise<any> => {
+  return await axiosClient.get('/variants/active', {
     params: {
       categoryId,
       limit: 100
@@ -19,62 +21,68 @@ export const listVariantByCategory = async (categoryId: string) => {
   })
 }
 
-export const listActiveVariants = async (params: any) => {
-  return await axiosClient.get('/active/variants', {
+export const listActiveVariants = async (params: any): Promise<any> => {
+  return await axiosClient.get('/variants/active', {
     params
   })
 }
 
-export const createVariant = async (userId: string, variant: any) => {
-  return await axiosClient.post(`/variant/create/${userId}`, variant)
+export const createVariant = async (variant: any): Promise<any> => {
+  return await axiosClient.post(`/admin/variant`, variant)
 }
 
 export const updateVariant = async (
-  userId: string,
   variantId: string,
   variant: any
-) => {
-  return await axiosClient.put(`/variant/${variantId}/${userId}`, variant)
+): Promise<any> => {
+  return await axiosClient.put(`/admin/variant/${variantId}`, variant)
 }
 
-export const removeVariant = async (userId: string, variantId: string) => {
-  return await axiosClient.delete(`/variant/${variantId}/${userId}`)
+export const removeVariant = async (variantId: string): Promise<any> => {
+  return await axiosClient.delete(`/admin/variant/${variantId}`)
 }
 
-export const restoreVariant = async (userId: string, variantId: string) => {
-  return await axiosClient.get(`/variant/restore/${variantId}/${userId}`)
+export const restoreVariant = async (variantId: string): Promise<any> => {
+  return await axiosClient.get(`/admin/variant/${variantId}/restore`)
 }
 
-export const listActiveValues = async (variantId: string) => {
-  return await axiosClient.get(`/active/variant/values/by/variant/${variantId}`)
+export const listActiveValues = async (
+  variantId: string,
+  params?: any
+): Promise<any> => {
+  return await axiosClient.get(`/active/values/by/variant/${variantId}`, {
+    params
+  })
 }
 
-export const listValues = async (userId: string, variantId: string) => {
-  return await axiosClient.get(
-    `/variant/values/by/variant/${variantId}/${userId}`
-  )
+export const listValues = async (
+  variantId: string,
+  params?: any
+): Promise<any> => {
+  return await axiosClient.get(`/values/by/variant/${variantId}`, {
+    params
+  })
 }
 
-export const getValueById = async (userId: string, valueId: string) => {
-  return await axiosClient.get(`/value/by/id/${valueId}/${userId}`)
+export const getValueById = async (valueId: string): Promise<any> => {
+  return await axiosClient.get(`/value/${valueId}`)
 }
 
-export const createValue = async (userId: string, value: any) => {
-  return await axiosClient.post(`/value/create/${userId}`, value)
+export const createValue = async (value: any): Promise<any> => {
+  return await axiosClient.post(`/value`, value)
 }
 
 export const updateValue = async (
-  userId: string,
   valueId: string,
   value: any
-) => {
-  return await axiosClient.put(`/value/${valueId}/${userId}`, value)
+): Promise<any> => {
+  return await axiosClient.put(`/value/${valueId}`, value)
 }
 
-export const removeValue = async (userId: string, valueId: string) => {
-  return await axiosClient.delete(`/value/${valueId}/${userId}`)
+export const removeValue = async (valueId: string): Promise<any> => {
+  return await axiosClient.delete(`/value/${valueId}`)
 }
 
-export const restoreValue = async (userId: string, valueId: string) => {
-  return await axiosClient.get(`/value/restore/${valueId}/${userId}`)
+export const restoreValue = async (valueId: string): Promise<any> => {
+  return await axiosClient.get(`/value/restore/${valueId}`)
 }

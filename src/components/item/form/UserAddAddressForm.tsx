@@ -1,64 +1,70 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
 import { getToken } from '../../../apis/auth.api'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
 import { useTranslation } from 'react-i18next'
 import { addAddress } from '../../../apis/user.api'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { AxiosResponse } from 'axios'
 import { useAntdApp } from '../../../hooks/useAntdApp'
-import { Form, Input, Select, Button, Spin, Alert, Modal, Space } from 'antd'
-import {
-  getDistrict,
-  getProvince,
-  getWard,
-  GHN_TOKEN
-} from '../../../apis/address.api'
+import { Form, Input, Select, Button, Spin, Alert } from 'antd'
+import { Province, District, Ward } from '../../../@types/address.type'
+import AddressService from '../../../services/address.service'
 
-async function getDistricts(provinceId: string) {
-  const { data: districtList } = await axios.get(getDistrict, {
-    headers: {
-      Token: GHN_TOKEN
-    },
-    params: {
-      province_id: provinceId
-    }
-  })
-  return districtList.data
-}
-
-async function getWards(districtId: string) {
-  const { data: wardList } = await axios.get(getWard, {
-    headers: {
-      Token: GHN_TOKEN
-    },
-    params: {
-      district_id: districtId
-    }
-  })
-  return wardList.data
-}
+const { Option } = Select
 
 interface AddressFormProps {
   onSuccess?: () => void
 }
 
-const { Option } = Select
-
 const UserAddAddressForm: React.FC<AddressFormProps> = ({ onSuccess }) => {
   const { t } = useTranslation()
   const { notification } = useAntdApp()
   const [form] = Form.useForm()
-  const [provinces, setProvinces] = useState<any[]>([])
-  const [districts, setDistricts] = useState<any[]>([])
-  const [wards, setWards] = useState<any[]>([])
-  const [isLoadingProvinces, setIsLoadingProvinces] = useState(false)
-  const [isLoadingDistricts, setIsLoadingDistricts] = useState(false)
-  const [isLoadingWards, setIsLoadingWards] = useState(false)
   const [error, setError] = useState('')
   const [updateDispatch] = useUpdateDispatch()
   const { _id } = getToken()
-  // Mutation for addAddress
+  const [selectedProvince, setSelectedProvince] = useState<string>('')
+  const [selectedDistrict, setSelectedDistrict] = useState<string>('')
+  // TanStack Query for provinces
+  const {
+    data: provinces = [],
+    isLoading: isProvincesLoading,
+    error: provincesError
+  } = useQuery<Province[]>({
+    queryKey: ['provinces'],
+    queryFn: () => AddressService.getProvinces()
+  })
+
+  // TanStack Query for districts
+  const {
+    data: districts = [],
+    isLoading: isDistrictsLoading,
+    error: districtsError
+  } = useQuery<District[]>({
+    queryKey: ['districts', selectedProvince],
+    queryFn: () =>
+      selectedProvince
+        ? AddressService.getDistricts(selectedProvince)
+        : Promise.resolve([]),
+    enabled: !!selectedProvince
+  })
+
+  // TanStack Query for wards
+  const {
+    data: wards = [],
+    isLoading: isWardsLoading,
+    error: wardsError
+  } = useQuery<Ward[]>({
+    queryKey: ['wards', selectedDistrict],
+    queryFn: () =>
+      selectedDistrict
+        ? AddressService.getWards(selectedDistrict)
+        : Promise.resolve([]),
+    enabled: !!selectedDistrict
+  })
+
+  const isLoading = isProvincesLoading || isDistrictsLoading || isWardsLoading
+  const apiError = provincesError || districtsError || wardsError // Mutation for addAddress
   const addAddressMutation = useMutation({
     mutationFn: async (addressData: any) => {
       const res = await addAddress(_id, addressData)
@@ -70,6 +76,8 @@ const UserAddAddressForm: React.FC<AddressFormProps> = ({ onSuccess }) => {
       } else {
         updateDispatch('account', data.user)
         form.resetFields()
+        setSelectedProvince('')
+        setSelectedDistrict('')
         notification.success({ message: t('toastSuccess.address.add') })
         if (onSuccess) {
           onSuccess()
@@ -80,82 +88,35 @@ const UserAddAddressForm: React.FC<AddressFormProps> = ({ onSuccess }) => {
       notification.error({ message: 'Server Error' })
     }
   })
-  useEffect(() => {
-    const fetchProvinces = async () => {
-      try {
-        setIsLoadingProvinces(true)
-        const { data } = await axios.get(getProvince, {
-          headers: {
-            Token: GHN_TOKEN
-          }
-        })
-        setProvinces(data.data)
-      } catch (error) {
-        console.error('Error fetching provinces:', error)
-        setError(t('addressForm.errorLoadingProvinces'))
-      } finally {
-        setIsLoadingProvinces(false)
-      }
-    }
-    fetchProvinces()
-  }, [])
 
-  const fetchDistricts = async (provinceId: string) => {
-    try {
-      setIsLoadingDistricts(true)
-      const districts = await getDistricts(provinceId)
-      setDistricts(districts)
-      return districts
-    } catch (error) {
-      console.error('Error fetching districts:', error)
-      setError(t('addressForm.errorLoadingDistricts'))
-      return []
-    } finally {
-      setIsLoadingDistricts(false)
-    }
-  }
-
-  const fetchWards = async (districtId: string) => {
-    try {
-      setIsLoadingWards(true)
-      const wards = await getWards(districtId)
-      setWards(wards)
-      return wards
-    } catch (error) {
-      console.error('Error fetching wards:', error)
-      setError(t('addressForm.errorLoadingWards'))
-      return []
-    } finally {
-      setIsLoadingWards(false)
-    }
-  }
-
-  const handleProvinceChange = async (value: string) => {
+  const handleProvinceChange = (value: string) => {
+    setSelectedProvince(value)
+    setSelectedDistrict('')
     form.setFieldsValue({ district: undefined, ward: undefined, street: '' })
-    setDistricts([])
-    setWards([])
-
-    if (value) {
-      await fetchDistricts(value)
-    }
   }
 
-  const handleDistrictChange = async (value: string) => {
+  const handleDistrictChange = (value: string) => {
+    setSelectedDistrict(value)
     form.setFieldsValue({ ward: undefined, street: '' })
-    setWards([])
-
-    if (value) {
-      await fetchWards(value)
-    }
   }
-
   const handleFinish = async (values: any) => {
+    console.log('Form values:', values)
+
     const province = provinces.find((p) => p.ProvinceID === values.province)
     const district = districts.find((d) => d.DistrictID === values.district)
     const ward = wards.find((w) => w.WardCode === values.ward)
 
+    console.log('Found province:', province)
+    console.log('Found district:', district)
+    console.log('Found ward:', ward)
+
     if (!province || !district || !ward) {
       setError(t('addressFormValid.allFields'))
+      return
+    }
+
+    if (!values.street || values.street.trim() === '') {
+      setError('Vui lòng nhập địa chỉ cụ thể')
       return
     }
 
@@ -170,15 +131,15 @@ const UserAddAddressForm: React.FC<AddressFormProps> = ({ onSuccess }) => {
       address: addressString
     }
 
+    console.log('Address data to submit:', addressData)
     addAddressMutation.mutate(addressData)
   }
-
   return (
     <div className='w-full'>
-      <Spin spinning={addAddressMutation.isPending}>
-        {error && (
+      <Spin spinning={addAddressMutation.isPending || isLoading}>
+        {(error || apiError) && (
           <Alert
-            message={error}
+            message={error || apiError?.message || 'Có lỗi xảy ra'}
             type='error'
             showIcon
             className='mb-4'
@@ -200,7 +161,7 @@ const UserAddAddressForm: React.FC<AddressFormProps> = ({ onSuccess }) => {
           >
             <Select
               placeholder={t('addressForm.selectProvince')}
-              loading={isLoadingProvinces}
+              loading={isProvincesLoading}
               onChange={handleProvinceChange}
               showSearch
               filterOption={(input, option) =>
@@ -208,12 +169,14 @@ const UserAddAddressForm: React.FC<AddressFormProps> = ({ onSuccess }) => {
                   .toLowerCase()
                   .includes(input.toLowerCase())
               }
-              styles={{ popup: { root: { maxHeight: 400, overflow: 'auto' } } }}
               virtual={false}
             >
               {provinces
+                .filter((province) => province.ProvinceName) // Lọc ra các province có ProvinceName
                 .slice()
-                .sort((a, b) => a.ProvinceName.localeCompare(b.ProvinceName))
+                .sort((a, b) =>
+                  (a.ProvinceName || '').localeCompare(b.ProvinceName || '')
+                )
                 .map((province) => (
                   <Option key={province.ProvinceID} value={province.ProvinceID}>
                     {province.ProvinceName}
@@ -234,7 +197,7 @@ const UserAddAddressForm: React.FC<AddressFormProps> = ({ onSuccess }) => {
             <Select
               placeholder={t('addressForm.selectDistrict')}
               disabled={districts.length === 0}
-              loading={isLoadingDistricts}
+              loading={isDistrictsLoading}
               onChange={handleDistrictChange}
               showSearch
               filterOption={(input, option) =>
@@ -242,12 +205,14 @@ const UserAddAddressForm: React.FC<AddressFormProps> = ({ onSuccess }) => {
                   .toLowerCase()
                   .includes(input.toLowerCase())
               }
-              styles={{ popup: { root: { maxHeight: 400, overflow: 'auto' } } }}
               virtual={false}
             >
               {districts
+                .filter((district) => district.DistrictName) // Lọc ra các district có DistrictName
                 .slice()
-                .sort((a, b) => a.DistrictName.localeCompare(b.DistrictName))
+                .sort((a, b) =>
+                  (a.DistrictName || '').localeCompare(b.DistrictName || '')
+                )
                 .map((district) => (
                   <Option key={district.DistrictID} value={district.DistrictID}>
                     {district.DistrictName}
@@ -265,19 +230,21 @@ const UserAddAddressForm: React.FC<AddressFormProps> = ({ onSuccess }) => {
             <Select
               placeholder={t('addressForm.selectWard')}
               disabled={wards.length === 0}
-              loading={isLoadingWards}
+              loading={isWardsLoading}
               showSearch
               filterOption={(input, option) =>
                 (option?.children?.toString() ?? '')
                   .toLowerCase()
                   .includes(input.toLowerCase())
               }
-              styles={{ popup: { root: { maxHeight: 400, overflow: 'auto' } } }}
               virtual={false}
             >
               {wards
+                .filter((ward) => ward.WardName) // Lọc ra các ward có WardName
                 .slice()
-                .sort((a, b) => a.WardName.localeCompare(b.WardName))
+                .sort((a, b) =>
+                  (a.WardName || '').localeCompare(b.WardName || '')
+                )
                 .map((ward) => (
                   <Option key={ward.WardCode} value={ward.WardCode}>
                     {ward.WardName}

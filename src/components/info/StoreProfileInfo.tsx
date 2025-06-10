@@ -1,86 +1,134 @@
 import { useTranslation } from 'react-i18next'
 import StoreEditProfileItem from '../item/StoreEditProfileItem'
 import { StoreType } from '../../@types/entity.types'
+import { Typography, Card, Space, Divider } from 'antd'
+import { ShopOutlined, TrophyOutlined, UserOutlined } from '@ant-design/icons'
 
 interface StoreProfileInfoProps {
-  store?: Partial<StoreType>
+  store: StoreType
   isEditable?: boolean
   showProfile?: boolean
 }
 
+const { Title, Text } = Typography
+const getDisplayAddress = (address: any): string => {
+  if (!address) {
+    return '-'
+  }
+
+  if (typeof address === 'string') {
+    return address
+  }
+
+  if (typeof address === 'object') {
+    if (address.address) {
+      return address.address
+    }
+
+    if (address.provinceName || address.districtName || address.wardName) {
+      const parts = []
+      if (address.wardName) parts.push(address.wardName)
+      if (address.districtName) parts.push(address.districtName)
+      if (address.provinceName) parts.push(address.provinceName)
+      return parts.length > 0 ? parts.join(', ') : '-'
+    }
+  }
+
+  return '-'
+}
+
 const StoreProfileInfo = ({
-  store = {},
+  store,
   isEditable = false,
   showProfile = true
 }: StoreProfileInfoProps) => {
   const { t } = useTranslation()
 
   return (
-    <div className='container-fluid'>
-      <div className='row p-3 py-4 box-shadow rounded-1 bg-body'>
-        {showProfile && <h5>{t('storeDetail.profile')}</h5>}
-        {showProfile && <hr />}
-        <div className='col-12 flex flex-column justify-content-center gap-2'>
+    <div className='w-full max-w-4xl mx-auto space-y-6'>
+      <Card className='shadow-sm border border-gray-200'>
+        {showProfile && (
+          <>
+            <Title level={4} className='mb-4 text-gray-800'>
+              {t('storeDetail.profile')}
+            </Title>
+            <Divider className='mt-0 mb-6' />
+          </>
+        )}
+
+        <Space direction='vertical' size='large' className='w-full'>
           {showProfile && (
-            <p className='text-justify fs-9'>
-              <i className='fa-solid fa-store text-muted me-1' />
-              <span className='text-dark-emphasis fw-bolder'>
-                {t('storeDetail.storeName')}
-              </span>
-              : {store?.name || '-'}
-            </p>
+            <div className='flex gap-2'>
+              <Text strong>{t('storeDetail.storeName')}:</Text>
+              <Text>{store?.name || '-'}</Text>
+            </div>
           )}
-          <p className='text-justify fs-9'>
-            <i className='fa-solid fa-quote-right text-muted me-1' />
-            <span className='text-dark-emphasis fw-bolder'>
-              {t('storeDetail.bio')}
-            </span>
-            : {store?.bio || '-'}
-          </p>
+
+          <div className='flex gap-2'>
+            <Text strong>{t('storeDetail.bio')}:</Text>
+            <Text>{store?.bio || '-'}</Text>
+          </div>
+
           {showProfile && (
-            <p className='text-justify fs-9'>
-              <i className='fa-solid fa-location-arrow text-muted me-1' />
-              <span className='text-dark-emphasis fw-bolder'>
-                {t('storeDetail.pickupAddress')}
-              </span>
-              : {store?.address || '-'}
-            </p>
+            <div className='flex gap-2'>
+              <Text strong>{t('storeDetail.pickupAddress')}:</Text>
+              <Text>{getDisplayAddress(store.address)}</Text>
+            </div>
           )}
-        </div>
+        </Space>
+
         {isEditable && (
-          <div className='col-12 flex justify-content-end'>
-            <StoreEditProfileItem store={store} />
+          <div className='flex justify-end mt-6 pt-4 border-t border-gray-100'>
+            <StoreEditProfileItem store={store as any} />
           </div>
         )}
-      </div>
+      </Card>
+
       {showProfile && (
-        <div className='row mt-3 p-3 py-4 box-shadow rounded-1 bg-body'>
-          <h5>{t('storeDetail.contractNPoint')}</h5>
-          <hr />
-          <div className='col-12 flex flex-column justify-content-center gap-2'>
-            <p className='text-justify fs-9'>
-              <i className='fa-solid fa-store text-muted me-1' />
-              <span className='text-dark-emphasis fw-bolder'>
-                {t('storeDetail.typeOfStall')}
-              </span>
-              : {store.commissionId?.name}
-            </p>
-            <p className='text-justify fs-9'>
-              <i className='fa-solid fa-shield-halved text-muted me-1' />
-              <span className='text-dark-emphasis fw-bolder'>
-                {t('storeDetail.point')}
-              </span>
-              : {store.point}
-            </p>{' '}
-            <p className='text-justify fs-9'>
-              <i className='fa-solid fa-location-dot text-muted me-1' />
-              <span className='text-dark-emphasis fw-bolder'>
-                {t('storeDetail.contactPerson')}
-              </span>
-              : {typeof store.ownerId === 'object' ? store.ownerId?.email : '-'}
-            </p>
-          </div>
-        </div>
+        <Card className='shadow-sm border border-gray-200'>
+          <Title level={4} className='mb-4 text-gray-800'>
+            {t('storeDetail.contractNPoint')}
+          </Title>
+          <Divider className='mt-0 mb-6' />
+
+          <Space direction='vertical' size='large' className='w-full'>
+            <div className='flex items-start gap-3'>
+              <ShopOutlined className='text-purple-500 mt-1 text-lg' />
+              <div className='flex-1'>
+                <Text strong>{t('storeDetail.typeOfStall')}:</Text>
+                <Text>
+                  {typeof store.commissionId === 'object' &&
+                  store.commissionId !== null &&
+                  'name' in store.commissionId
+                    ? store.commissionId.name
+                    : '-'}
+                </Text>
+              </div>
+            </div>
+
+            <div className='flex items-start gap-3'>
+              <TrophyOutlined className='text-yellow-500 mt-1 text-lg' />
+              <div className='flex-1'>
+                <Text strong>{t('storeDetail.point')}:</Text>
+                <Text>{store.point ?? '-'}</Text>
+              </div>
+            </div>
+
+            <div className='flex items-start gap-3'>
+              <UserOutlined className='text-indigo-500 mt-1 text-lg' />
+              <div className='flex-1'>
+                <Text strong>{t('storeDetail.contactPerson')}:</Text>
+                <Text>
+                  {typeof store.ownerId === 'object' &&
+                  store.ownerId !== null &&
+                  'email' in store.ownerId
+                    ? store.ownerId.email
+                    : '-'}
+                </Text>
+              </div>
+            </div>
+          </Space>
+        </Card>
       )}
     </div>
   )

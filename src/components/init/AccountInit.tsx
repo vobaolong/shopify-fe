@@ -34,29 +34,22 @@ const AccountInit = () => {
     queryKey: ['userAccountInit', _id],
     queryFn: async () => {
       if (!_id) return null
-
+      const res = await getUser(_id)
+      const newUser = res.user
+      if (!newUser) throw new Error('User data not found')
       try {
-        const res = (await getUser(_id)) as any
-        const newUser = res.user
-        if (!newUser) {
-          throw new Error('User data not found')
-        }
-        try {
-          const levelRes = (await getUserLevel(_id)) as any
-          newUser.level = levelRes.level || {}
-        } catch {
-          newUser.level = {}
-        }
-        try {
-          const cartRes = (await getCartCount(_id)) as any
-          newUser.cartCount = cartRes.count || 0
-        } catch {
-          newUser.cartCount = 0
-        }
-        return newUser
-      } catch (error) {
-        throw error
+        const levelRes = await getUserLevel(_id)
+        newUser.level = levelRes.level || {}
+      } catch {
+        newUser.level = {}
       }
+      try {
+        const cartRes = await getCartCount(_id)
+        newUser.cartCount = cartRes.count || 0
+      } catch {
+        newUser.cartCount = 0
+      }
+      return newUser
     },
     enabled: !!_id,
     staleTime: 5 * 60 * 1000,

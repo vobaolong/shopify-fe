@@ -1,12 +1,10 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { listReviews } from '../../apis/review.api'
-import { Spin, Alert } from 'antd'
+import { Spin, Alert, Table } from 'antd'
 import Pagination from '../ui/Pagination'
 import StarRating from '../label/StarRating'
 import { useTranslation } from 'react-i18next'
 import { humanReadableDate } from '../../helper/humanReadable'
-import SortByButton from './sub/SortByButton'
 import ShowResult from '../ui/ShowResult'
 import box from '../../assets/box.svg'
 import ProductSmallCard from '../card/ProductSmallCard'
@@ -14,6 +12,7 @@ import { Modal } from 'antd'
 import ListReport from '../item/form/ListReport'
 import { useSelector } from 'react-redux'
 import { selectAccountUser } from '../../store/slices/accountSlice'
+import { useQuery } from '@tanstack/react-query'
 
 const reviewReasons = [
   {
@@ -45,14 +44,9 @@ const SellerReviewTable = ({
   rating = 0
 }) => {
   const { t } = useTranslation()
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [reviews, setReviews] = useState([])
-  const [pagination, setPagination] = useState({
-    size: 0
-  })
+  const [error] = useState('')
   const [modalVisible, setModalVisible] = useState(false)
-  const [selectedReview, setSelectedReview] = useState(null)
+  const [selectedReview, setSelectedReview] = useState<any>(null)
   const user = useSelector(selectAccountUser)
   const [filter, setFilter] = useState({
     productId,
@@ -65,7 +59,27 @@ const SellerReviewTable = ({
     page: 1
   })
 
-  const handleReportClick = (review) => {
+  const {
+    data,
+    isLoading: queryLoading,
+    isError,
+    refetch
+  } = useQuery({
+    queryKey: ['reviews', filter],
+    queryFn: async () => {
+      const res = await listReviews(filter)
+      return res.data || res
+    }
+  })
+
+  const reviews = data?.reviews || []
+  const pagination = {
+    size: data?.size || 0,
+    pageCurrent: data?.filter?.pageCurrent || 1,
+    pageCount: data?.filter?.pageCount || 1
+  }
+
+  const handleReportClick = (review: any) => {
     setSelectedReview(review)
     setModalVisible(true)
   }
@@ -75,199 +89,115 @@ const SellerReviewTable = ({
     setSelectedReview(null)
   }
 
-  const init = () => {
-    setError('')
-    setIsLoading(true)
-
-    listReviews(filter)
-      .then((data) => {
-        if (data.error) setError(data.error)
-        else {
-          setReviews(data.reviews)
-          setPagination({
-            size: data.size,
-            pageCurrent: data.filter.pageCurrent,
-            pageCount: data.filter.pageCount
-          })
-        }
-        setIsLoading(false)
-        setTimeout(() => setError(''), 3000)
-      })
-      .catch(() => {
-        setError('Server Error')
-        setIsLoading(false)
-        setTimeout(() => setError(''), 3000)
-      })
-  }
-
-  useEffect(() => {
-    setFilter((prevFilter) => ({
-      ...prevFilter,
-      rating: rating === 0 ? '' : rating,
-      storeId
-    }))
-  }, [rating, storeId])
-
-  useEffect(() => {
-    init()
-  }, [filter])
-
-  const handleChangePage = (newPage) => {
+  const handleChangePage = (newPage: number) => {
     setFilter({
       ...filter,
       page: newPage
     })
   }
 
-  const handleSetSortBy = (order, sortBy) => {
-    setFilter({
-      ...filter,
-      sortBy,
-      order
-    })
-  }
-  return (
-    <div className='position-relative'>
-      {isLoading && <Spin size='large' />}
-      {error && <Alert message={error} type='error' />}
-      <div className='p-3 box-shadow bg-body rounded-1'>
-        {!isLoading && pagination.size === 0 ? (
-          <div className='my-4 text-center'>
-            <img className='mb-3' src={box} alt='noItem' width={'100px'} />
-            <h5>{t('reviewDetail.noReview')}</h5>
-          </div>
-        ) : (
-          <div className='table-scroll my-2'>
-            <table className='table table-sm table-hover align-middle text-start'>
-              <thead>
-                <tr>
-                  <th scope='col' className='text-center'>
-                    #
-                  </th>
-
-                  <th scope='col'>{t('productDetail.name')}</th>
-                  <th scope='col'>
-                    <SortByButton
-                      currentOrder={filter.order}
-                      currentSortBy={filter.sortBy}
-                      title={t('Rating')}
-                      sortBy='rating'
-                      onSet={handleSetSortBy}
-                    />
-                  </th>
-                  <th scope='col'>{t('reviewDetail.content')}</th>
-                  <th scope='col'>
-                    <SortByButton
-                      currentOrder={filter.order}
-                      currentSortBy={filter.sortBy}
-                      title={t('createdAt')}
-                      sortBy='createdAt'
-                      onSet={handleSetSortBy}
-                    />
-                  </th>
-                  <th scope='col'>
-                    <span>{t('action')}</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {reviews.map((review, index) => (
-                  <tr key={review._id}>
-                    <th scope='row'>
-                      {index + 1 + (filter.page - 1) * filter.limit}
-                    </th>
-                    <td
-                      style={{
-                        whiteSpace: 'normal',
-                        minWidth: '400px',
-                        width: 'fit-content'
-                      }}
-                    >
-                      <small>
-                        <ProductSmallCard product={review.productId} />
-                      </small>
-                    </td>
-                    <td>
-                      <StarRating stars={review.rating} />
-                    </td>
-                    <td
-                      style={{
-                        width: '400px',
-                        maxWidth: '400px',
-                        minWidth: '400px',
-                        whiteSpace: 'normal',
-                        wordWrap: 'break-word',
-                        overflow: 'auto'
-                      }}
-                    >
-                      {review.content}
-                    </td>
-                    <td>{humanReadableDate(review.createdAt)}</td>
-                    <td>
-                      {' '}
-                      <button
-                        type='button'
-                        onClick={() => handleReportClick(review)}
-                        className='btn btn-sm btn-warning'
-                      >
-                        {t('button.complaint')}
-                      </button>
-                      <Modal
-                        hasCloseBtn={false}
-                        title={t('dialog.complaint')}
-                        id='report'
-                      >
-                        <ListReport
-                          reasons={reviewReasons}
-                          objectId={review._id}
-                          reportBy={user._id}
-                          isStore={false}
-                          isProduct={false}
-                          isReview={true}
-                          showOtherReason={true}
-                        />
-                      </Modal>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-        <div className='flex justify-content-between items-center px-4'>
-          <ShowResult
-            limit={filter.limit}
-            size={pagination.size}
-            pageCurrent={pagination.pageCurrent}
-          />
-          {pagination.size !== 0 && (
-            <Pagination
-              pagination={pagination}
-              onChangePage={handleChangePage}
-            />
-          )}{' '}
+  const columns = [
+    {
+      title: '#',
+      dataIndex: '',
+      key: 'index',
+      width: '5%',
+      render: (_: any, __: any, index: number) => (
+        <span>{index + 1 + (filter.page - 1) * filter.limit}</span>
+      )
+    },
+    {
+      title: t('productDetail.name'),
+      dataIndex: 'productId',
+      key: 'productId',
+      width: '20%',
+      render: (productId: any) => (
+        <small>
+          <ProductSmallCard product={productId} />
+        </small>
+      )
+    },
+    {
+      title: t('Rating'),
+      dataIndex: 'rating',
+      key: 'rating',
+      width: '10%',
+      render: (rating: number) => <StarRating stars={rating} />
+    },
+    {
+      title: t('reviewDetail.content'),
+      dataIndex: 'content',
+      key: 'content',
+      width: '40%',
+      render: (content: string) => (
+        <div
+          style={{
+            width: '400px',
+            maxWidth: '400px',
+            minWidth: '400px',
+            whiteSpace: 'normal',
+            wordWrap: 'break-word',
+            overflow: 'auto'
+          }}
+        >
+          {content}
         </div>
-      </div>
+      )
+    },
+    {
+      title: t('createdAt'),
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      width: '15%',
+      render: (createdAt: string) => humanReadableDate(createdAt)
+    },
+    {
+      title: t('action'),
+      key: 'action',
+      width: '10%',
+      render: (_: any, record: any) => (
+        <>
+          <button
+            type='button'
+            onClick={() => handleReportClick(record)}
+            className='btn btn-sm btn-warning'
+          >
+            {t('button.complaint')}
+          </button>
+          <Modal
+            title={t('dialog.complaint')}
+            open={modalVisible && selectedReview?._id === record._id}
+            onCancel={handleModalClose}
+            footer={null}
+            closable
+          >
+            <ListReport
+              reasons={reviewReasons}
+              objectId={record._id || ''}
+              reportBy={user._id || ''}
+              isStore={false}
+              isProduct={false}
+              isReview={true}
+              showOtherReason={true}
+            />
+          </Modal>
+        </>
+      )
+    }
+  ]
 
-      <Modal
-        title={t('dialog.complaint')}
-        open={modalVisible}
-        onCancel={handleModalClose}
-        footer={null}
-        closable
-      >
-        {selectedReview && (
-          <ListReport
-            reasons={reviewReasons}
-            objectId={selectedReview._id}
-            reportBy={user._id}
-            isStore={false}
-            isProduct={false}
-            isReview={true}
-            showOtherReason={true}
-          />
-        )}
-      </Modal>
+  return (
+    <div>
+      {queryLoading && <Spin size='large' />}
+      {isError && <Alert message={error} type='error' />}
+      <Table
+        columns={columns}
+        dataSource={reviews}
+        rowKey='_id'
+        pagination={pagination}
+        className='mb-4'
+        scroll={{ x: 'max-content' }}
+      />
     </div>
   )
 }

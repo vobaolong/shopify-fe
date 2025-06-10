@@ -4,17 +4,12 @@ import { updateAddress } from '../../../apis/user.api'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
 import { useTranslation } from 'react-i18next'
 import { useAntdApp } from '../../../hooks/useAntdApp'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Form, Input, Button, Spin, Alert, Modal, AutoComplete } from 'antd'
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
+import { Form, Input, Button, Spin, Alert, Modal, Select } from 'antd'
+import { Province, District, Ward } from '../../../@types/address.type'
+import AddressService from '../../../services/address.service'
 
-// Hàm fetch gợi ý địa chỉ từ Nominatim
-async function fetchAddressSuggestions(query: string) {
-  if (!query) return []
-  const res = await fetch(
-    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`
-  )
-  return await res.json()
-}
+const { Option } = Select
 
 interface UserEditAddressFormProps {
   oldAddress?: string
@@ -32,12 +27,52 @@ const UserEditAddressForm: React.FC<UserEditAddressFormProps> = ({
   const [form] = Form.useForm()
   const [isConfirming, setIsConfirming] = useState(false)
   const [error, setError] = useState('')
-  const [options, setOptions] = useState<any[]>([])
-  const [fetching, setFetching] = useState(false)
+  const [selectedProvince, setSelectedProvince] = useState<string>('')
+  const [selectedDistrict, setSelectedDistrict] = useState<string>('')
 
   const [updateDispatch] = useUpdateDispatch()
   const { _id } = getToken()
   const queryClient = useQueryClient()
+  // TanStack Query for provinces
+  const {
+    data: provinces = [],
+    isLoading: isProvincesLoading,
+    error: provincesError
+  } = useQuery<Province[]>({
+    queryKey: ['provinces'],
+    queryFn: () => AddressService.getProvinces()
+  })
+
+  // TanStack Query for districts
+  const {
+    data: districts = [],
+    isLoading: isDistrictsLoading,
+    error: districtsError
+  } = useQuery<District[]>({
+    queryKey: ['districts', selectedProvince],
+    queryFn: () =>
+      selectedProvince
+        ? AddressService.getDistricts(selectedProvince)
+        : Promise.resolve([]),
+    enabled: !!selectedProvince
+  })
+
+  // TanStack Query for wards
+  const {
+    data: wards = [],
+    isLoading: isWardsLoading,
+    error: wardsError
+  } = useQuery<Ward[]>({
+    queryKey: ['wards', selectedDistrict],
+    queryFn: () =>
+      selectedDistrict
+        ? AddressService.getWards(selectedDistrict)
+        : Promise.resolve([]),
+    enabled: !!selectedDistrict
+  })
+  const isLoading = isProvincesLoading || isDistrictsLoading || isWardsLoading
+  const apiError = provincesError || districtsError || wardsError
+
   const updateAddressMutation = useMutation({
     mutationFn: (addressString: string) =>
       updateAddress(_id, index ?? 0, { address: addressString }),
@@ -60,16 +95,68 @@ const UserEditAddressForm: React.FC<UserEditAddressFormProps> = ({
   })
 
   useEffect(() => {
-    if (oldAddress) {
+    if (oldAddress && provinces.length > 0) {
       const addressParts = oldAddress.split(', ')
-      form.setFieldsValue({
-        street: addressParts[0] || '',
-        ward: addressParts[1] || '',
-        district: addressParts[2] || '',
-        province: addressParts[3] || ''
-      })
+      if (addressParts.length >= 4) {
+        const street = addressParts[0] || ''
+        const wardName = addressParts[1] || ''
+        const districtName = addressParts[2] || ''
+        const provinceName = addressParts[3] || ''
+
+        // Find province by name
+        const province = provinces.find((p) => p.ProvinceName === provinceName)
+        if (province) {
+          setSelectedProvince(province.ProvinceID)
+          form.setFieldsValue({
+            street,
+            ward: wardName,
+            district: districtName,
+            province: province.ProvinceID
+          })
+        } else {
+          // Fallback to basic form values
+          form.setFieldsValue({
+            street,
+            ward: wardName,
+            district: districtName,
+            province: provinceName
+          })
+        }
+      }
     }
-  }, [oldAddress, index, form])
+  }, [oldAddress, provinces, form])
+
+  useEffect(() => {
+    if (selectedProvince && districts.length > 0) {
+      const values = form.getFieldsValue()
+      const district = districts.find((d) => d.DistrictName === values.district)
+      if (district) {
+        setSelectedDistrict(district.DistrictID)
+        form.setFieldsValue({ district: district.DistrictID })
+      }
+    }
+  }, [districts, selectedProvince, form])
+
+  useEffect(() => {
+    if (selectedDistrict && wards.length > 0) {
+      const values = form.getFieldsValue()
+      const ward = wards.find((w) => w.WardName === values.ward)
+      if (ward) {
+        form.setFieldsValue({ ward: ward.WardCode })
+      }
+    }
+  }, [wards, selectedDistrict, form])
+
+  const handleProvinceChange = (value: string) => {
+    setSelectedProvince(value)
+    setSelectedDistrict('')
+    form.setFieldsValue({ district: undefined, ward: undefined })
+  }
+
+  const handleDistrictChange = (value: string) => {
+    setSelectedDistrict(value)
+    form.setFieldsValue({ ward: undefined })
+  }
 
   const handleFinish = (values: any) => {
     setIsConfirming(true)
@@ -77,43 +164,33 @@ const UserEditAddressForm: React.FC<UserEditAddressFormProps> = ({
 
   const handleConfirmSubmit = () => {
     const values = form.getFieldsValue()
-    const addressString = `${values.street}, ${values.ward}, ${values.district}, ${values.province}`
+    let addressString = ''
+
+    if (selectedProvince && selectedDistrict && values.ward && values.street) {
+      // Use the new structured approach
+      const province = provinces.find((p) => p.ProvinceID === selectedProvince)
+      const district = districts.find((d) => d.DistrictID === selectedDistrict)
+      const ward = wards.find((w) => w.WardCode === values.ward)
+
+      if (province && district && ward) {
+        addressString = `${values.street}, ${ward.WardName}, ${district.DistrictName}, ${province.ProvinceName}`
+      } else {
+        addressString = `${values.street}, ${values.ward}, ${values.district}, ${values.province}`
+      }
+    } else {
+      // Fallback to manual input
+      addressString = `${values.street}, ${values.ward}, ${values.district}, ${values.province}`
+    }
+
     updateAddressMutation.mutate(addressString)
     setIsConfirming(false)
   }
-
-  // Xử lý gợi ý địa chỉ
-  const handleSearch = async (value: string) => {
-    if (!value) {
-      setOptions([])
-      return
-    }
-    setFetching(true)
-    const suggestions = await fetchAddressSuggestions(value)
-    setOptions(
-      suggestions.map((item: any) => ({
-        value: item.display_name,
-        label: (
-          <div>
-            <span style={{ fontWeight: 600 }}>
-              {item.display_name.split(',')[0]}
-            </span>
-            <span style={{ color: '#888', marginLeft: 8 }}>
-              {item.display_name.replace(item.display_name.split(',')[0], '')}
-            </span>
-          </div>
-        )
-      }))
-    )
-    setFetching(false)
-  }
-
   return (
     <div className='w-full'>
-      <Spin spinning={updateAddressMutation.isPending}>
-        {error && (
+      <Spin spinning={updateAddressMutation.isPending || isLoading}>
+        {(error || apiError) && (
           <Alert
-            message={error}
+            message={error || apiError?.message || 'Có lỗi xảy ra'}
             type='error'
             showIcon
             className='mb-4'
@@ -144,38 +221,7 @@ const UserEditAddressForm: React.FC<UserEditAddressFormProps> = ({
               { max: 100, message: t('addressFormValid.streetTooLong') }
             ]}
           >
-            <AutoComplete
-              options={options}
-              onSearch={handleSearch}
-              placeholder='Ví dụ: 33 M3'
-              notFoundContent={fetching ? <Spin size='small' /> : null}
-              filterOption={false}
-            >
-              <Input />
-            </AutoComplete>
-          </Form.Item>
-
-          <Form.Item
-            name='ward'
-            label={t('addressForm.ward')}
-            rules={[
-              { required: true, message: t('addressFormValid.wardRequired') }
-            ]}
-          >
-            <Input placeholder={t('addressForm.ward')} />
-          </Form.Item>
-
-          <Form.Item
-            name='district'
-            label={t('addressForm.district')}
-            rules={[
-              {
-                required: true,
-                message: t('addressFormValid.districtRequired')
-              }
-            ]}
-          >
-            <Input placeholder={t('addressForm.district')} />
+            <Input placeholder='Ví dụ: 33 M3' />
           </Form.Item>
 
           <Form.Item
@@ -188,7 +234,100 @@ const UserEditAddressForm: React.FC<UserEditAddressFormProps> = ({
               }
             ]}
           >
-            <Input placeholder={t('addressForm.province')} />
+            <Select
+              placeholder={t('addressForm.selectProvince')}
+              loading={isProvincesLoading}
+              onChange={handleProvinceChange}
+              showSearch
+              filterOption={(input, option) =>
+                (option?.children?.toString() ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              virtual={false}
+            >
+              {provinces
+                .filter((province) => province.ProvinceName)
+                .slice()
+                .sort((a, b) =>
+                  (a.ProvinceName || '').localeCompare(b.ProvinceName || '')
+                )
+                .map((province) => (
+                  <Option key={province.ProvinceID} value={province.ProvinceID}>
+                    {province.ProvinceName}
+                  </Option>
+                ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name='district'
+            label={t('addressForm.district')}
+            rules={[
+              {
+                required: true,
+                message: t('addressFormValid.districtRequired')
+              }
+            ]}
+          >
+            <Select
+              placeholder={t('addressForm.selectDistrict')}
+              disabled={districts.length === 0}
+              loading={isDistrictsLoading}
+              onChange={handleDistrictChange}
+              showSearch
+              filterOption={(input, option) =>
+                (option?.children?.toString() ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              virtual={false}
+            >
+              {districts
+                .filter((district) => district.DistrictName)
+                .slice()
+                .sort((a, b) =>
+                  (a.DistrictName || '').localeCompare(b.DistrictName || '')
+                )
+                .map((district) => (
+                  <Option key={district.DistrictID} value={district.DistrictID}>
+                    {district.DistrictName}
+                  </Option>
+                ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name='ward'
+            label={t('addressForm.ward')}
+            rules={[
+              { required: true, message: t('addressFormValid.wardRequired') }
+            ]}
+          >
+            <Select
+              placeholder={t('addressForm.selectWard')}
+              disabled={wards.length === 0}
+              loading={isWardsLoading}
+              showSearch
+              filterOption={(input, option) =>
+                (option?.children?.toString() ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              virtual={false}
+            >
+              {wards
+                .filter((ward) => ward.WardName)
+                .slice()
+                .sort((a, b) =>
+                  (a.WardName || '').localeCompare(b.WardName || '')
+                )
+                .map((ward) => (
+                  <Option key={ward.WardCode} value={ward.WardCode}>
+                    {ward.WardName}
+                  </Option>
+                ))}
+            </Select>
           </Form.Item>
 
           <Form.Item>

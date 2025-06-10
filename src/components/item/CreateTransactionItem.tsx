@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { Modal, Button, Tooltip } from 'antd'
 import { ImportOutlined, ExportOutlined } from '@ant-design/icons'
-import CreateDepositTransactionForm from './form/CreateDepositTransactionForm'
-import CreateWithDrawTransactionForm from './form/CreateWithDrawTransactionForm'
+import CreateStoreTransactionForm from './form/CreateStoreTransactionForm'
 import { useTranslation } from 'react-i18next'
 
 interface CreateTransactionItemProps {
@@ -71,7 +70,8 @@ const CreateTransactionItem = ({
         width={600}
         className='custom-modal'
       >
-        <CreateDepositTransactionForm
+        <CreateStoreTransactionForm
+          type='deposit'
           eWallet={eWallet}
           storeId={storeId}
           onRun={hideDepositModal}
@@ -83,10 +83,11 @@ const CreateTransactionItem = ({
         open={isWithdrawModalOpen}
         onCancel={hideWithdrawModal}
         footer={null}
-        width={600}
+        width={500}
         className='custom-modal'
       >
-        <CreateWithDrawTransactionForm
+        <CreateStoreTransactionForm
+          type='withdraw'
           eWallet={eWallet}
           storeId={storeId}
           onRun={hideWithdrawModal}

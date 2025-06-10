@@ -1,154 +1,146 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Layout, Menu, Button } from 'antd'
+import {
+  DashboardOutlined,
+  ShopOutlined,
+  DropboxOutlined,
+  UsergroupAddOutlined,
+  ShoppingCartOutlined,
+  RollbackOutlined,
+  WalletOutlined,
+  CommentOutlined,
+  MenuUnfoldOutlined,
+  MenuFoldOutlined
+} from '@ant-design/icons'
+import { useState } from 'react'
 import { StoreType, UserType } from '../../../@types/entity.types'
+
+const { Sider } = Layout
 
 interface SellerSideBarProps {
   user: UserType
   store: StoreType
 }
 
+const menuItems = (t: (key: string) => string, storeId: string) => [
+  {
+    key: storeId,
+    icon: <DashboardOutlined />,
+    label: (
+      <Link to={`/seller/${storeId}`} className='!no-underline'>
+        {t('admin.adDashboard.overview')}
+      </Link>
+    )
+  },
+  {
+    key: 'profile',
+    icon: <ShopOutlined />,
+    label: (
+      <Link to={`/seller/profile/${storeId}`} className='!no-underline'>
+        {t('storeDetail.profile')}
+      </Link>
+    )
+  },
+  {
+    key: 'products',
+    icon: <DropboxOutlined />,
+    label: (
+      <Link to={`/seller/products/${storeId}`} className='!no-underline'>
+        {t('storeDetail.products')}
+      </Link>
+    )
+  },
+  {
+    key: 'staff',
+    icon: <UsergroupAddOutlined />,
+    label: (
+      <Link to={`/seller/staff/${storeId}`} className='!no-underline'>
+        {t('storeDetail.staff')}
+      </Link>
+    )
+  },
+  {
+    key: 'orders',
+    icon: <ShoppingCartOutlined />,
+    label: (
+      <Link to={`/seller/orders/${storeId}`} className='!no-underline'>
+        {t('storeDetail.orders')}
+      </Link>
+    )
+  },
+  {
+    key: 'return',
+    icon: <RollbackOutlined />,
+    label: (
+      <Link to={`/seller/return/${storeId}`} className='!no-underline'>
+        {t('storeDetail.requestReturn')}
+      </Link>
+    )
+  },
+  {
+    key: 'wallet',
+    icon: <WalletOutlined />,
+    label: (
+      <Link to={`/seller/wallet/${storeId}`} className='!no-underline'>
+        {t('wallet')}
+      </Link>
+    )
+  },
+  {
+    key: 'review',
+    icon: <CommentOutlined />,
+    label: (
+      <Link to={`/seller/review/${storeId}`} className='!no-underline'>
+        {t('review')}
+      </Link>
+    )
+  }
+]
+
+const siderStyle: React.CSSProperties = {
+  height: '100vh',
+  position: 'sticky',
+  top: 0,
+  bottom: 0,
+  backgroundColor: 'white'
+}
+
 const SellerSideBar = ({ user, store }: SellerSideBarProps) => {
   const { t } = useTranslation()
-  const path = useLocation().pathname.split('/')[2]
+  const location = useLocation()
+  const path = location.pathname.split('/')[2] || store._id
+  const [collapsed, setCollapsed] = useState(false)
 
   return (
-    <div className='sticky-sidebar flex flex-column flex-shrink-0 p-2 box-shadow bg-body rounded-1 res-account-sidebar'>
-      <ul className='nav nav-pills flex-column mb-auto justify-content-around gap-1'>
-        <li className='nav-item'>
-          <Link
-            to={`/seller/${store._id}`}
-            className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === store._id ? 'active' : ''
-            }`}
-          >
-            <i
-              className={`${
-                path === store._id ? 'fa-solid' : 'fa-light'
-              } w-10 text-center fa-chart-line`}
-            />
-            <span className='ms-3 res-hide-xl'>
-              {t('admin.adDashboard.overview')}
-            </span>
-          </Link>
-        </li>
-
-        <li className='nav-item'>
-          <Link
-            to={`/seller/profile/${store._id}`}
-            className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'profile' ? 'active' : ''
-            }`}
-          >
-            <i
-              className={`${
-                path === 'profile' ? 'fa-solid' : 'fa-light'
-              } w-10 text-center fa-store`}
-            />
-            <span className='ms-3 res-hide-xl'>{t('storeDetail.profile')}</span>
-          </Link>
-        </li>
-
-        <li className='nav-item'>
-          <Link
-            to={`/seller/products/${store._id}`}
-            className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'products' ? 'active' : ''
-            }`}
-          >
-            <i
-              className={`${
-                path === 'products' ? 'fa-solid' : 'fa-light'
-              } w-10 text-center fa-box`}
-            />
-            <span className='ms-3 res-hide-xl'>
-              {t('storeDetail.products')}
-            </span>
-          </Link>
-        </li>
-
-        <li className='nav-item'>
-          <Link
-            to={`/seller/staff/${store._id}`}
-            className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'staff' ? 'active' : ''
-            }`}
-          >
-            <i
-              className={`${
-                path === 'staff' ? 'fa-solid' : 'fa-light'
-              } w-10 text-center  fa-user-group`}
-            />
-            <span className='ms-3 res-hide-xl'>{t('storeDetail.staff')}</span>
-          </Link>
-        </li>
-
-        <li className='nav-item'>
-          <Link
-            to={`/seller/orders/${store._id}`}
-            className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'orders' ? 'active' : ''
-            }`}
-          >
-            <i
-              className={`${
-                path === 'orders' ? 'fa-solid' : 'fa-light'
-              } w-10 text-center fa-receipt`}
-            />
-            <span className='ms-3 res-hide-xl'>{t('storeDetail.orders')}</span>
-          </Link>
-        </li>
-
-        <li className='nav-item w-100'>
-          <Link
-            to={`/seller/return/${store._id}`}
-            className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'return' ? 'active' : ''
-            }`}
-          >
-            <i
-              className={`${
-                path === 'return' ? 'fa-solid' : 'fa-light'
-              } w-10 text-center fa-arrow-rotate-left`}
-            />
-            <span className='ms-3 res-hide-xl'>
-              {t('storeDetail.requestReturn')}
-            </span>
-          </Link>
-        </li>
-
-        <li className='nav-item'>
-          <Link
-            to={`/seller/wallet/${store._id}`}
-            className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'wallet' ? 'active' : ''
-            }`}
-          >
-            <i
-              className={`${
-                path === 'wallet' ? 'fa-solid' : 'fa-light'
-              } w-10 text-center fa-wallet`}
-            />
-            <span className='ms-3 res-hide-xl'>{t('wallet')}</span>
-          </Link>
-        </li>
-
-        <li className='nav-item'>
-          <Link
-            to={`/seller/review/${store._id}`}
-            className={`nav-link cus-sidebar-item cus-sidebar-item--db ripple link-dark ${
-              path === 'review' ? 'active' : ''
-            }`}
-          >
-            <i
-              className={`${
-                path === 'review' ? 'fa-solid' : 'fa-light'
-              } w-10 text-center fa-comment`}
-            />
-            <span className='ms-3 res-hide-xl'>{t('review')}</span>
-          </Link>
-        </li>
-      </ul>
-    </div>
+    <Sider
+      collapsible
+      collapsed={collapsed}
+      onCollapse={(value) => setCollapsed(value)}
+      trigger={null}
+      breakpoint='lg'
+      collapsedWidth='80'
+      width={220}
+      style={siderStyle}
+    >
+      <div className='flex items-center justify-between px-4 py-3'>
+        <div className='text-xl font-bold text-primary'>
+          {!collapsed && 'SELLER'}
+        </div>
+        <Button
+          type='text'
+          icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+          onClick={() => setCollapsed(!collapsed)}
+          className='flex items-center justify-center'
+        />
+      </div>
+      <Menu
+        mode='inline'
+        selectedKeys={[path]}
+        items={menuItems(t, store._id)}
+        style={{ height: '100%', borderRight: 0 }}
+      />
+    </Sider>
   )
 }
 

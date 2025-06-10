@@ -1,109 +1,71 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { connect } from 'react-redux'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useDispatch } from 'react-redux'
 import { getToken } from '../../apis/auth.api'
 import { getStore } from '../../apis/store.api'
 import { getStoreLevel } from '../../apis/level.api'
-import { countOrder } from '../../apis/order.api'
 import {
   getStoreFollowerCount,
   checkFollowingStore
 } from '../../apis/followStore.api'
-import { Spin, Alert } from 'antd'
+import { Spin, Alert, Avatar } from 'antd'
 import defaultImage from '../../assets/default.webp'
 import { addStore } from '../../store/slices/storeSlice'
 
-interface StoreInitProps {
-  store: any
-  actions: (store: any) => void
-}
-
-const StoreInit = ({ store, actions }: StoreInitProps) => {
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-
+const StoreInit = () => {
+  const dispatch = useDispatch()
+  const queryClient = useQueryClient()
   const { _id } = getToken()
   const { storeId } = useParams()
   const safeStoreId = storeId || ''
   const safeUserId = _id || ''
 
-  const init = () => {
-    setIsLoading(true)
-    getStore(safeStoreId)
-      .then(async (res) => {
-        const data = res.data
-        if (data.error) {
-          setError(data.error)
-          setIsLoading(false)
-        } else {
-          const newStore = data.store
-          try {
-            const res = await getStoreLevel(safeStoreId)
-            newStore.level = res.data.level
-          } catch {
-            newStore.level = {}
-          }
-          try {
-            const res = await getStoreFollowerCount(safeStoreId)
-            newStore.numberOfFollowers = res.data.count
-          } catch {
-            newStore.numberOfFollowers = 0
-          }
-          try {
-            const res = await checkFollowingStore(safeUserId, safeStoreId)
-            newStore.isFollowing = res.data.success ? true : false
-          } catch {
-            newStore.isFollowing = false
-          }
-          try {
-            const res1 = await countOrder('Delivered', '', safeStoreId)
-            const res2 = await countOrder('Cancelled', '', safeStoreId)
-            newStore.numberOfSuccessfulOrders = res1.data.count
-            newStore.numberOfFailedOrders = res2.data.count
-          } catch {
-            newStore.numberOfSuccessfulOrders = 0
-            newStore.numberOfFailedOrders = 0
-          }
-
-          actions(newStore)
-          setIsLoading(false)
-        }
-      })
-      .catch(() => {
-        setError('Server Error')
-        setIsLoading(false)
-      })
-  }
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['store-init', safeStoreId, safeUserId],
+    queryFn: async () => {
+      const res = await getStore(safeStoreId)
+      const storeData = res.data.store
+      try {
+        const levelRes = await getStoreLevel(safeStoreId)
+        storeData.level = levelRes.data.level || {}
+      } catch {
+        storeData.level = {}
+      }
+      try {
+        const followerRes = await getStoreFollowerCount(safeStoreId)
+        storeData.numberOfFollowers = followerRes.data.count || 0
+      } catch {
+        storeData.numberOfFollowers = 0
+      }
+      try {
+        const followRes = await checkFollowingStore(safeUserId, safeStoreId)
+        storeData.isFollowing = followRes.data.success ? true : false
+      } catch {
+        storeData.isFollowing = false
+      }
+      return storeData
+    },
+    enabled: !!safeStoreId,
+    staleTime: 5 * 60 * 1000
+  })
 
   useEffect(() => {
-    if (!store || store._id !== storeId) init()
-  }, [storeId])
-  return isLoading ? (
-    <div className='cus-position-relative-loading'>
-      <Spin size='small' />
-    </div>
-  ) : (
+    if (data) {
+      dispatch(addStore(data))
+      queryClient.setQueryData(['store-init', safeStoreId, safeUserId], data)
+    }
+  }, [data, dispatch, queryClient, safeStoreId, safeUserId])
+
+  if (isLoading) return <Spin size='small' />
+  if (error) return <Alert message={error.message} type='error' showIcon />
+
+  return (
     <div className='your-store-card btn btn-outline-light cus-outline ripple'>
-      <img
-        loading='lazy'
-        src={store.avatar || defaultImage}
-        className='your-store-img'
-        alt='Store avatar'
-      />{' '}
-      <span className='your-store-name unselect res-hide-md'>
-        {store.name}
-        {error && <Alert message={error} type='error' showIcon />}
-      </span>
+      <Avatar src={data?.avatar || defaultImage} />
+      <span className='your-store-name unselect res-hide-md'>{data?.name}</span>
     </div>
   )
 }
 
-function mapStateToProps(state: any) {
-  return { store: state.store.store }
-}
-
-function mapDispatchToProps(dispatch: any) {
-  return { actions: (store: any) => dispatch(addStore(store)) }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(StoreInit)
+export default StoreInit

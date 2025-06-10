@@ -1,22 +1,22 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { getToken } from '../../apis/auth.api'
 import { deleteStaff } from '../../apis/store.api'
 import useUpdateDispatch from '../../hooks/useUpdateDispatch'
 import UserSmallCard from '../card/UserSmallCard'
 import StoreAddStaffItem from '../item/StoreAddStaffItem'
 import CancelStaffButton from '../button/CancelStaffButton'
-import Pagination from '../ui/Pagination'
-import SearchInput from '../ui/SearchInput'
-import { Spin } from 'antd'
-import ConfirmDialog from '../ui/ConfirmDialog'
-import SortByButton from './sub/SortByButton'
+import { Table, Button, Modal, Alert, Spin, Tooltip, Input } from 'antd'
+import {
+  UserAddOutlined,
+  DeleteOutlined,
+  SearchOutlined
+} from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import ShowResult from '../ui/ShowResult'
-import { Alert } from 'antd'
-import boxImg from '../../assets/box.svg'
 import { StaffFilterState, defaultStaffFilter } from '../../@types/filter.type'
+import boxImg from '../../assets/box.svg'
 
 const StoreStaffTable = ({
   heading = false,
@@ -25,147 +25,185 @@ const StoreStaffTable = ({
   storeId = ''
 }) => {
   const { t } = useTranslation()
-  const [deletedStaff, setDeletedStaff] = useState({})
+  const [deletedStaff, setDeletedStaff] = useState<any>({})
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isConfirming, setIsConfirming] = useState(false)
   const { _id: userId } = getToken()
   const [updateDispatch] = useUpdateDispatch()
-  const [listStaff, setListStaff] = useState([])
-  const [pagination, setPagination] = useState({
-    size: 0,
-    pageCurrent: 1,
-    pageCount: 1
-  })
   const [alerts, setAlerts] = useState(true)
   const [filter, setFilter] = useState<StaffFilterState>(defaultStaffFilter)
   const [pendingFilter, setPendingFilter] =
     useState<StaffFilterState>(defaultStaffFilter)
 
-  useEffect(() => {
-    if (!staffIds || staffIds.length <= 0) {
-      setListStaff([])
-      setPagination({
-        ...pagination,
-        size: 0
-      })
-      return
-    }
+  // Local filter logic
+  const filteredStaff = useMemo(() => {
+    if (!Array.isArray(staffIds) || staffIds.length === 0) return []
     const search = (filter.search || '').toLowerCase()
-    const filterList = staffIds
+    return staffIds
       .filter(
         (staff: any) =>
-          staff.userName.toLowerCase().includes(search) ||
-          staff.name.toLowerCase().includes(search)
+          staff.userName?.toLowerCase().includes(search) ||
+          staff.name?.toLowerCase().includes(search)
       )
       .sort(compareFunc(filter.sortBy || 'name', filter.order || 'asc'))
+  }, [staffIds, filter])
 
-    const limit = filter.limit || 6
-    const size = filterList.length
-    const pageCurrent = filter.page || 1
-    const pageCount = Math.ceil(size / limit)
-    let skip = limit * (pageCurrent - 1)
-    if (pageCurrent > pageCount) {
-      skip = (pageCount - 1) * limit
-    }
+  const pageSize = filter.limit || 6
+  const pageCurrent = filter.page || 1
+  const pageCount = Math.ceil(filteredStaff.length / pageSize)
+  const pagedStaff = filteredStaff.slice(
+    (pageCurrent - 1) * pageSize,
+    pageCurrent * pageSize
+  )
 
-    const newListStaff = filterList.slice(skip, skip + limit)
-    setListStaff(newListStaff)
-    setPagination({
-      size,
-      pageCurrent,
-      pageCount
-    })
-  }, [filter, staffIds])
-  const handleChangeKeyword = (keyword: string) => {
-    setPendingFilter({
-      ...pendingFilter,
-      search: keyword
-    })
+  const handleChangeKeyword = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPendingFilter({ ...pendingFilter, search: e.target.value })
   }
-
   const handleSearch = () => {
-    setFilter({
-      ...pendingFilter,
-      page: 1
-    })
+    setFilter({ ...pendingFilter, page: 1 })
   }
-
-  const handleChangePage = (newPage: number) => {
-    setFilter({
-      ...filter,
-      page: newPage
-    })
+  const handleChangePage = (page: number) => {
+    setFilter({ ...filter, page })
   }
   const handleSetSortBy = (order: string, sortBy: string) => {
-    setFilter({
-      ...filter,
-      sortBy,
-      order: order as 'asc' | 'desc'
-    })
+    setFilter({ ...filter, sortBy, order: order as 'asc' | 'desc' })
   }
-
   const handleDeleteStaff = (staff: any) => {
     setDeletedStaff(staff)
     setIsConfirming(true)
   }
-  const onDeleteSubmitStaff = () => {
-    const staff = (deletedStaff as any)?._id
+  const onDeleteSubmitStaff = async () => {
     setError('')
     setIsLoading(true)
-    deleteStaff(userId, staff, storeId)
-      .then((data) => {
-        if (data.error) setError(data.error)
-        else {
-          updateDispatch('seller', data.store)
-          toast.success(t('toastSuccess.staff.removeStaff'))
-        }
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
-      .catch((error) => {
-        setError(`Server Error`)
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
+    try {
+      const staff = deletedStaff?._id
+      const data = await deleteStaff(userId, staff, storeId)
+      if (data.error) setError(data.error)
+      else {
+        updateDispatch('seller', data.store)
+        toast.success(t('toastSuccess.staff.removeStaff'))
+      }
+    } catch {
+      setError('Server Error')
+    } finally {
+      setIsLoading(false)
+      setIsConfirming(false)
+      setTimeout(() => setError(''), 3000)
+    }
   }
 
+  const columns = [
+    {
+      title: '#',
+      dataIndex: 'index',
+      key: 'index',
+      align: 'center' as const,
+      width: 50,
+      render: (_: any, __: any, idx: number) =>
+        idx + 1 + (pageCurrent - 1) * pageSize
+    },
+    {
+      title: t('staffDetail.name'),
+      dataIndex: 'name',
+      key: 'name',
+      render: (_: any, record: any) => <UserSmallCard user={record} />,
+      width: 200
+    },
+    {
+      title: 'ID Card',
+      dataIndex: 'id_card',
+      key: 'id_card',
+      width: 120,
+      render: (id_card: string) => id_card || '-'
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email',
+      width: 180,
+      render: (email: string) => email || '-'
+    },
+    {
+      title: t('userDetail.phone'),
+      dataIndex: 'phone',
+      key: 'phone',
+      width: 120,
+      render: (phone: string) => phone || '-'
+    },
+    ...(ownerId && userId === (ownerId as any)?._id
+      ? [
+          {
+            title: t('action'),
+            key: 'action',
+            align: 'center' as const,
+            render: (_: any, record: any) => (
+              <Tooltip title={t('staffDetail.delete')}>
+                <Button
+                  icon={<DeleteOutlined />}
+                  danger
+                  size='small'
+                  onClick={() => handleDeleteStaff(record)}
+                />
+              </Tooltip>
+            )
+          }
+        ]
+      : [])
+  ]
+
   return (
-    <div className='position-relative'>
-      {' '}
-      {alerts ? (
+    <div className='relative'>
+      {alerts && (
         <Alert
           type='info'
           message={t('alert.listStaff')}
           description={`${t('alert.thisSectionContains')} ${t('alert.theShopStaff.')}`}
           closable
           onClose={() => setAlerts(false)}
-          style={{ marginBottom: 16 }}
-        />
-      ) : null}
-      {isLoading && <Spin size='large' />}
-      {isConfirming && (
-        <ConfirmDialog
-          title={t('staffDetail.delete')}
-          color='danger'
-          message={t('message.removeStaff')}
-          onSubmit={onDeleteSubmitStaff}
-          onClose={() => setIsConfirming(false)}
+          className='mb-2'
         />
       )}
+      {isLoading && (
+        <div className='flex justify-center p-3'>
+          <Spin size='large' />
+        </div>
+      )}
+      {isConfirming && (
+        <Modal
+          open={isConfirming}
+          title={t('staffDetail.delete')}
+          onOk={onDeleteSubmitStaff}
+          onCancel={() => setIsConfirming(false)}
+          okText={t('button.delete')}
+          cancelText={t('button.cancel')}
+          confirmLoading={isLoading}
+        >
+          <p>{t('message.removeStaff')}</p>
+        </Modal>
+      )}
       {heading && <h5 className='text-start'>{t('staffDetail.staffList')}</h5>}
-      {error && <Alert message={error} type='error' />}
-      <div className='p-3 bg-white rounded-md'>
-        <div className='flex gap-3 items-center flex-wrap'>
-          <SearchInput
+      {error && (
+        <Alert message={error} type='error' showIcon className='mb-2' />
+      )}
+      <div className='p-3 bg-white rounded-md shadow'>
+        <div className='flex gap-3 items-center flex-wrap mb-3'>
+          <Input
+            prefix={<SearchOutlined />}
+            placeholder={t('search')}
             value={pendingFilter.search || ''}
             onChange={handleChangeKeyword}
-            onSearch={handleSearch}
+            onPressEnter={handleSearch}
+            className='w-64'
+            allowClear
           />
+          <Button
+            type='primary'
+            icon={<SearchOutlined />}
+            onClick={handleSearch}
+          >
+            {t('search')}
+          </Button>
           {ownerId && userId === (ownerId as any)?._id ? (
             <StoreAddStaffItem
               storeId={storeId}
@@ -176,115 +214,49 @@ const StoreStaffTable = ({
             <CancelStaffButton storeId={storeId} />
           )}
         </div>
-
-        {!isLoading && pagination.size === 0 ? (
+        {pagedStaff.length === 0 ? (
           <div className='my-4 text-center'>
-            <img className='mb-3' src={boxImg} alt='boxImg' width={'80px'} />
+            <img
+              className='mb-3 mx-auto'
+              src={boxImg}
+              alt='boxImg'
+              width={'80px'}
+            />
             <h5>{t('staffDetail.noStaff')}</h5>
           </div>
         ) : (
-          <div className='table-scroll my-2'>
-            <table className='store-staff-table table align-middle items-center table-hover table-sm text-start'>
-              <thead>
-                <tr>
-                  <th scope='col' className='text-center'>
-                    #
-                  </th>
-                  <th scope='col'>
-                    <SortByButton
-                      currentOrder={filter.order}
-                      currentSortBy={filter.sortBy}
-                      title={t('staffDetail.name')}
-                      sortBy='name'
-                      onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
-                    />
-                  </th>
-                  <th scope='col'>
-                    <SortByButton
-                      currentOrder={filter.order}
-                      currentSortBy={filter.sortBy}
-                      title='ID Card'
-                      sortBy='id_card'
-                      onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
-                    />
-                  </th>
-                  <th scope='col'>
-                    <SortByButton
-                      currentOrder={filter.order}
-                      currentSortBy={filter.sortBy}
-                      title='Email'
-                      sortBy='email'
-                      onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
-                    />
-                  </th>
-                  <th scope='col'>
-                    <SortByButton
-                      currentOrder={filter.order}
-                      currentSortBy={filter.sortBy}
-                      title={t('userDetail.phone')}
-                      sortBy='phone'
-                      onSet={(order, sortBy) => handleSetSortBy(order, sortBy)}
-                    />
-                  </th>{' '}
-                  {(ownerId as any) && userId === (ownerId as any)?._id && (
-                    <th scope='col'>
-                      <span style={{ fontWeight: '400', fontSize: '.875rem' }}>
-                        {t('action')}
-                      </span>
-                    </th>
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {listStaff?.map((staff: any, index: number) => (
-                  <tr key={index}>
-                    <th scope='row' className='text-center'>
-                      {index +
-                        1 +
-                        ((filter.page || 1) - 1) * (filter.limit || 6)}
-                    </th>
-                    <td style={{ maxWidth: '300px' }}>
-                      <UserSmallCard user={staff} />
-                    </td>
-                    <td>{staff.id_card || '-'}</td>
-                    <td>{staff.email || '-'}</td>
-                    <td>{staff.phone || '-'}</td>
-                    {(ownerId as any) && userId === (ownerId as any)?._id && (
-                      <td>
-                        <div className='position-relative d-inline-block'>
-                          <button
-                            type='button'
-                            className='btn btn-sm btn-outline-danger rounded-1 ripple cus-tooltip'
-                            onClick={() => handleDeleteStaff(staff)}
-                          >
-                            <i className='fa-solid fa-user-xmark' />
-                          </button>
-                          <span className='cus-tooltip-msg'>
-                            {t('button.delete')}
-                          </span>
-                        </div>
-                      </td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <Table
+            columns={columns}
+            dataSource={pagedStaff}
+            rowKey='_id'
+            pagination={false}
+            className='mb-4'
+            scroll={{ x: 'max-content' }}
+          />
         )}
-        <div className='flex justify-content-between items-center px-4'>
-          {' '}
-          {pagination.size !== 0 && (
-            <ShowResult
-              limit={filter.limit || 6}
-              size={pagination.size}
-              pageCurrent={pagination.pageCurrent}
-            />
-          )}
-          {pagination.size !== 0 && (
-            <Pagination
-              pagination={pagination}
-              onChangePage={handleChangePage}
-            />
+        <div className='flex justify-between items-center px-4'>
+          <span className='text-gray-500 text-sm'>
+            {t('Hiển thị')} {pagedStaff.length} / {filteredStaff.length}
+          </span>
+          {filteredStaff.length > 0 && (
+            <div>
+              <Button
+                disabled={pageCurrent === 1}
+                onClick={() => handleChangePage(pageCurrent - 1)}
+                className='mr-2'
+              >
+                {t('Prev')}
+              </Button>
+              <span className='mx-2'>
+                {pageCurrent} / {pageCount}
+              </span>
+              <Button
+                disabled={pageCurrent === pageCount}
+                onClick={() => handleChangePage(pageCurrent + 1)}
+              >
+                {t('Next')}
+              </Button>
+            </div>
           )}
         </div>
       </div>
@@ -292,26 +264,13 @@ const StoreStaffTable = ({
   )
 }
 
-export default StoreStaffTable
-
-const compareFunc = (sortBy: string, order: string) => {
+function compareFunc(sortBy: string, order: string) {
   return (a: any, b: any) => {
-    let valueA =
-      sortBy !== 'name' ? a[sortBy] : (a.userName + a.name).toLowerCase()
-    let valueB =
-      sortBy !== 'name' ? b[sortBy] : (b.userName + b.name).toLowerCase()
-
-    if (typeof valueA === 'undefined') valueA = ''
-    if (typeof valueB === 'undefined') valueB = ''
-
-    if (order === 'asc') {
-      if (valueA < valueB) return -1
-      else if (valueA > valueB) return 1
-      else return 0
-    } else {
-      if (valueA < valueB) return 1
-      else if (valueA > valueB) return -1
-      else return 0
-    }
+    if (!a[sortBy] || !b[sortBy]) return 0
+    if (a[sortBy] < b[sortBy]) return order === 'asc' ? -1 : 1
+    if (a[sortBy] > b[sortBy]) return order === 'asc' ? 1 : -1
+    return 0
   }
 }
+
+export default StoreStaffTable

@@ -243,7 +243,7 @@ const UserOrdersTable: React.FC<UserOrdersTableProps> = ({
         open={drawerOpen}
         onClose={handleCloseDrawer}
         width={600}
-        destroyOnClose
+        destroyOnHidden
       >
         {selectedOrderId && (
           <OrderDetailInfo orderId={selectedOrderId} by='user' />

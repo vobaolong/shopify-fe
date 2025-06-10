@@ -6,11 +6,11 @@ import ConfirmDialog from '../../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import AddressForm from './AddressForm'
-import { getAddress } from '../../../apis/address.api'
+import { getAddress, getAddressById } from '../../../apis/address.api'
 import { useMutation } from '@tanstack/react-query'
 import { AxiosResponse } from 'axios'
 import { useAntdApp } from '../../../hooks/useAntdApp'
-import { Button, Form, Input, Spin, Alert } from 'antd'
+import { Button, Form, Input, Spin, Alert, FormInstance } from 'antd'
 import { regexTest } from '../../../constants/regex.constant'
 
 interface StoreEditProfileFormProps {
@@ -18,6 +18,7 @@ interface StoreEditProfileFormProps {
   bio?: string
   address?: string
   storeId?: string
+  form?: FormInstance<any>
 }
 
 interface ProfileState {
@@ -33,14 +34,13 @@ const StoreEditProfileForm = ({
   name = '',
   bio = '',
   address = '',
-  storeId = ''
+  storeId = '',
+  form
 }: StoreEditProfileFormProps) => {
   const { notification } = useAntdApp()
   const [isConfirming, setIsConfirming] = useState(false)
   const [error, setError] = useState('')
-  const [form] = Form.useForm()
   const [updateDispatch] = useUpdateDispatch()
-  const { _id } = getToken()
   const { t } = useTranslation()
   const [addressDetail, setAddressDetail] = useState<any>(null)
   const [profile, setProfile] = useState<ProfileState>({
@@ -61,7 +61,7 @@ const StoreEditProfileForm = ({
         address: values.address,
         addressDetail: addressDetail
       }
-      const res = await updateProfile(_id, store, storeId)
+      const res = await updateProfile(store, storeId)
       return (res as AxiosResponse<any>).data || res
     },
     onSuccess: (data) => {
@@ -76,14 +76,30 @@ const StoreEditProfileForm = ({
       notification.error({ message: 'Server Error' })
     }
   })
-
   const fetchAddress = async (address: string) => {
-    const res = await getAddress(encodeURIComponent(address))
-    setAddressDetail(res)
+    try {
+      // Check if address looks like an ID (24 character hex string for MongoDB ObjectId)
+      if (address.length === 24 && /^[0-9a-fA-F]{24}$/.test(address)) {
+        const res = await getAddressById(address)
+        setAddressDetail(res)
+      } else {
+        // Try to fetch by address string
+        const res = await getAddress(encodeURIComponent(address))
+        setAddressDetail(res)
+      }
+    } catch (error) {
+      console.error('Error fetching address:', error)
+      // If it's an address string, we can still use it directly
+      if (typeof address === 'string' && address.length > 24) {
+        setAddressDetail({ address })
+      }
+    }
   }
   useEffect(() => {
-    fetchAddress(address)
-    form.setFieldsValue({
+    if (address && typeof address === 'string') {
+      fetchAddress(address)
+    }
+    form?.setFieldsValue({
       name: name,
       bio: bio,
       address: address
@@ -106,7 +122,7 @@ const StoreEditProfileForm = ({
     setIsConfirming(true)
   }
   const onSubmit = () => {
-    const formValues = form.getFieldsValue()
+    const formValues = form?.getFieldsValue()
     updateProfileMutation.mutate({
       name: formValues.name,
       bio: formValues.bio,
@@ -156,7 +172,7 @@ const StoreEditProfileForm = ({
             onBlur={(e) => {
               const isValid = regexTest('name', e.target.value)
               if (!isValid) {
-                form.setFields([
+                form?.setFields([
                   {
                     name: 'name',
                     errors: [t('storeDetailValid.validName')]
@@ -181,7 +197,7 @@ const StoreEditProfileForm = ({
             onBlur={(e) => {
               const isValid = regexTest('bio', e.target.value)
               if (!isValid) {
-                form.setFields([
+                form?.setFields([
                   {
                     name: 'bio',
                     errors: [t('storeDetailValid.bioValid')]
@@ -195,26 +211,14 @@ const StoreEditProfileForm = ({
         <div className='mb-4'>
           {addressDetail !== null && (
             <AddressForm
-              addressDetail={addressDetail}
+              addressDetail={addressDetail || {}}
               onChange={(value: any) => {
                 setAddressDetail({ ...addressDetail, ...value })
-                form.setFieldsValue({ address: value.street })
+                form?.setFieldsValue({ address: value.street })
               }}
             />
           )}
         </div>
-
-        <Form.Item>
-          <Button
-            type='primary'
-            htmlType='submit'
-            loading={updateProfileMutation.isPending}
-            className='w-full'
-            size='large'
-          >
-            {t('button.save')}
-          </Button>
-        </Form.Item>
       </Form>
     </div>
   )

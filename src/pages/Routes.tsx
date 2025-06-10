@@ -34,8 +34,6 @@ const AdminVariantValuesPage = React.lazy(
   () => import('./admin/VariantValuePage')
 )
 const AdminBrandPage = React.lazy(() => import('./admin/BrandPage'))
-const AdminCreateBrandPage = React.lazy(() => import('./admin/CreateBrandPage'))
-
 const AdminProductPage = React.lazy(() => import('./admin/ProductPage'))
 const AdminOrderPage = React.lazy(() => import('./admin/OrderPage'))
 const AdminOrderDetailPage = React.lazy(() => import('./admin/OrderDetailPage'))
@@ -201,22 +199,6 @@ const Routers = () => {
             }
           />
           <Route
-            path='/admin/variant/create'
-            element={
-              <AdminRoute>
-                <AdminCreateVariantPage />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path='/admin/variant/edit/:variantId'
-            element={
-              <AdminRoute>
-                <AdminEditVariantPage />
-              </AdminRoute>
-            }
-          />
-          <Route
             path='/admin/variant/values/:variantId'
             element={
               <AdminRoute>
@@ -224,7 +206,6 @@ const Routers = () => {
               </AdminRoute>
             }
           />
-          {/*  */}
           <Route
             path='/admin/brands'
             element={
@@ -233,15 +214,6 @@ const Routers = () => {
               </AdminRoute>
             }
           />
-          <Route
-            path='/admin/brand/create'
-            element={
-              <AdminRoute>
-                <AdminCreateBrandPage />
-              </AdminRoute>
-            }
-          />{' '}
-          {/*  */}
           <Route
             path='/admin/products'
             element={

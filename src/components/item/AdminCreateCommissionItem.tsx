@@ -45,7 +45,7 @@ const AdminCreateCommissionItem = ({
         onCancel={handleCancel}
         footer={null}
         title={t('dialog.addCommission')}
-        destroyOnClose
+        destroyOnHidden
       >
         <AdminCreateCommissionForm onRun={handleSuccess} />
       </Modal>

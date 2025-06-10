@@ -49,8 +49,6 @@ export interface UserType {
   updatedAt?: string
   level?: LevelType
   cartCount?: number
-  numberOfSuccessfulOrders?: number
-  numberOfFailedOrders?: number
   point?: number | string
   googleId?: string
   isPhoneActive?: boolean
@@ -62,7 +60,7 @@ export interface StoreType {
   name: string
   avatar: string
   cover?: string
-  address: string
+  address?: string
   bio?: string
   ownerId: string | UserType
   isActive: boolean
@@ -72,8 +70,6 @@ export interface StoreType {
   level?: LevelType
   numberOfFollowers?: number
   isFollowing?: boolean
-  numberOfSuccessfulOrders?: number
-  numberOfFailedOrders?: number
   rating: number
   commissionId?: string | CommissionType
   point?: number

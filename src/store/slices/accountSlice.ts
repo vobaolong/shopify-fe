@@ -13,8 +13,6 @@ interface AccountState {
       point?: number
       [key: string]: any
     }
-    numberOfSuccessfulOrders?: number
-    numberOfFailedOrders?: number
     [key: string]: any
   }
 }

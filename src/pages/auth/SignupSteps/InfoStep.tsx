@@ -1,5 +1,6 @@
 import { Form, Input, Button } from 'antd'
 import { useMutation } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { signup } from '../../../apis/auth.api'
 import { useAntdApp } from '../../../hooks/useAntdApp'
 import { t } from 'i18next'
@@ -12,11 +13,18 @@ interface InfoStepProps {
 const InfoStep = ({ email }: InfoStepProps) => {
   const { notification } = useAntdApp()
   const [form] = Form.useForm()
+  const navigate = useNavigate()
 
   const signupMutation = useMutation({
     mutationFn: (values: any) => signup({ ...values, email }),
     onSuccess: () => {
-      notification.success({ message: 'Đăng ký thành công!' })
+      notification.success({
+        message: 'Đăng ký thành công!',
+        description: 'Bạn có thể đăng nhập ngay bây giờ.'
+      })
+      setTimeout(() => {
+        navigate('/signin')
+      }, 1500)
     },
     onError: (err: any) => {
       notification.error({ message: err?.message || 'Đăng ký thất bại!' })

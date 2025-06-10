@@ -1,18 +1,14 @@
 import axiosClient, { axiosClientImg } from './client.api'
 
-export const getStoreProfile = async (
-  userId: string,
-  storeId: string
-): Promise<any> => {
-  return await axiosClient.get(`/store/profile/${storeId}/${userId}`)
+export const getStoreProfile = async (storeId: string): Promise<any> => {
+  return await axiosClient.get(`/store/profile/${storeId}`)
 }
 
 export const updateProfile = async (
-  userId: string,
   store: any,
   storeId: string
 ): Promise<any> => {
-  return await axiosClient.put(`/store/${storeId}/${userId}`, store)
+  return await axiosClient.put(`/store/${storeId}`, store)
 }
 
 export const getStore = async (storeId: string): Promise<any> => {
@@ -39,7 +35,7 @@ export const getStoresForAdmin = async (params: any): Promise<any> => {
 }
 
 export const createStore = async (userId: string, store: any): Promise<any> => {
-  return await axiosClientImg.post(`/store/create/${userId}`, store)
+  return await axiosClientImg.post(`/store/${userId}`, store)
 }
 
 export const updateAvatar = async (

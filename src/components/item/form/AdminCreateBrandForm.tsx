@@ -20,10 +20,6 @@ const AdminCreateBrandForm = ({
   const [isScrolled, setIsScrolled] = useState(false)
   const [isConfirmingBack, setIsConfirmingBack] = useState(false)
   const [isConfirming, setIsConfirming] = useState(false)
-  const [selectedCategories, setSelectedCategories] = useState<CategoryType[]>(
-    []
-  )
-  const [categoryIds, setCategoryIds] = useState<string[]>([])
   const [form] = Form.useForm()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -53,7 +49,6 @@ const AdminCreateBrandForm = ({
         queryClient.invalidateQueries({ queryKey: ['brands'] })
         setIsConfirming(false)
         form.resetFields()
-        setCategoryIds([])
         if (onSuccessCreate) onSuccessCreate()
       }
     },
@@ -62,14 +57,24 @@ const AdminCreateBrandForm = ({
     }
   })
 
-  const handleFinish = (values: { name: string; categoryIds: string[] }) => {
+  const handleFinish = (values: { name: string; categorySelector: any[] }) => {
     setIsConfirming(true)
   }
+
   const handleConfirmSubmit = () => {
     const values = form.getFieldsValue()
+    const selectors = Array.isArray(values.categorySelector)
+      ? (values.categorySelector as {
+          lv1?: string
+          lv2?: string
+          lv3?: string
+          categoryObj?: CategoryType
+        }[])
+      : []
+    const categoryIds = selectors.map((c) => c.lv3).filter(Boolean)
+
     const formData = new FormData()
     formData.append('name', values.name)
-    // categoryIds đã là array, chỉ cần stringify một lần
     formData.append('categoryIds', JSON.stringify(categoryIds))
     if (values.logo && values.logo[0]?.originFileObj) {
       formData.append('logo', values.logo[0].originFileObj)
@@ -86,8 +91,9 @@ const AdminCreateBrandForm = ({
     navigate('/admin/brands')
     setIsConfirmingBack(false)
   }
+
   return (
-    <div className='container-fluid position-relative'>
+    <div>
       {createBrandMutation.isPending && <Spin size='large' />}
       {isConfirming && (
         <ConfirmDialog
@@ -109,107 +115,75 @@ const AdminCreateBrandForm = ({
         form={form}
         layout='vertical'
         onFinish={handleFinish}
-        initialValues={{ name: '', categoryIds: [] }}
+        className='space-y-4 flex'
+        initialValues={{ name: '', categorySelector: [] }}
       >
-        <div className='row box-shadow bg-body rounded-1'>
-          <div className='col-12 bg-primary p-3 rounded-top-2'>
-            <span className='text-white fs-5 m-0'>{t('brandDetail.add')}</span>
-          </div>
-
-          <div className='col-12 mt-3 px-4'>
-            <span className=''>{t('productDetail.chooseCategory')}</span>
-            <Form.Item
-              name='categoryIds'
-              rules={[{ required: true, message: t('variantDetail.required') }]}
-            >
-              {' '}
-              <MultiCategorySelector
-                label={t('chosenCategory')}
-                isActive={false}
-                isRequired={true}
-                defaultValue={selectedCategories}
-                onSet={(categories) => {
-                  const ids = categories.map((cat) => cat._id)
-                  setCategoryIds(ids)
-                  setSelectedCategories(categories)
-                  form.setFieldsValue({ categoryIds: ids })
-                }}
-              />
-            </Form.Item>
-          </div>
-
-          <div className='col-12 px-4 my-3'>
-            <Form.Item
-              name='name'
-              label={t('brandDetail.name')}
-              rules={[
-                { required: true, message: t('brandDetail.validName') },
-                {
-                  validator: async (_, value) => {
-                    if (!value) return Promise.resolve()
-                    const res = await checkBrandNameExist(value)
-                    if (res.data?.exists) {
-                      return Promise.reject(
-                        new Error(t('brandDetail.duplicateName'))
-                      )
-                    }
-                    return Promise.resolve()
-                  }
-                }
-              ]}
-            >
-              <Input placeholder={t('brandDetail.name')} />
-            </Form.Item>
-          </div>
-
-          <div className='col-12 px-4 my-3'>
-            <Form.Item
-              name='logo'
-              label={t('brandDetail.logo')}
-              valuePropName='fileList'
-              getValueFromEvent={(e) =>
-                Array.isArray(e) ? e : e && e.fileList
-              }
-            >
-              <Upload
-                name='logo'
-                listType='picture'
-                beforeUpload={() => false}
-                maxCount={1}
-              >
-                <Button icon={<UploadOutlined />}>
-                  {t('brandDetail.uploadLogo')}
-                </Button>
-              </Upload>
-            </Form.Item>
-          </div>
-        </div>
-
-        <div
-          className={`bg-body ${
-            isScrolled ? 'shadow' : 'box-shadow'
-          } rounded-1 row px-4 my-3 p-3`}
-          style={{ position: 'sticky', bottom: '0' }}
+        <Form.Item
+          name='categorySelector'
+          label={t('productDetail.chooseCategory')}
+          rules={[{ required: true, message: t('variantDetail.required') }]}
         >
-          <div className='flex justify-end items-center'>
-            <Link
-              to='/admin/brands'
-              className='btn btn-outline-primary ripple res-w-100-md rounded-1 me-3'
-              style={{ width: '200px', maxWidth: '100%' }}
-              onClick={handleBackClick}
-            >
-              {t('button.cancel')}
-            </Link>
-            <Button
-              type='primary'
-              htmlType='submit'
-              className='res-w-100-md rounded-1'
-              style={{ width: '300px', maxWidth: '100%' }}
-            >
-              {t('button.submit')}
+          <MultiCategorySelector
+            label={t('chosenCategory')}
+            isActive={false}
+            isRequired={true}
+            value={form.getFieldValue('categorySelector') || []}
+            onSet={(categories) =>
+              form.setFieldsValue({
+                categorySelector: categories
+              })
+            }
+          />
+        </Form.Item>
+
+        <Form.Item
+          name='name'
+          label={t('brandDetail.name')}
+          rules={[
+            { required: true, message: t('brandDetail.validName') },
+            {
+              validator: async (_, value) => {
+                if (!value) return Promise.resolve()
+                const res = await checkBrandNameExist(value)
+                if (res.data?.exists) {
+                  return Promise.reject(
+                    new Error(t('brandDetail.duplicateName'))
+                  )
+                }
+                return Promise.resolve()
+              }
+            }
+          ]}
+        >
+          <Input placeholder={t('brandDetail.name')} />
+        </Form.Item>
+
+        <Form.Item
+          name='logo'
+          label={t('brandDetail.logo')}
+          valuePropName='fileList'
+          getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
+        >
+          <Upload
+            name='logo'
+            listType='picture'
+            beforeUpload={() => false}
+            maxCount={1}
+          >
+            <Button icon={<UploadOutlined />}>
+              {t('brandDetail.uploadLogo')}
             </Button>
-          </div>
-        </div>
+          </Upload>
+        </Form.Item>
+
+        <Button
+          type='primary'
+          htmlType='submit'
+          className='res-w-100-md rounded-1'
+          style={{ width: '300px', maxWidth: '100%' }}
+        >
+          {t('button.submit')}
+        </Button>
       </Form>
     </div>
   )

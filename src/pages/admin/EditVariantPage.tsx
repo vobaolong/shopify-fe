@@ -1,7 +1,6 @@
 import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import AdminLayout from '../../components/layout/AdminLayout'
-import AdminEditVariantForm from '../../components/item/form/AdminEditVariantForm'
 import { useTranslation } from 'react-i18next'
 
 const EditVariantPage = () => {

@@ -3,10 +3,12 @@ import { useParams } from 'react-router-dom'
 import SellerLayout from '../../components/layout/SellerLayout'
 import SellerEditProductForm from '../../components/item/form/SellerEditProductForm'
 import { useTranslation } from 'react-i18next'
+import { selectAccountUser } from '../../store/slices/accountSlice'
+import { selectSellerStore } from '../../store/slices/sellerSlice'
 
 const EditProductPage = () => {
-  const user = useSelector((state: any) => state.account.user)
-  const store = useSelector((state: any) => state.seller.store)
+  const user = useSelector(selectAccountUser)
+  const store = useSelector(selectSellerStore)
   const { productId } = useParams()
   const { t } = useTranslation()
 
@@ -22,7 +24,7 @@ const EditProductPage = () => {
     }
   ]
   return (
-    <SellerLayout user={user} store={store} paths={paths}>
+    <SellerLayout user={user as any} store={store as any} paths={paths}>
       <SellerEditProductForm storeId={store._id} productId={productId} />
     </SellerLayout>
   )

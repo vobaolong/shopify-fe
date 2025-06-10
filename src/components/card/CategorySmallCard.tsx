@@ -26,10 +26,14 @@ const CategorySmallCard = ({
       stack.unshift(current.categoryId.name)
       current = current.categoryId
     }
+    stack.push(cat.name)
     stack.forEach((name, idx) => {
       nodes.push(
         <span key={name + idx} className='inline-flex items-center'>
-          {name} <img src={chevronSvg} alt='chevron' className='mx-1' />
+          {name}
+          {idx < stack.length - 1 && (
+            <img src={chevronSvg} alt='chevron' className='mx-1' />
+          )}
         </span>
       )
     })
@@ -42,10 +46,7 @@ const CategorySmallCard = ({
         className='text-reset text-decoration-none cus-link-hover'
         to={`/category/${category._id}`}
       >
-        <span className='flex items-center'>
-          {parent && getCategoryLine(category)}
-          {category.name}
-        </span>
+        <span className='flex items-center'>{getCategoryLine(category)}</span>
       </Link>
     </span>
   )

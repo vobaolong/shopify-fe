@@ -74,19 +74,15 @@ const UserCreateStoreForm = ({ onSuccess }: UserCreateStoreFormProps = {}) => {
       formData.set('bio', values.bio)
       formData.set('address', values.address)
       formData.set('commissionId', values.commissionId)
-
       if (values.avatar && values.avatar[0]?.originFileObj) {
         formData.set('avatar', values.avatar[0].originFileObj)
       }
-
       if (values.cover && values.cover[0]?.originFileObj) {
         formData.set('cover', values.cover[0].originFileObj)
       }
-
       formData.set('addressDetail', JSON.stringify(addressDetail))
-
       const res = await createStore(_id, formData)
-      return (res as AxiosResponse<any>).data || res
+      return res.data || res
     },
     onSuccess: (data) => {
       if (data.error) {
@@ -129,12 +125,12 @@ const UserCreateStoreForm = ({ onSuccess }: UserCreateStoreFormProps = {}) => {
     setAddressDetail(value)
     form.setFieldsValue({ address: value.street })
   }
-
   const normFile = (e: any) => {
     if (Array.isArray(e)) {
       return e
     }
-    return e?.fileList
+    const fileList = e?.fileList
+    return fileList
   }
 
   const onSubmit = () => {
@@ -173,12 +169,23 @@ const UserCreateStoreForm = ({ onSuccess }: UserCreateStoreFormProps = {}) => {
             onClose={() => setIsConfirming(false)}
           />
         )}
-
         <Form
           form={form}
           layout='vertical'
           onFinish={handleFinish}
-          className='w-full'
+          onFinishFailed={(errorInfo) => {
+            const errors = errorInfo.errorFields
+            if (errors.some((error) => error.name[0] === 'avatar')) {
+              notification.error({
+                message: 'Vui lòng upload ảnh đại diện cửa hàng'
+              })
+            }
+            if (errors.some((error) => error.name[0] === 'cover')) {
+              notification.error({
+                message: 'Vui lòng upload ảnh bìa cửa hàng'
+              })
+            }
+          }}
           initialValues={{
             name: '',
             bio: '',
@@ -190,7 +197,6 @@ const UserCreateStoreForm = ({ onSuccess }: UserCreateStoreFormProps = {}) => {
           }}
           requiredMark={true}
         >
-          {/* Basic Info Section */}
           <Card title={t('storeDetail.basicInfo')}>
             {isCommissionsError && (
               <Alert
@@ -275,6 +281,7 @@ const UserCreateStoreForm = ({ onSuccess }: UserCreateStoreFormProps = {}) => {
           <Card className='mt-3' title={t('storeDetail.imgInfo')}>
             <div className='grid grid-cols-1 md:grid-cols-12 gap-6'>
               <div className='col-span-1 md:col-span-3'>
+                {' '}
                 <Form.Item
                   name='avatar'
                   label={
@@ -296,22 +303,24 @@ const UserCreateStoreForm = ({ onSuccess }: UserCreateStoreFormProps = {}) => {
                     </Text>
                   }
                 >
-                  <ImgCrop rotationSlider aspect={1}>
-                    <Upload
-                      listType='picture-card'
-                      maxCount={1}
-                      beforeUpload={() => false}
-                      accept='image/jpeg,image/png'
-                    >
-                      <div className='flex flex-col items-center justify-center'>
-                        <UploadOutlined />
-                        <div className='mt-2'>{t('upload')}</div>
-                      </div>
-                    </Upload>
-                  </ImgCrop>
+                  <Upload
+                    listType='picture-card'
+                    maxCount={1}
+                    beforeUpload={() => false}
+                    accept='image/jpeg,image/png'
+                    onChange={(info) => {
+                      console.log('Avatar upload onChange:', info)
+                    }}
+                  >
+                    <div className='flex flex-col items-center justify-center'>
+                      <UploadOutlined />
+                      <div className='mt-2'>{t('upload')}</div>
+                    </div>
+                  </Upload>
                 </Form.Item>
               </div>
               <div className='col-span-1 md:col-span-9'>
+                {' '}
                 <Form.Item
                   name='cover'
                   label={
@@ -327,24 +336,26 @@ const UserCreateStoreForm = ({ onSuccess }: UserCreateStoreFormProps = {}) => {
                       message: t('storeDetailValid.coverValid')
                     }
                   ]}
-                  help={                    <Text type='secondary' className='text-xs'>
+                  help={
+                    <Text type='secondary' className='text-xs'>
                       Recommended size: 1200x200px
                     </Text>
                   }
                 >
-                  <ImgCrop rotationSlider aspect={6}>
-                    <Upload
-                      listType='picture-card'
-                      maxCount={1}
-                      beforeUpload={() => false}
-                      accept='image/jpeg,image/png'
-                    >
-                      <div className='flex flex-col items-center justify-center'>
-                        <UploadOutlined />
-                        <div className='mt-2'>{t('upload')}</div>
-                      </div>
-                    </Upload>
-                  </ImgCrop>
+                  <Upload
+                    listType='picture-card'
+                    maxCount={1}
+                    beforeUpload={() => false}
+                    accept='image/jpeg,image/png'
+                    onChange={(info) => {
+                      console.log('Cover upload onChange:', info)
+                    }}
+                  >
+                    <div className='flex flex-col items-center justify-center'>
+                      <UploadOutlined />
+                      <div className='mt-2'>{t('upload')}</div>
+                    </div>
+                  </Upload>
                 </Form.Item>
               </div>
             </div>{' '}
@@ -360,7 +371,6 @@ const UserCreateStoreForm = ({ onSuccess }: UserCreateStoreFormProps = {}) => {
                     <ArrowLeftOutlined className='mr-2' />
                     {t('storeDetail.backToStore')}
                   </Link>
-
                   <div className='text-center mb-4 md:mb-0 flex flex-col items-center'>
                     <Text className='text-gray-500 text-sm'>
                       {t('storeDetail.getPaid')}{' '}
@@ -389,8 +399,7 @@ const UserCreateStoreForm = ({ onSuccess }: UserCreateStoreFormProps = {}) => {
                         </Text>
                       </Checkbox>
                     </div>
-                  </div>
-
+                  </div>{' '}
                   <Button
                     type='primary'
                     htmlType='submit'
@@ -398,6 +407,14 @@ const UserCreateStoreForm = ({ onSuccess }: UserCreateStoreFormProps = {}) => {
                     loading={createStoreMutation.isPending}
                     className='w-full md:w-48'
                     size='large'
+                    onClick={() => {
+                      console.log(
+                        'Submit button clicked, isChecked:',
+                        isChecked
+                      )
+                      console.log('Current form values:', form.getFieldsValue())
+                      console.log('Current form errors:', form.getFieldsError())
+                    }}
                   >
                     {t('button.submit')}
                   </Button>
@@ -437,8 +454,7 @@ const UserCreateStoreForm = ({ onSuccess }: UserCreateStoreFormProps = {}) => {
                       </Text>
                     </Checkbox>
                   </div>
-                </div>
-
+                </div>{' '}
                 <Button
                   type='primary'
                   htmlType='submit'
@@ -446,6 +462,14 @@ const UserCreateStoreForm = ({ onSuccess }: UserCreateStoreFormProps = {}) => {
                   loading={createStoreMutation.isPending}
                   className='w-full'
                   size='large'
+                  onClick={() => {
+                    console.log(
+                      'Drawer submit button clicked, isChecked:',
+                      isChecked
+                    )
+                    console.log('Current form values:', form.getFieldsValue())
+                    console.log('Current form errors:', form.getFieldsError())
+                  }}
                 >
                   {t('button.submit')}
                 </Button>

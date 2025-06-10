@@ -5,6 +5,7 @@ import { toast } from 'react-toastify'
 import { useSelector } from 'react-redux'
 import { useCreateTransactionByUser } from '../../../hooks/useTransaction'
 import { Form, Input, InputNumber, Button, Alert } from 'antd'
+import { useQueryClient } from '@tanstack/react-query'
 
 interface CreateTransactionFormForUserProps {
   eWallet?: number | string
@@ -18,6 +19,7 @@ const CreateTransactionFormForUser = ({
   const { t } = useTranslation()
   const [form] = Form.useForm()
   const [updateDispatch] = useUpdateDispatch()
+  const queryClient = useQueryClient()
   const { _id: userId } = getToken()
   const user = useSelector((state: any) => state.account.user)
   const isGoogleUser = user && user.googleId
@@ -73,6 +75,9 @@ const CreateTransactionFormForUser = ({
           form.resetFields()
           updateDispatch('account', data.user)
           toast.success(t('toastSuccess.withDraw'))
+          // Invalidate cache để EWalletInfo update ngay lập tức
+          queryClient.invalidateQueries({ queryKey: ['transactions'] })
+          queryClient.invalidateQueries({ queryKey: ['user', userId] })
           if (onRun) onRun()
         },
         onError: (error: any) => {

@@ -14,8 +14,7 @@ interface AddVariantValueItemProps {
 const AddVariantValueItem = ({
   variantId = '',
   variantName = '',
-  onRun,
-  isFullWidth = false
+  onRun
 }: AddVariantValueItemProps) => {
   const { t } = useTranslation()
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -34,13 +33,8 @@ const AddVariantValueItem = ({
   }
 
   return (
-    <div className={`relative inline-block ${isFullWidth ? 'w-full' : ''}`}>
-      <Button
-        type='primary'
-        icon={<PlusOutlined />}
-        className={`text-nowrap rounded ${isFullWidth ? 'w-full' : ''}`}
-        onClick={showModal}
-      >
+    <div>
+      <Button type='primary' icon={<PlusOutlined />} onClick={showModal}>
         <span className='ml-1 hidden sm:inline'>
           {t('variantDetail.value.add')}
         </span>
@@ -51,7 +45,7 @@ const AddVariantValueItem = ({
         onCancel={handleCancel}
         footer={null}
         title={`${t('variantDetail.value.add')} '${variantName}'`}
-        destroyOnClose
+        destroyOnHidden
       >
         <AddVariantValueForm
           variantId={variantId}

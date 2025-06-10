@@ -29,8 +29,7 @@ const UserAddressesTable: React.FC<UserAddressesTableProps> = ({
   addresses = []
 }) => {
   const { t } = useTranslation()
-  const { notification } = useAntdApp()
-  const [error, setError] = useState('')
+  const { notification, message } = useAntdApp()
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [selectedAddress, setSelectedAddress] = useState<{
     address: string
@@ -51,12 +50,11 @@ const UserAddressesTable: React.FC<UserAddressesTableProps> = ({
     setIsEditModalOpen(true)
   }
 
-  // Delete Address Mutation
   const deleteAddressMutation = useMutation({
     mutationFn: (index: number) => deleteAddresses(_id, index),
     onSuccess: (data) => {
       if (data.error) {
-        setError(data.error)
+        message.error(data.error)
       } else {
         updateDispatch('account', data.user)
         notification.success({ message: t('toastSuccess.address.delete') })
@@ -71,8 +69,8 @@ const UserAddressesTable: React.FC<UserAddressesTableProps> = ({
     Modal.confirm({
       title: t('userDetail.delAddress'),
       content: <Text>{address}</Text>,
-      okText: t('button.yes'),
-      cancelText: t('button.no'),
+      okText: t('button.confirm'),
+      cancelText: t('button.cancel'),
       okType: 'danger',
       onOk: () => deleteAddressMutation.mutate(index)
     })
@@ -142,21 +140,9 @@ const UserAddressesTable: React.FC<UserAddressesTableProps> = ({
   return (
     <div className='w-full bg-white rounded-lg shadow-md p-4'>
       <Spin spinning={deleteAddressMutation.isPending}>
-        {error && (
-          <Alert
-            message={error}
-            type='error'
-            showIcon
-            className='mb-4'
-            closable
-            onClose={() => setError('')}
-          />
-        )}
-
         <div className='flex justify-between items-center mb-4'>
           <UserAddAddressItem heading={true} count={addresses?.length || 0} />
         </div>
-
         <Table
           dataSource={dataSource}
           columns={columns}

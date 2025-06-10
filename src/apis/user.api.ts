@@ -2,11 +2,11 @@ import { getToken, refreshTokenApi } from './auth.api'
 import { jwtDecode } from 'jwt-decode'
 import axiosClient, { axiosClientImg } from './client.api'
 
-export const getUser = async (userId: string) => {
+export const getUser = async (userId: string): Promise<any> => {
   return await axiosClient.get(`/user/${userId}`)
 }
 
-export const getListUsers = async (params: any) => {
+export const getListUsers = async (params: any): Promise<any> => {
   return await axiosClient.get('/users', {
     params
   })

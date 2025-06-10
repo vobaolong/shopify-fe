@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Form, Input, Button, Modal, Spin, notification } from 'antd'
-import { getToken } from '../../../apis/auth.api'
-import { createValue } from '../../../apis/variant.api'
+import { Form, Input, Button, Modal, Spin } from 'antd'
 import { useTranslation } from 'react-i18next'
-import { useMutation } from '@tanstack/react-query'
-import useInvalidate from '../../../hooks/useInvalidate'
+import { useCreateVariantValue } from '../../../hooks/useVariantValue'
+import { useAntdApp } from '../../../hooks/useAntdApp'
 
 interface AddVariantValueFormProps {
   variantId: string
@@ -18,7 +16,7 @@ const AddVariantValueForm = ({
   onRun
 }: AddVariantValueFormProps) => {
   const [form] = Form.useForm()
-  const invalidate = useInvalidate()
+  const { notification } = useAntdApp()
   const { t } = useTranslation()
   const [isConfirming, setIsConfirming] = useState(false)
   const [newValue, setNewValue] = useState({
@@ -27,7 +25,7 @@ const AddVariantValueForm = ({
     variantName
   })
 
-  const { _id } = getToken()
+  const createValueMutation = useCreateVariantValue()
 
   useEffect(() => {
     setNewValue((prev) => ({
@@ -37,34 +35,35 @@ const AddVariantValueForm = ({
     }))
   }, [variantId, variantName])
 
-  const createValueMutation = useMutation({
-    mutationFn: () => createValue(_id, newValue),
-    onSuccess: (res) => {
-      const data = res.data
-      if (data.error) {
-        notification.error({ message: data.error })
-      } else {
-        form.resetFields()
-        setNewValue((prev) => ({ ...prev, name: '' }))
-        if (onRun) onRun()
-        notification.success({ message: t('toastSuccess.variantValue.add') })
-        invalidate({ queryKey: ['variants'] })
-      }
-      setIsConfirming(false)
-    },
-    onError: () => {
-      notification.error({ message: 'Server error' })
-      setIsConfirming(false)
-    }
-  })
-
   const handleSubmit = (values: { name: string }) => {
     setNewValue((prev) => ({ ...prev, name: values.name }))
     setIsConfirming(true)
   }
 
   const handleConfirm = () => {
-    createValueMutation.mutate()
+    createValueMutation.mutate(
+      { ...newValue },
+      {
+        onSuccess: (data) => {
+          const response = data.data || data
+          if (response.error) {
+            notification.error({ message: response.error })
+          } else {
+            form.resetFields()
+            setNewValue((prev) => ({ ...prev, name: '' }))
+            if (onRun) onRun()
+            notification.success({
+              message: t('toastSuccess.variantValue.add')
+            })
+          }
+          setIsConfirming(false)
+        },
+        onError: () => {
+          notification.error({ message: 'Server error' })
+          setIsConfirming(false)
+        }
+      }
+    )
   }
 
   return (

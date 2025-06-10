@@ -25,17 +25,16 @@ export const listSellingProductsByStore = async (
   params: any,
   storeId: string
 ): Promise<any> => {
-  return await axiosClient.get(`/selling/products/by/store/${storeId}`, {
+  return await axiosClient.get(`/selling/products/store/${storeId}`, {
     params
   })
 }
 
 export const listProductsForManager = async (
-  userId: string,
   params: any,
   storeId: string
 ): Promise<any> => {
-  return await axiosClient.get(`/products/by/store/${storeId}/${userId}`, {
+  return await axiosClient.get(`/store/${storeId}/products`, {
     params
   })
 }

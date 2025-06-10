@@ -13,14 +13,14 @@ import { totalProducts } from '../../helper/total'
 import { useSelector } from 'react-redux'
 import { calcTime } from '../../helper/calcTime'
 import { useQuery } from '@tanstack/react-query'
-import { OrderStatus, ReturnStatus } from '../../enums/OrderStatus.enum'
+import { OrderStatus, ReturnStatus, Role } from '../../enums/OrderStatus.enum'
 import React from 'react'
 import ListOrderItems from '../list/ListOrderItems'
 
 interface OrderDetailInfoProps {
   orderId: string
   storeId?: string | null
-  by?: 'user' | 'store' | 'admin'
+  by?: Role.USER | 'store' | 'admin'
   isEditable?: boolean
 }
 
@@ -29,7 +29,7 @@ const { Title, Text } = Typography
 const OrderDetailInfo: React.FC<OrderDetailInfoProps> = ({
   orderId,
   storeId,
-  by = 'user',
+  by = Role.USER,
   isEditable = false
 }) => {
   const { t } = useTranslation()
@@ -64,20 +64,15 @@ const OrderDetailInfo: React.FC<OrderDetailInfoProps> = ({
         const response = await listItemsByOrder(_id, orderId)
         return response?.items || []
       } catch (error: any) {
-        console.error('Error fetching order items:', {
-          message: error.message,
-          response: error.response?.data,
-          status: error.response?.status
-        })
         return []
       }
     },
-    enabled: by === 'user' && !!orderId && !!_id,
+    enabled: by === Role.USER && !!orderId && !!_id,
     retry: 1
   })
 
   const order = orderData?.order || {}
-  const items = by === 'user' ? itemsData || [] : []
+  const items = by === Role.USER ? itemsData || [] : []
 
   const totalOrderSalePrice = items.reduce((total: number, item: any) => {
     if (item?.productId?.salePrice) {
@@ -93,18 +88,17 @@ const OrderDetailInfo: React.FC<OrderDetailInfoProps> = ({
 
   const handleReload = () => {
     refetchOrder()
-    if (by === 'user') refetchItems()
+    if (by === Role.USER) refetchItems()
   }
 
-  if (isOrderLoading || (by === 'user' && isItemsLoading)) {
+  if (isOrderLoading || (by === Role.USER && isItemsLoading)) {
     return (
-      <div className='mt-3'>
-        <Spin className='w-full flex justify-center my-8' size='large' />
+      <div className='mt-3 flex justify-center items-center min-h-[120px]'>
+        <Spin size='large' />
       </div>
     )
   }
 
-  // Show error if either order or items have errors
   if (orderError || itemsError) {
     return (
       <div className='mt-3'>
@@ -172,7 +166,7 @@ const OrderDetailInfo: React.FC<OrderDetailInfoProps> = ({
       </Descriptions>
 
       <Divider orientation='left'>{t('orderDetail.listProducts')}</Divider>
-      {by === 'user' ? (
+      {by === Role.USER ? (
         <ListOrderItems
           orderId={orderId}
           storeId={storeId as string}
@@ -190,8 +184,8 @@ const OrderDetailInfo: React.FC<OrderDetailInfoProps> = ({
         />
       )}
 
-      {by === 'user' && getToken().role === 'user' && (
-        <div className='bg-gray-50 rounded p-3'>
+      {by === Role.USER && getToken().role === Role.USER && (
+        <div className='bg-gray-50 rounded p-3 mt-4'>
           <div className='flex justify-between border-b py-2'>
             <span>{t('cartDetail.subTotal')}</span>
             <span>
@@ -227,7 +221,7 @@ const OrderDetailInfo: React.FC<OrderDetailInfoProps> = ({
       )}
 
       {/* Return order button & modal */}
-      {by === 'user' &&
+      {by === Role.USER &&
         order.status === OrderStatus.DELIVERED &&
         calcTime(order.updatedAt) < 360 && (
           <div className='mt-4'>

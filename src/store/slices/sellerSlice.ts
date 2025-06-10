@@ -26,6 +26,5 @@ export const { addSeller } = sellerSlice.actions
 
 export default sellerSlice.reducer
 
-// Selector
 export const selectSellerStore = (state: { seller: SellerState }) =>
   state.seller.store

@@ -236,7 +236,7 @@ const TransactionsTable = ({
         <div className='mb-3 flex items-center justify-between'>
           {by === 'store' && (
             <>
-              <EWalletInfo eWallet={eWallet} />
+              <EWalletInfo storeId={storeId} eWallet={eWallet} type='store' />
               {owner && (owner as OwnerType)._id && (
                 <div className='ms-auto'>
                   <CreateTransactionItem
@@ -250,7 +250,11 @@ const TransactionsTable = ({
           )}
           {by === 'user' && (
             <>
-              <EWalletInfo eWallet={eWallet} />
+              <EWalletInfo
+                userId={(owner as OwnerType)._id}
+                eWallet={eWallet}
+                type='user'
+              />
               <div className='ms-auto'>
                 <CreateTransactionItemForUser
                   eWallet={eWallet}

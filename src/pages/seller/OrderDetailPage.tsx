@@ -21,7 +21,7 @@ const OrderDetailPage = () => {
     <SellerLayout user={user} store={store} paths={paths}>
       <div className='res-mx--12-md bg-white rounded-1 box-shadow p-4'>
         <OrderDetailInfo
-          orderId={orderId}
+          orderId={orderId as string}
           storeId={storeId}
           by='store'
           isEditable={true}

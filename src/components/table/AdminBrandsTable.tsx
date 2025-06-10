@@ -11,9 +11,9 @@ import {
   DatePicker,
   Divider,
   Modal,
-  Spin
+  Spin,
+  Tag
 } from 'antd'
-import { Link } from 'react-router-dom'
 import dayjs from 'dayjs'
 import { listBrands, removeBrand, restoreBrand } from '../../apis/brand.api'
 import useInvalidate from '../../hooks/useInvalidate'
@@ -24,8 +24,7 @@ import SearchInput from '../ui/SearchInput'
 import CategorySmallCard from '../card/CategorySmallCard'
 import DeletedLabel from '../label/DeletedLabel'
 import ActiveLabel from '../label/ActiveLabel'
-import AdminEditBrandForm from '../item/form/AdminEditBrandForm'
-import AdminCreateBrandForm from '../item/form/AdminCreateBrandForm'
+import AdminBrandForm from '../item/form/AdminBrandForm'
 import { humanReadableDate } from '../../helper/humanReadable'
 import { ColumnsType } from 'antd/es/table'
 import { BrandFilterState, defaultBrandFilter } from '../../@types/filter.type'
@@ -50,6 +49,7 @@ const AdminBrandsTable = () => {
   const [pendingFilter, setPendingFilter] =
     useState<BrandFilterState>(defaultBrandFilter)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [drawerMode, setDrawerMode] = useState<'CREATE' | 'UPDATE'>('CREATE')
   const [editingBrandId, setEditingBrandId] = useState<string | null>(null)
 
   const { data, isLoading, error } = useQuery<BrandsResponse, Error>({
@@ -237,9 +237,11 @@ const AdminBrandsTable = () => {
       title: '#',
       dataIndex: 'index',
       key: 'index',
-      render: (_: any, __: any, index: number) =>
-        index + 1 + (filter.page || 1) * (filter.limit || 10),
-      width: 50
+      align: 'center' as const,
+      fixed: 'left',
+      render: (_: any, __: any, idx: number) =>
+        (pagination.pageCurrent - 1) * (filter.limit || 8) + idx + 1,
+      width: 60
     },
     {
       title: t('brandDetail.name'),
@@ -249,20 +251,19 @@ const AdminBrandsTable = () => {
       render: (text: string) => <span>{text}</span>
     },
     {
-      title: t('brandDetail.categories'),
+      title: t('variantDetail.categories'),
       dataIndex: 'categoryIds',
       key: 'categoryIds',
-      render: (categories: any[]) => (
-        <div style={{ maxHeight: 200, overflow: 'auto' }}>
-          <Space direction='vertical' size='small'>
-            {categories.map((category, idx) => (
-              <div key={idx}>
-                <CategorySmallCard category={category} />
-              </div>
-            ))}
-          </Space>
+      render: (categoryIds: any[]) => (
+        <div className='flex flex-col gap-1 max-h-32 overflow-auto'>
+          {categoryIds.map((category, index) => (
+            <Tag key={index} className='text-xs'>
+              <CategorySmallCard category={category} />
+            </Tag>
+          ))}
         </div>
-      )
+      ),
+      width: 300
     },
     {
       title: t('status.status'),
@@ -297,6 +298,7 @@ const AdminBrandsTable = () => {
               icon={<i className='fa-duotone fa-pen-to-square' />}
               onClick={() => {
                 setEditingBrandId(brand._id)
+                setDrawerMode('UPDATE')
                 setDrawerOpen(true)
               }}
             />
@@ -391,6 +393,7 @@ const AdminBrandsTable = () => {
               type='primary'
               onClick={() => {
                 setEditingBrandId(null)
+                setDrawerMode('CREATE')
                 setDrawerOpen(true)
               }}
               icon={<i className='fa-light fa-plus' />}
@@ -456,21 +459,28 @@ const AdminBrandsTable = () => {
             }}
             onChange={handleTableChange}
             scroll={{ x: 'max-content' }}
+            bordered
           />
         </div>
       </Spin>
       <Drawer
-        title={editingBrandId ? t('brandDetail.edit') : t('brandDetail.add')}
+        title={
+          drawerMode === 'UPDATE' ? t('brandDetail.edit') : t('brandDetail.add')
+        }
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         width={700}
         destroyOnHidden
       >
-        {editingBrandId ? (
-          <AdminEditBrandForm brandId={editingBrandId} />
-        ) : (
-          <AdminCreateBrandForm />
-        )}
+        <AdminBrandForm
+          mode={drawerMode}
+          brandId={editingBrandId}
+          onSuccess={() => {
+            setDrawerOpen(false)
+            invalidate({ queryKey: ['brands'] })
+          }}
+          onClose={() => setDrawerOpen(false)}
+        />
       </Drawer>
     </div>
   )

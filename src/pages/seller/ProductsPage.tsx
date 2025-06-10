@@ -2,10 +2,12 @@ import { useSelector } from 'react-redux'
 import SellerLayout from '../../components/layout/SellerLayout'
 import StoreProductsTable from '../../components/table/StoreProductsTable'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import { selectAccountUser } from '../../store/slices/accountSlice'
 import { selectSellerStore } from '../../store/slices/sellerSlice'
+import { Button } from 'antd'
+import { PlusOutlined } from '@ant-design/icons'
+import SellerProductForm from '../../components/item/form/SellerProductForm'
 
 const ProductsPage = () => {
   const { t } = useTranslation()
@@ -18,10 +20,9 @@ const ProductsPage = () => {
       url: `/seller/products/${store._id}`
     }
   ]
-  const [selectedOption, setSelectedOption] = useState('all')
-  const handleOptionClick = (option) => {
-    setSelectedOption(option)
-  }
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [run, setRun] = useState(false)
+
   const productStatus = [
     {
       label: t('productDetail.all'),
@@ -34,38 +35,28 @@ const ProductsPage = () => {
   ]
 
   return (
-    <SellerLayout user={user} store={store} paths={paths}>
+    <SellerLayout user={user as any} store={store as any} paths={paths}>
       <div className='flex align-items-start justify-content-between mb-3'>
         <h4>Danh sách sản phẩm</h4>
-        <Link
-          type='button'
-          className='btn btn-primary ripple text-nowrap rounded-1 ms-2'
-          to={`/seller/products/addNew/${store._id}`}
+        <Button
+          type='primary'
+          icon={<PlusOutlined />}
+          onClick={() => setDrawerOpen(true)}
         >
-          <i className='fa-light fa-plus me-1' />
-          <span>{t('productDetail.createProduct')}</span>
-        </Link>
+          {t('productDetail.createProduct')}
+        </Button>
       </div>
 
-      <div className='nav nav-tabs bg-body rounded-top-1 box-shadow mb-2'>
-        {productStatus.map((status) => (
-          <li
-            className='nav-item flex-grow-1 text-center pointer'
-            key={status.value}
-          >
-            <span
-              className={`nav-link h-100 ${
-                selectedOption === status.value ? `active` : ``
-              }`}
-              onClick={() => handleOptionClick(status.value)}
-            >
-              {status.label}
-            </span>
-          </li>
-        ))}
-      </div>
-
-      <StoreProductsTable storeId={store._id} selectedOption={selectedOption} />
+      <StoreProductsTable storeId={store._id} run={run} />
+      <SellerProductForm
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        storeId={store._id}
+        onSuccess={() => {
+          setDrawerOpen(false)
+          setRun((prev) => !prev)
+        }}
+      />
     </SellerLayout>
   )
 }

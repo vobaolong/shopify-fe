@@ -3,299 +3,254 @@ import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { listCategories, listActiveCategories } from '../../apis/category.api'
 import { CategoryFilter, CategoryType } from '../../@types/entity.types'
-import {
-  Input,
-  List,
-  Button,
-  Spin,
-  Alert,
-  Row,
-  Col,
-  Card,
-  Typography
-} from 'antd'
+import { Select, Alert, Row, Col, Typography, Spin, Button } from 'antd'
 import CategorySmallCard from '../card/CategorySmallCard'
 import { useTranslation } from 'react-i18next'
+import { CloseOutlined } from '@ant-design/icons'
 
 interface CategorySelectorProps {
   value?: CategoryType | ''
   isActive?: boolean
-  selected?: 'child' | 'parent'
   label?: string
   onChange?: (category: CategoryType | '') => void
-  isSelected?: boolean
   isRequired?: boolean
-}
-
-const defaultLv1Filter: CategoryFilter = {
-  search: '',
-  categoryId: null,
-  sortBy: 'name',
-  order: 'asc',
-  limit: 100,
-  page: 1
-}
-const defaultLv2Filter: CategoryFilter = {
-  search: '',
-  categoryId: null,
-  sortBy: 'name',
-  order: 'asc',
-  limit: 100,
-  page: 1
-}
-const defaultLv3Filter: CategoryFilter = {
-  search: '',
-  categoryId: null,
-  sortBy: 'name',
-  order: 'asc',
-  limit: 100,
-  page: 1
 }
 
 const CategorySelector: React.FC<CategorySelectorProps> = ({
   value = '',
   isActive = false,
-  selected = 'child',
   label = 'Chosen category',
   onChange = () => {},
-  isSelected = true,
   isRequired = false
 }) => {
   const { t } = useTranslation()
-  const [lv1Filter, setLv1Filter] = useState<CategoryFilter>(defaultLv1Filter)
-  const [lv2Filter, setLv2Filter] = useState<CategoryFilter>(defaultLv2Filter)
-  const [lv3Filter, setLv3Filter] = useState<CategoryFilter>(defaultLv3Filter)
-  const [search, setSearch] = useState('')
+  const [lv1, setLv1] = useState<string | undefined>(undefined)
+  const [lv2, setLv2] = useState<string | undefined>(undefined)
+  const [lv3, setLv3] = useState<string | undefined>(undefined)
+  const [selectedObj, setSelectedObj] = useState<CategoryType | undefined>(
+    typeof value === 'object' && value ? value : undefined
+  )
+
+  useEffect(() => {
+    if (typeof value === 'object' && value) {
+      const lv3Id = value._id
+      let lv2Id: string | undefined = undefined
+      let lv1Id: string | undefined = undefined
+      if (value.categoryId && typeof value.categoryId === 'object') {
+        lv2Id = value.categoryId._id
+        if (
+          value.categoryId.categoryId &&
+          typeof value.categoryId.categoryId === 'object'
+        ) {
+          lv1Id = value.categoryId.categoryId._id
+        } else if (typeof value.categoryId.categoryId === 'string') {
+          lv1Id = value.categoryId.categoryId
+        }
+      } else if (typeof value.categoryId === 'string') {
+        lv2Id = value.categoryId
+      }
+      setLv1(lv1Id)
+      setLv2(lv2Id)
+      setLv3(lv3Id)
+      setSelectedObj(value)
+    } else {
+      setLv1(undefined)
+      setLv2(undefined)
+      setLv3(undefined)
+      setSelectedObj(undefined)
+    }
+  }, [value])
 
   const {
-    data: lv1Data,
+    data: lv1Categories = [],
     isLoading: lv1Loading,
     error: lv1Error
-  } = useQuery<CategoryType[]>({
-    queryKey: ['categories', 'lv1', lv1Filter, isActive],
+  } = useQuery({
+    queryKey: ['categories', 'lv1', isActive],
     queryFn: async () => {
       if (isActive) {
-        const res = await listActiveCategories({
-          ...lv1Filter,
-          categoryId: null
-        })
-        return res.categories || []
+        return (
+          await listActiveCategories({ limit: 1000, page: 1, categoryId: null })
+        ).categories
       } else {
-        const res = await listCategories({ ...lv1Filter, categoryId: null })
-        return res.categories || []
+        return (
+          await listCategories({ limit: 1000, page: 1, categoryId: null })
+        ).categories
       }
     }
   })
 
   const {
-    data: lv2Data,
+    data: lv2Categories = [],
     isLoading: lv2Loading,
     error: lv2Error
-  } = useQuery<CategoryType[]>({
-    queryKey: ['categories', 'lv2', lv2Filter, isActive],
+  } = useQuery({
+    queryKey: ['categories', 'lv2', lv1, isActive],
     queryFn: async () => {
-      if (!lv2Filter.categoryId) return []
+      if (!lv1) return []
       if (isActive) {
-        const res = await listActiveCategories(lv2Filter)
-        return res.categories || []
+        return (
+          await listActiveCategories({ limit: 1000, page: 1, categoryId: lv1 })
+        ).categories
       } else {
-        const res = await listCategories(lv2Filter)
-        return res.categories || []
+        return (await listCategories({ limit: 1000, page: 1, categoryId: lv1 }))
+          .categories
       }
     },
-    enabled: !!lv2Filter.categoryId
+    enabled: !!lv1
   })
 
   const {
-    data: lv3Data,
+    data: lv3Categories = [],
     isLoading: lv3Loading,
     error: lv3Error
-  } = useQuery<CategoryType[]>({
-    queryKey: ['categories', 'lv3', lv3Filter, isActive],
+  } = useQuery({
+    queryKey: ['categories', 'lv3', lv2, isActive],
     queryFn: async () => {
-      if (!lv3Filter.categoryId) return []
+      if (!lv2) return []
       if (isActive) {
-        const res = await listActiveCategories(lv3Filter)
-        return res.categories || []
+        return (
+          await listActiveCategories({ limit: 1000, page: 1, categoryId: lv2 })
+        ).categories
       } else {
-        const res = await listCategories(lv3Filter)
-        return res.categories || []
+        return (await listCategories({ limit: 1000, page: 1, categoryId: lv2 }))
+          .categories
       }
     },
-    enabled: !!lv3Filter.categoryId
+    enabled: !!lv2
   })
 
-  // Tìm kiếm lv1
-  const handleChangeKeyword = (keyword: string) => {
-    setSearch(keyword)
-    setLv1Filter({
-      ...lv1Filter,
-      search: keyword,
-      categoryId: null
-    })
-    setLv2Filter({ ...defaultLv2Filter })
-    setLv3Filter({ ...defaultLv3Filter })
+  useEffect(() => {
+    setLv2(undefined)
+    setLv3(undefined)
+  }, [lv1])
+
+  useEffect(() => {
+    setLv3(undefined)
+  }, [lv2])
+
+  const handleLv3Change = (id: string) => {
+    setLv3(id)
+    const catObj = lv3Categories.find((cat: CategoryType) => cat._id === id)
+    setSelectedObj(catObj)
+    onChange && onChange(catObj || '')
   }
 
-  // Chọn category cấp 1 hoặc 2
-  const handleClick = (
-    filter: CategoryFilter | null,
-    setFilter: React.Dispatch<React.SetStateAction<CategoryFilter>> | null,
-    category: CategoryType
-  ) => {
-    if (setFilter && filter) {
-      setFilter({
-        ...filter,
-        categoryId: category._id
-      })
-    }
-    if (filter === lv2Filter) {
-      setLv3Filter({ ...defaultLv3Filter })
-    }
-    if (isSelected) {
-      if (
-        (selected === 'parent' && filter === lv2Filter) ||
-        (selected === 'parent' && filter === lv3Filter) ||
-        (selected === 'child' && filter === null)
-      ) {
-        onChange && onChange(category)
-      }
-    }
-  }
-
-  // Chọn category cấp 3
-  const handleClickLv3 = (category: CategoryType) => {
-    onChange && onChange(category)
-  }
-
-  // Xóa chọn
   const handleDelete = () => {
+    setLv1(undefined)
+    setLv2(undefined)
+    setLv3(undefined)
+    setSelectedObj(undefined)
     onChange && onChange('')
   }
 
   return (
-    <Row gutter={16}>
-      <Input.Search
-        value={search}
-        onChange={(e) => handleChangeKeyword(e.target.value)}
-        placeholder={t('search')}
-        allowClear
-        className='px-2 pb-4'
-      />
-      <Col span={8}>
-        {lv1Loading ? (
-          <Spin />
-        ) : lv1Error ? (
-          <Alert type='error' message={String(lv1Error as any)} />
-        ) : (
-          <List
-            dataSource={lv1Data || []}
-            renderItem={(category) => (
-              <List.Item>
-                <Button
-                  type={
-                    category._id === lv2Filter.categoryId
-                      ? 'primary'
-                      : 'default'
-                  }
-                  block
-                  onClick={() => handleClick(lv2Filter, setLv2Filter, category)}
-                  style={{ textAlign: 'left' }}
-                >
-                  {category.name}
-                </Button>
-              </List.Item>
-            )}
-            style={{ maxHeight: 250, overflowY: 'auto', background: '#fff' }}
+    <div>
+      <Row gutter={16}>
+        <Col span={8}>
+          <span>{t('categoryForm.lv1')}</span>
+          <Select
+            style={{ width: '100%' }}
+            placeholder={t('Chọn cấp 1')}
+            value={lv1}
+            onChange={setLv1}
+            loading={lv1Loading}
+            options={lv1Categories.map((cat: CategoryType) => ({
+              label: cat.name,
+              value: cat._id,
+              children: cat.name
+            }))}
+            showSearch
+            allowClear
+            virtual={false}
+            filterOption={(input, option) =>
+              (option?.children?.toString() ?? '')
+                .toLowerCase()
+                .includes(input.toLowerCase())
+            }
           />
-        )}
-      </Col>
-      <Col span={8}>
-        {lv2Loading ? (
-          <Spin />
-        ) : lv2Error ? (
-          <Alert type='error' message={String(lv2Error as any)} />
-        ) : (
-          <List
-            dataSource={lv2Data || []}
-            renderItem={(category) => (
-              <List.Item>
-                <Button
-                  type={
-                    category._id === lv3Filter.categoryId
-                      ? 'primary'
-                      : 'default'
-                  }
-                  block
-                  onClick={() => handleClick(lv3Filter, setLv3Filter, category)}
-                  style={{ textAlign: 'left' }}
-                >
-                  {category.name}
-                </Button>
-              </List.Item>
-            )}
-            style={{ maxHeight: 250, overflowY: 'auto', background: '#fff' }}
-          />
-        )}
-      </Col>
-      <Col span={8}>
-        {lv3Loading ? (
-          <Spin />
-        ) : lv3Error ? (
-          <Alert type='error' message={String(lv3Error as any)} />
-        ) : (
-          <List
-            dataSource={lv3Data || []}
-            renderItem={(category) => (
-              <List.Item>
-                <Button
-                  type={
-                    value &&
-                    typeof value !== 'string' &&
-                    category._id === value._id
-                      ? 'primary'
-                      : 'default'
-                  }
-                  block
-                  onClick={() => handleClickLv3(category)}
-                  style={{ textAlign: 'left' }}
-                >
-                  {category.name}
-                </Button>
-              </List.Item>
-            )}
-            style={{ maxHeight: 250, overflowY: 'auto', background: '#fff' }}
-          />
-        )}
-      </Col>
-      {isSelected && (
-        <Col span={24} style={{ marginTop: 16 }}>
-          <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-            {label}
-          </Typography.Text>
-          <Card style={{ minHeight: 60, marginTop: 8, background: '#fafafa' }}>
-            {value && typeof value !== 'string' ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <CategorySmallCard category={value} />
-                <Button
-                  type='text'
-                  danger
-                  size='small'
-                  onClick={handleDelete}
-                  style={{ marginLeft: 'auto' }}
-                >
-                  {t('delete') || <span>X</span>}
-                </Button>
-              </div>
-            ) : (
-              <span className={isRequired ? 'text-danger' : ''}>
-                {t('variantDetail.required')}
-              </span>
-            )}
-          </Card>
         </Col>
+        <Col span={8}>
+          <span>{t('categoryForm.lv2')}</span>
+          <Select
+            style={{ width: '100%' }}
+            placeholder={t('Chọn cấp 2')}
+            value={lv2}
+            onChange={setLv2}
+            loading={lv2Loading}
+            options={lv2Categories.map((cat: CategoryType) => ({
+              label: cat.name,
+              value: cat._id,
+              children: cat.name
+            }))}
+            showSearch
+            allowClear
+            disabled={!lv1}
+            virtual={false}
+            filterOption={(input, option) =>
+              (option?.children?.toString() ?? '')
+                .toLowerCase()
+                .includes(input.toLowerCase())
+            }
+          />
+        </Col>
+        <Col span={8}>
+          <span>{t('categoryForm.lv3')}</span>
+          <Select
+            style={{ width: '100%' }}
+            placeholder={t('Chọn cấp 3')}
+            value={lv3}
+            onChange={handleLv3Change}
+            loading={lv3Loading}
+            options={lv3Categories.map((cat: CategoryType) => ({
+              label: cat.name,
+              value: cat._id,
+              children: cat.name
+            }))}
+            showSearch
+            allowClear
+            disabled={!lv2}
+            virtual={false}
+            filterOption={(input, option) =>
+              (option?.children?.toString() ?? '')
+                .toLowerCase()
+                .includes(input.toLowerCase())
+            }
+          />
+        </Col>
+      </Row>
+      {(lv1Error || lv2Error || lv3Error) && (
+        <Alert
+          message={String(lv1Error || lv2Error || lv3Error)}
+          type='error'
+          showIcon
+        />
       )}
-    </Row>
+      <div style={{ marginTop: 16 }}>
+        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+          {label}
+        </Typography.Text>
+        <div className='mt-2 bg-gray-100 p-2 rounded-md'>
+          {selectedObj ? (
+            <div className='flex items-center gap-2'>
+              <CategorySmallCard category={selectedObj} />
+              <Button
+                type='text'
+                danger
+                onClick={handleDelete}
+                className='!ml-auto'
+              >
+                <CloseOutlined />
+              </Button>
+            </div>
+          ) : (
+            <span className={isRequired ? 'text-danger' : ''}>
+              {isRequired ? t('variantDetail.required') : t('Chưa chọn')}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
   )
 }
 

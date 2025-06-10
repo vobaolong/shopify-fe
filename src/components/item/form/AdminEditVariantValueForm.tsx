@@ -1,9 +1,8 @@
 import { useEffect } from 'react'
-import { Form, Input, Button, notification } from 'antd'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { getToken } from '../../../apis/auth.api'
-import { updateValue } from '../../../apis/variant.api'
+import { Form, Input, Button } from 'antd'
 import { useTranslation } from 'react-i18next'
+import { useUpdateVariantValue } from '../../../hooks/useVariantValue'
+import { useAntdApp } from '../../../hooks/useAntdApp'
 
 interface VariantValueType {
   _id: string
@@ -23,35 +22,9 @@ const AdminEditVariantValueForm = ({
   onRun?: () => void
 }) => {
   const { t } = useTranslation()
+  const { notification } = useAntdApp()
   const [form] = Form.useForm()
-  const queryClient = useQueryClient()
-  const { _id } = getToken()
-
-  const updateValueMutation = useMutation({
-    mutationFn: (values: ValueFormData) =>
-      updateValue(_id, oldVariantValue?._id || '', {
-        ...oldVariantValue,
-        ...values
-      }),
-    onSuccess: (res) => {
-      if (res.data.error) {
-        notification.error({
-          message: res.data.error
-        })
-      } else {
-        notification.success({
-          message: t('toastSuccess.updateValue')
-        })
-        queryClient.invalidateQueries({ queryKey: ['variants'] })
-        onRun?.()
-      }
-    },
-    onError: () => {
-      notification.error({
-        message: 'Server Error'
-      })
-    }
-  })
+  const updateValueMutation = useUpdateVariantValue()
 
   useEffect(() => {
     if (oldVariantValue) {
@@ -62,7 +35,30 @@ const AdminEditVariantValueForm = ({
   }, [oldVariantValue, form])
 
   const handleSubmit = (values: ValueFormData) => {
-    updateValueMutation.mutate(values)
+    if (!oldVariantValue?._id) return
+
+    updateValueMutation.mutate(
+      {
+        valueId: oldVariantValue._id,
+        value: values
+      },
+      {
+        onSuccess: (data) => {
+          const response = data.data || data
+          if (response.error) {
+            notification.error({ message: response.error })
+          } else {
+            notification.success({
+              message: t('toastSuccess.variantValue.update')
+            })
+            onRun?.()
+          }
+        },
+        onError: () => {
+          notification.error({ message: 'Server Error' })
+        }
+      }
+    )
   }
 
   return (

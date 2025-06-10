@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import {
@@ -12,10 +11,10 @@ import {
   Modal,
   Spin,
   Tag,
-  Divider
+  Divider,
+  Drawer
 } from 'antd'
 import { SyncOutlined } from '@ant-design/icons'
-import { getToken } from '../../apis/auth.api'
 import {
   listVariants,
   removeVariant,
@@ -28,12 +27,14 @@ import SearchInput from '../ui/SearchInput'
 import DeletedLabel from '../label/DeletedLabel'
 import ActiveLabel from '../label/ActiveLabel'
 import CategorySmallCard from '../card/CategorySmallCard'
+import VariantValuesTable from './VariantValuesTable'
 import { humanReadableDate } from '../../helper/humanReadable'
 import { ColumnsType } from 'antd/es/table'
 import {
   VariantFilterState,
   defaultVariantFilter
 } from '../../@types/filter.type'
+import AdminVariantForm from '../selector/AdminVariantForm'
 
 interface VariantsResponse {
   variants: any[]
@@ -41,29 +42,35 @@ interface VariantsResponse {
   filter: { pageCurrent: number; pageCount: number }
 }
 
-const AdminVariantsTable = ({ heading = false }) => {
+const AdminVariantsTable = () => {
   const { t } = useTranslation()
   const { notification } = useAntdApp()
   const invalidate = useInvalidate()
-  const { _id: userId } = getToken()
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
   const [filter, setFilter] = useState<VariantFilterState>(defaultVariantFilter)
   const [pendingFilter, setPendingFilter] =
     useState<VariantFilterState>(defaultVariantFilter)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [drawerMode, setDrawerMode] = useState<'CREATE' | 'UPDATE'>('CREATE')
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [variantValuesModalOpen, setVariantValuesModalOpen] = useState(false)
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
+    null
+  )
 
   const fetchVariants = async (filter: any): Promise<VariantsResponse> => {
-    const res = await listVariants(userId, filter)
+    const res = await listVariants(filter)
     return res.data || res
   }
 
   const { data, isLoading, error } = useQuery<VariantsResponse, Error>({
     queryKey: ['variants', filter],
     queryFn: () => fetchVariants(filter),
-    enabled: !!userId
+    enabled: !!filter
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (variantId: string) => removeVariant(userId, variantId),
+    mutationFn: (variantId: string) => removeVariant(variantId),
     onSuccess: () => {
       notification.success({ message: t('toastSuccess.variant.delete') })
       invalidate({ queryKey: ['variants'] })
@@ -76,7 +83,7 @@ const AdminVariantsTable = ({ heading = false }) => {
   })
 
   const restoreMutation = useMutation({
-    mutationFn: (variantId: string) => restoreVariant(userId, variantId),
+    mutationFn: (variantId: string) => restoreVariant(variantId),
     onSuccess: () => {
       notification.success({ message: t('toastSuccess.variant.restore') })
       invalidate({ queryKey: ['variants'] })
@@ -145,7 +152,6 @@ const AdminVariantsTable = ({ heading = false }) => {
       okType: 'danger'
     })
   }
-
   const handleBulkRestore = () => {
     if (selectedRowKeys.length === 0) return
 
@@ -162,6 +168,11 @@ const AdminVariantsTable = ({ heading = false }) => {
       cancelText: t('button.cancel')
     })
   }
+
+  const handleViewVariantValues = (variantId: string) => {
+    setSelectedVariantId(variantId)
+    setVariantValuesModalOpen(true)
+  }
   const columns: ColumnsType<any> = [
     {
       title: '#',
@@ -170,7 +181,7 @@ const AdminVariantsTable = ({ heading = false }) => {
       align: 'center' as const,
       fixed: 'left',
       render: (_: any, __: any, idx: number) =>
-        (pagination.pageCurrent - 1) * filter.limit + idx + 1,
+        (pagination.pageCurrent - 1) * (filter.limit || 8) + idx + 1,
       width: 60
     },
     {
@@ -220,22 +231,24 @@ const AdminVariantsTable = ({ heading = false }) => {
       render: (_: any, record: any) => (
         <Space size='small'>
           <Tooltip title={t('button.detail')}>
-            <Link to={`/admin/variant/values/${record._id}`}>
-              <Button
-                type='default'
-                size='small'
-                icon={<i className='fa-solid fa-circle-info' />}
-              />
-            </Link>
+            <Button
+              type='default'
+              size='small'
+              icon={<i className='fa-solid fa-circle-info' />}
+              onClick={() => handleViewVariantValues(record._id)}
+            />
           </Tooltip>
           <Tooltip title={t('button.edit')}>
-            <Link to={`/admin/variant/edit/${record._id}`}>
-              <Button
-                type='primary'
-                size='small'
-                icon={<i className='fa-duotone fa-pen-to-square' />}
-              />
-            </Link>
+            <Button
+              type='primary'
+              size='small'
+              icon={<i className='fa-duotone fa-pen-to-square' />}
+              onClick={() => {
+                setDrawerMode('UPDATE')
+                setEditingId(record._id)
+                setDrawerOpen(true)
+              }}
+            />
           </Tooltip>
           {record.isDeleted ? (
             <Tooltip title={t('button.restore')}>
@@ -268,7 +281,7 @@ const AdminVariantsTable = ({ heading = false }) => {
   const variants = data?.variants || []
   const pagination: PaginationType = {
     size: data?.size || 0,
-    pageCurrent: data?.filter?.pageCurrent || filter.page,
+    pageCurrent: data?.filter?.pageCurrent || filter.page || 1,
     pageCount: data?.filter?.pageCount || 1
   }
 
@@ -329,13 +342,17 @@ const AdminVariantsTable = ({ heading = false }) => {
               loading={isLoading}
               icon={<SyncOutlined spin={isLoading} />}
             />
-            <Link to='/admin/variant/create'>
-              <Button type='primary' icon={<i className='fa-light fa-plus' />}>
-                <span className='hidden sm:inline'>
-                  {t('variantDetail.add')}
-                </span>
-              </Button>
-            </Link>
+            <Button
+              type='primary'
+              icon={<i className='fa-light fa-plus' />}
+              onClick={() => {
+                setDrawerMode('CREATE')
+                setEditingId(null)
+                setDrawerOpen(true)
+              }}
+            >
+              <span className='hidden sm:inline'>{t('variantDetail.add')}</span>
+            </Button>
           </div>
 
           <div>
@@ -404,6 +421,38 @@ const AdminVariantsTable = ({ heading = false }) => {
           </div>
         </div>
       </Spin>
+      <Drawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        width={600}
+        title={
+          drawerMode === 'CREATE' ? t('variantDetail.add') : t('button.edit')
+        }
+        destroyOnHidden
+      >
+        <AdminVariantForm
+          mode={drawerMode}
+          variantId={editingId}
+          onSuccess={() => {
+            setDrawerOpen(false)
+            invalidate({ queryKey: ['variants'] })
+          }}
+          onClose={() => setDrawerOpen(false)}
+        />{' '}
+      </Drawer>
+
+      <Modal
+        open={variantValuesModalOpen}
+        onCancel={() => setVariantValuesModalOpen(false)}
+        width={1000}
+        title={t('breadcrumbs.variantValues')}
+        footer={null}
+        destroyOnHidden
+      >
+        {selectedVariantId && (
+          <VariantValuesTable variantId={selectedVariantId} />
+        )}
+      </Modal>
     </div>
   )
 }

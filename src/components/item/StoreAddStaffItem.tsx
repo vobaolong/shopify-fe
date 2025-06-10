@@ -32,7 +32,7 @@ const StoreAddStaffItem = ({ storeId = '', owner = {}, staff = [] }) => {
         onCancel={handleCancel}
         footer={null}
         title={t('staffDetail.add')}
-        destroyOnClose
+        destroyOnHidden
       >
         <StoreAddStaffForm storeId={storeId} owner={owner} staff={staff} />
       </Modal>

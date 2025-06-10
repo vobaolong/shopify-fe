@@ -69,11 +69,10 @@ export const listOrdersByUser = async (
 }
 
 export const listOrdersByStore = async (
-  userId: string,
-  params: any,
-  storeId: string
+  storeId: string,
+  params: any
 ): Promise<any> => {
-  return await axiosClient.get(`/orders/by/store/${storeId}/${userId}`, {
+  return await axiosClient.get(`/store/${storeId}/orders`, {
     params
   })
 }
@@ -83,8 +82,11 @@ export const listReturnByStore = async (
   filter: any,
   storeId: string
 ): Promise<any> => {
-  return await axiosClient.get(`/order/return/by/store/${storeId}/${userId}`, {
-    params: filter
+  return await axiosClient.get(`/store/${storeId}/return`, {
+    params: {
+      userId,
+      ...filter
+    }
   })
 }
 

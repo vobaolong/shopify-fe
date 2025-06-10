@@ -37,7 +37,6 @@ const AdminReviewTable = ({
     page: 1
   })
 
-  // Update filter when rating or storeId changes
   useEffect(() => {
     setFilter((prevFilter) => ({
       ...prevFilter,
@@ -46,10 +45,7 @@ const AdminReviewTable = ({
     }))
   }, [rating, storeId])
 
-  // TanStack Query for fetching reviews
   const { data, isLoading, error, refetch } = useReviews(filter)
-
-  // TanStack Query mutation for deleting reviews
   const deleteReviewMutation = useDeleteReviewByAdmin()
   const reviews: ReviewType[] = data?.data?.reviews || []
   const pagination: PaginationType = {

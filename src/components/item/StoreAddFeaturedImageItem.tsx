@@ -42,7 +42,7 @@ const StoreAddFeaturedImageItem = ({ count = 6, storeId = '' }) => {
           onCancel={handleCancel}
           footer={null}
           title={t('storeDetail.addFeaturedImg')}
-          destroyOnClose
+          destroyOnHidden
         >
           <StoreAddFeaturedImageForm storeId={storeId} />
         </Modal>

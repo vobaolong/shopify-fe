@@ -128,6 +128,12 @@ input:focus {
 	padding: .8rem !important;
 }
 
+.scroll-tags .ant-select-selector {
+	overflow-x: auto !important;
+	white-space: nowrap !important;
+	max-height: 180px;
+}
+
 .fs-9 {
 	font-size: 0.9rem !important;
 }

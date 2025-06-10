@@ -579,6 +579,24 @@
       "valueOf": "Value of"
     }
   },
+  "categoryForm": {
+    "lv1": "Category",
+    "lv2": "Sub Category",
+    "lv3": "Third Level Category"
+  },
+  "brandDetail": {
+    "brands": "Brands",
+    "categories": "Categories",
+    "add": "Add Brand",
+    "edit": "Edit Brand",
+    "del": "Delete Brand",
+    "res": "Restore Brand",
+    "name": "Brand Name",
+    "validName": "Please provide a valid brand name!",
+    "selectCategory": "Select Category",
+    "required": "No category selected",
+    "createdAt": "Created At"
+  },
   "staffDetail": {
     "staffList": "Staff List",
     "owner": "Store Owner",

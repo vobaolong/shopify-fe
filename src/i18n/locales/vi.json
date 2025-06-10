@@ -215,13 +215,13 @@
     "listActiveStores": "Shop đang hoạt động",
     "listBannedProducts": "Sản phẩm bị tạm khoá",
     "listActiveProducts": "Sản phẩm đang bán",
-    "allOrders": "Tất cả đơn hàng",
-    "notProcessedOrders": "Đơn hàng chưa xử lý",
-    "processingOrders": "Đơn hàng đang xử lý",
-    "shippedOrders": "Đơn hàng chờ giao",
-    "deliveredOrders": "Đơn hàng hoàn thành",
-    "cancelledOrders": "Đơn hàng đã huỷ",
-    "returnedOrders": "Đơn hàng đã trả hàng",
+    "allOrders": "Tất cả",
+    "notProcessedOrders": "Chưa xử lý",
+    "processingOrders": "Đang xử lý",
+    "shippedOrders": "Chờ giao",
+    "deliveredOrders": "Hoàn thành",
+    "cancelledOrders": "Đã huỷ",
+    "returnedOrders": "Đã trả hàng",
     "userInSystem": "Người dùng trong hệ thống",
     "listStores": "Danh sách gian hàng"
   },
@@ -611,12 +611,17 @@
     "createdAt": "Ngày tạo",
     "value": {
       "name": "Tên thuộc tính",
-      "add": "Thêm thuộc tính cho",
+      "add": "Thêm thuộc tính",
       "edit": "Sửa thuộc tính",
       "res": "Khôi phục thuộc tính",
       "value": "Thuộc tính",
       "valueOf": "Thuộc tính của"
     }
+  },
+  "categoryForm": {
+    "lv1": "Cấp 1",
+    "lv2": "Cấp 2",
+    "lv3": "Cấp 3"
   },
   "brandDetail": {
     "brands": "Thương hiệu",
@@ -700,7 +705,7 @@
   },
   "favorite": "Yêu thích",
   "wallet": "Số dư TK ShopBase",
-  "myBalance": "Số dư của tôi",
+  "myBalance": "Số dư",
   "dropHere": "Thả ảnh vào đây...",
   "dragNDrop": "Kéo/Thả ảnh vào đây hoặc nhấn để chọn",
   "confirmDialog": "Bạn có chắc chắn về điều này không?",

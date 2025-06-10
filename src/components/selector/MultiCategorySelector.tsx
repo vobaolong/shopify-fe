@@ -1,78 +1,55 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { listCategories, listActiveCategories } from '../../apis/category.api'
-import SearchInput from '../ui/SearchInput'
-import CategorySmallCard from '../card/CategorySmallCard'
-import { Alert, Spin } from 'antd'
+import { Alert, Spin, Select, Row, Col } from 'antd'
 import { useTranslation } from 'react-i18next'
-import { CategoryFilter, CategoryType } from '../../@types/entity.types'
+import { CategoryType } from '../../@types/entity.types'
 import { useQuery } from '@tanstack/react-query'
 
 interface MultiCategorySelectorProps {
-  defaultValue?: CategoryType[]
-  value?: CategoryType[] // Add controlled value prop
+  value?: {
+    lv1?: string
+    lv2?: string
+    lv3?: string
+    categoryObj?: CategoryType
+  }[]
   isActive?: boolean
   isRequired?: boolean
   label?: string
-  onSet?: (categories: CategoryType[]) => void
-  isSelected?: boolean
+  onSet?: (
+    value: {
+      lv1?: string
+      lv2?: string
+      lv3?: string
+      categoryObj?: CategoryType
+    }[]
+  ) => void
 }
 
 const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
-  defaultValue = [],
-  value, // Add value prop
+  value = [],
   isActive = false,
-  isRequired = false,
-  label = 'Chosen category',
-  onSet = () => {},
-  isSelected = true
+  onSet = () => {}
 }) => {
   const { t } = useTranslation()
-  const [lv1Filter, setLv1Filter] = useState<CategoryFilter>({
-    search: '',
-    categoryId: null,
-    sortBy: 'name',
-    order: 'asc',
-    limit: 100,
-    page: 1
-  })
-  const [lv2Filter, setLv2Filter] = useState<CategoryFilter>({
-    search: '',
-    categoryId: '',
-    sortBy: 'name',
-    order: 'asc',
-    limit: 100,
-    page: 1
-  })
-  const [lv3Filter, setLv3Filter] = useState<CategoryFilter>({
-    search: '',
-    categoryId: '',
-    sortBy: 'name',
-    order: 'asc',
-    limit: 100,
-    page: 1
-  })
-  const [selectedCategories, setSelectedCategories] = useState<CategoryType[]>(
-    value || defaultValue || []
-  )
-
-  // Update selectedCategories when value prop changes (controlled mode)
-  useEffect(() => {
-    if (value !== undefined) {
-      setSelectedCategories(value)
-    }
-  }, [value])
+  const [lv1, setLv1] = useState<string | undefined>(undefined)
+  const [lv2, setLv2] = useState<string | undefined>(undefined)
+  const [lv3Temp, setLv3Temp] = useState<string[]>([])
 
   const {
     data: lv1Categories = [],
     isLoading: lv1Loading,
     error: lv1Error
   } = useQuery({
-    queryKey: ['categories', 'lv1', lv1Filter, isActive],
+    queryKey: ['categories', 'lv1', isActive],
     queryFn: async () => {
       if (isActive) {
-        return (await listActiveCategories(lv1Filter)).categories
+        return (
+          await listActiveCategories({ limit: 1000, page: 1, categoryId: null })
+        ).categories
       } else {
-        return (await listCategories(lv1Filter)).categories
+        return (
+          await listCategories({ limit: 1000, page: 1, categoryId: null })
+        ).categories
       }
     }
   })
@@ -82,16 +59,19 @@ const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
     isLoading: lv2Loading,
     error: lv2Error
   } = useQuery({
-    queryKey: ['categories', 'lv2', lv2Filter, isActive],
+    queryKey: ['categories', 'lv2', lv1, isActive],
     queryFn: async () => {
-      if (!lv2Filter.categoryId) return []
+      if (!lv1) return []
       if (isActive) {
-        return (await listActiveCategories(lv2Filter)).categories
+        return (
+          await listActiveCategories({ limit: 1000, page: 1, categoryId: lv1 })
+        ).categories
       } else {
-        return (await listCategories(lv2Filter)).categories
+        return (await listCategories({ limit: 1000, page: 1, categoryId: lv1 }))
+          .categories
       }
     },
-    enabled: !!lv2Filter.categoryId
+    enabled: !!lv1
   })
 
   const {
@@ -99,226 +79,162 @@ const MultiCategorySelector: React.FC<MultiCategorySelectorProps> = ({
     isLoading: lv3Loading,
     error: lv3Error
   } = useQuery({
-    queryKey: ['categories', 'lv3', lv3Filter, isActive],
+    queryKey: ['categories', 'lv3', lv2, isActive],
     queryFn: async () => {
-      if (!lv3Filter.categoryId) return []
+      if (!lv2) return []
       if (isActive) {
-        return (await listActiveCategories(lv3Filter)).categories
+        return (
+          await listActiveCategories({ limit: 1000, page: 1, categoryId: lv2 })
+        ).categories
       } else {
-        return (await listCategories(lv3Filter)).categories
+        return (await listCategories({ limit: 1000, page: 1, categoryId: lv2 }))
+          .categories
       }
     },
-    enabled: !!lv3Filter.categoryId
+    enabled: !!lv2
   })
 
-  // Initialize selectedCategories based on mode
   useEffect(() => {
-    if (value === undefined && defaultValue) {
-      setSelectedCategories(defaultValue)
+    setLv2(undefined)
+    setLv3Temp([])
+  }, [lv1])
+
+  useEffect(() => {
+    setLv3Temp([])
+  }, [lv2])
+
+  const handleLv3Change = (selectedLv3: string[]) => {
+    const currentLv3 = value.map((v) => v.lv3)
+    const newLv3 = selectedLv3.filter((id) => !currentLv3.includes(id))
+    if (newLv3.length === 0) {
+      setLv3Temp([])
+      return
     }
-  }, [defaultValue, value])
-
-  const handleChangeKeyword = (keyword: string) => {
-    setLv1Filter({
-      ...lv1Filter,
-      search: keyword
+    const newObjs = newLv3.map((lv3id) => {
+      const catObj = lv3Categories.find(
+        (cat: CategoryType) => cat._id === lv3id
+      )
+      return { lv1, lv2, lv3: lv3id, categoryObj: catObj }
     })
-
-    setLv2Filter({
-      ...lv2Filter,
-      categoryId: ''
-    })
-
-    setLv3Filter({
-      ...lv3Filter,
-      categoryId: ''
-    })
+    onSet([...value, ...newObjs])
+    setLv3Temp([])
   }
-  const handleClick = (
-    filter: CategoryFilter | null,
-    setFilter: React.Dispatch<React.SetStateAction<CategoryFilter>> | null,
-    category: CategoryType
-  ) => {
-    if (setFilter && filter)
-      setFilter({
-        ...filter,
-        categoryId: category._id
-      })
 
-    if (filter === lv2Filter)
-      setLv3Filter({
-        ...lv3Filter,
-        categoryId: ''
-      })
+  const handleTagRemove = (lv3id: string) => {
+    const newValue = value.filter((v) => v.lv3 !== lv3id)
+    onSet(newValue)
+  }
 
-    if (isSelected && filter === null) {
-      const temp = selectedCategories.map((cat) => cat._id)
-      if (temp.indexOf(category._id) === -1) {
-        const newSelected = [...selectedCategories, category]
-        // Update state only if not in controlled mode
-        if (value === undefined) {
-          setSelectedCategories(newSelected)
-        }
-        if (onSet) onSet(newSelected)
-      }
-    }
-  }
-  const handleRemove = (index: number) => {
-    const newArray = [...selectedCategories]
-    newArray.splice(index, 1)
-    // Update state only if not in controlled mode
-    if (value === undefined) {
-      setSelectedCategories(newArray)
-    }
-    if (onSet) onSet(newArray)
-  }
+  // Lấy selected lv3 từ value prop
+  const selectedLv3 = Array.isArray(value)
+    ? value.map((v) => v.lv3!).filter(Boolean)
+    : []
 
   return (
-    <div className='row'>
-      <div className='col'>
-        <SearchInput value={lv1Filter.search} onChange={handleChangeKeyword} />
-      </div>{' '}
-      <div className='col-12 position-relative'>
-        {(lv1Loading || lv2Loading || lv3Loading) && <Spin />}
-        {(lv1Error || lv2Error || lv3Error) && (
-          <Alert
-            message={String(lv1Error || lv2Error || lv3Error)}
-            type='error'
-            showIcon
-          />
-        )}
-
-        <div className='flex border p-1 mt-2 rounded-2 bg-value'>
-          <div
-            className='list-group m-1'
-            style={{
-              width: '33.33333%',
-              overflowY: 'auto',
-              height: '250px'
-            }}
-          >
-            {' '}
-            {lv1Categories?.map((category: CategoryType, index: number) => (
-              <div key={category._id || index}>
-                <button
-                  type='button'
-                  className={`list-group-item ripple list-group-item-action flex justify-content-between items-center ${
-                    category._id === lv2Filter.categoryId && 'active'
-                  }`}
-                  onClick={() => handleClick(lv2Filter, setLv2Filter, category)}
-                >
-                  <span className='res-smaller-md'>{category.name}</span>
-                  <i className='fa-solid fa-angle-right res-smaller-lg res-hide' />
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <div
-            className='list-group m-1'
-            style={{
-              width: '33.33333%',
-              overflowY: 'auto',
-              height: '250px'
-            }}
-          >
-            {' '}
-            {lv2Categories?.map((category: CategoryType, index: number) => (
-              <div key={category._id || index}>
-                <button
-                  type='button'
-                  className={`list-group-item ripple list-group-item-action flex justify-content-between items-center  ${
-                    category._id === lv3Filter.categoryId && 'active'
-                  }`}
-                  onClick={() => handleClick(lv3Filter, setLv3Filter, category)}
-                >
-                  <span className='res-smaller-md'>{category.name}</span>
-                  <i className='fa-solid fa-angle-right res-smaller-lg res-hide' />
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <div
-            className='list-group m-1'
-            style={{
-              width: '33.33333%',
-              overflowY: 'auto',
-              height: '250px'
-            }}
-          >
-            {' '}
-            {lv3Categories?.map((category: CategoryType, index: number) => (
-              <div key={category._id || index}>
-                <button
-                  type='button'
-                  className={`list-group-item ripple list-group-item-action ${
-                    selectedCategories &&
-                    Array.isArray(selectedCategories) &&
-                    selectedCategories
-                      .map((cat) => cat._id)
-                      .indexOf(category._id) !== -1 &&
-                    'active'
-                  }`}
-                  onClick={() => handleClick(null, null, category)}
-                >
-                  <span className='res-smaller-md'>{category.name}</span>
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
+    <div>
+      <div className='scroll-tags'>
+        <Select
+          mode='multiple'
+          style={{ width: '100%', marginBottom: 8 }}
+          value={selectedLv3}
+          onChange={(ids) => {
+            const removed = selectedLv3.filter((id) => !ids.includes(id))
+            if (removed.length > 0) {
+              removed.forEach(handleTagRemove)
+            }
+          }}
+          options={value.map((v) => ({
+            label: v.categoryObj?.name || v.lv3,
+            value: v.lv3
+          }))}
+          placeholder={t('Các phân loại đã chọn')}
+          open={false}
+          allowClear
+        />
       </div>
-      {isSelected && (
-        <div className='col mt-2'>
-          <div className='mt-4 position-relative'>
-            <label
-              className='position-absolute text-muted'
-              style={{
-                fontSize: '0.8rem',
-                left: '12px',
-                top: '-18px'
-              }}
-            >
-              {label}
-            </label>
-
-            <div
-              style={{ height: '100%', maxHeight: '300px', overflow: 'auto' }}
-              className='form-control border bg-light-subtle flex flex-column gap-3'
-            >
-              {selectedCategories &&
-                (Array.isArray(selectedCategories) ? (
-                  selectedCategories.map(
-                    (category: CategoryType, index: number) => (
-                      <span
-                        key={index}
-                        className='flex items-center position-relative'
-                      >
-                        <CategorySmallCard category={category} />
-                        <button
-                          style={{
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            right: '0'
-                          }}
-                          type='button'
-                          className='btn btn-outline-danger btn-sm ripple ms-2 position-absolute'
-                          onClick={() => handleRemove(index)}
-                        >
-                          <i className='fa-solid fa-xmark' />
-                        </button>
-                      </span>
-                    )
-                  )
-                ) : (
-                  <span className={isRequired ? 'text-danger' : undefined}>
-                    {t('variantDetail.required')}
-                  </span>
-                ))}
-            </div>
-          </div>
-        </div>
+      <Row gutter={16}>
+        <Col span={8}>
+          <span>{t('categoryForm.lv1')}</span>
+          <Select
+            style={{ width: '100%' }}
+            placeholder={t('Chọn cấp 1')}
+            value={lv1}
+            onChange={setLv1}
+            loading={lv1Loading}
+            options={lv1Categories.map((cat: CategoryType) => ({
+              label: cat.name,
+              value: cat._id,
+              children: cat.name
+            }))}
+            showSearch
+            allowClear
+            virtual={false}
+            styles={{ popup: { root: { maxHeight: 300, overflow: 'auto' } } }}
+            filterOption={(input, option) =>
+              (option?.children?.toString() ?? '')
+                .toLowerCase()
+                .includes(input.toLowerCase())
+            }
+          />
+        </Col>
+        <Col span={8}>
+          <span>{t('categoryForm.lv2')}</span>
+          <Select
+            style={{ width: '100%' }}
+            placeholder={t('Chọn cấp 2')}
+            value={lv2}
+            onChange={setLv2}
+            loading={lv2Loading}
+            options={lv2Categories.map((cat: CategoryType) => ({
+              label: cat.name,
+              value: cat._id,
+              children: cat.name
+            }))}
+            showSearch
+            allowClear
+            disabled={!lv1}
+            virtual={false}
+            styles={{ popup: { root: { maxHeight: 300, overflow: 'auto' } } }}
+            filterOption={(input, option) =>
+              (option?.children?.toString() ?? '')
+                .toLowerCase()
+                .includes(input.toLowerCase())
+            }
+          />
+        </Col>
+        <Col span={8}>
+          <span>{t('categoryForm.lv3')}</span>
+          <Select
+            mode='multiple'
+            style={{ width: '100%' }}
+            placeholder={t('Chọn cấp 3')}
+            value={lv3Temp}
+            onChange={handleLv3Change}
+            loading={lv3Loading}
+            options={lv3Categories.map((cat: CategoryType) => ({
+              label: cat.name,
+              value: cat._id,
+              children: cat.name
+            }))}
+            showSearch
+            allowClear
+            disabled={!lv2}
+            virtual={false}
+            styles={{ popup: { root: { maxHeight: 300, overflow: 'auto' } } }}
+            filterOption={(input, option) =>
+              (option?.children?.toString() ?? '')
+                .toLowerCase()
+                .includes(input.toLowerCase())
+            }
+          />
+        </Col>
+      </Row>
+      {(lv1Error || lv2Error || lv3Error) && (
+        <Alert
+          message={String(lv1Error || lv2Error || lv3Error)}
+          type='error'
+          showIcon
+        />
       )}
     </div>
   )

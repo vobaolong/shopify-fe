@@ -8,7 +8,7 @@ import {
 import { humanReadableDate } from '../../helper/humanReadable'
 import { formatPrice } from '../../helper/formatPrice'
 import Pagination from '../ui/Pagination'
-import { Spin, Alert } from 'antd'
+import { Spin, Alert, Table } from 'antd'
 import SortByButton from './sub/SortByButton'
 import OrderReturnStatusLabel from '../label/OrderReturnStatusLabel'
 import OrderPaymentLabel from '../label/OrderPaymentLabel'
@@ -21,6 +21,7 @@ import {
   ReturnFilterState,
   defaultReturnFilter
 } from '../../@types/filter.type'
+import { useQuery } from '@tanstack/react-query'
 
 const SellerReturnTable = ({
   storeId = '',
@@ -31,12 +32,6 @@ const SellerReturnTable = ({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [displayError, setDisplayError] = useState(false)
-  const [orders, setOrders] = useState<any[]>([])
-  const [pagination, setPagination] = useState({
-    size: 0,
-    pageCurrent: 1,
-    pageCount: 1
-  })
   const [filter, setFilter] = useState<ReturnFilterState>({
     ...defaultReturnFilter,
     status
@@ -46,47 +41,28 @@ const SellerReturnTable = ({
     status
   })
 
-  const { _id, accessToken } = getToken()
-  const init = () => {
-    setError('')
-    setIsLoading(true)
-    let timerId: NodeJS.Timeout | null = null
-    listReturnByStore(_id, filter, storeId)
-      .then((data) => {
-        console.log(data)
-        if (data.error) setError(data.error)
-        else {
-          setOrders(data.orders || [])
-          setPagination({
-            size: data.size || 0,
-            pageCurrent: data.filter?.pageCurrent || 1,
-            pageCount: data.filter?.pageCount || 1
-          })
-        }
-        setIsLoading(false)
-        if (timerId) clearTimeout(timerId)
-      })
-      .catch(() => {
-        setError('Server Error')
-        setIsLoading(false)
-        if (timerId) clearTimeout(timerId)
-      })
-    timerId = setTimeout(() => {
-      if (error) setDisplayError(true)
-    }, 3000)
-  }
-  useEffect(() => {
-    const newFilter = {
-      ...filter,
-      status
-    }
-    setFilter(newFilter)
-    setPendingFilter(newFilter)
-  }, [status])
+  const { _id } = getToken()
 
-  useEffect(() => {
-    init()
-  }, [filter, storeId])
+  // Query for return orders
+  const {
+    data,
+    isLoading: queryLoading,
+    isError,
+    refetch
+  } = useQuery({
+    queryKey: ['returnOrders', filter, storeId],
+    queryFn: async () => {
+      const res = await listReturnByStore(_id, filter, storeId)
+      return res.data || res
+    }
+  })
+
+  const orders = data?.orders || []
+  const pagination = {
+    size: data?.size || 0,
+    pageCurrent: data?.filter?.pageCurrent || 1,
+    pageCount: data?.filter?.pageCount || 1
+  }
 
   const handleChangeKeyword = (keyword: string) => {
     setPendingFilter({
@@ -129,7 +105,7 @@ const SellerReturnTable = ({
       )
 
       if (result.success) {
-        init()
+        refetch()
       } else {
         throw new Error(result.error || 'Failed to update status')
       }
@@ -142,6 +118,103 @@ const SellerReturnTable = ({
     }
   }
   //
+
+  const columns = [
+    {
+      title: 'ID',
+      dataIndex: '_id',
+      key: '_id',
+      width: '10%',
+      render: (text: string) => <small>{text}</small>
+    },
+    {
+      title: t('orderDetail.date'),
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      width: '15%',
+      render: (text: string) => <small>{humanReadableDate(text)}</small>
+    },
+    {
+      title: t('orderDetail.total'),
+      dataIndex: 'amountFromUser',
+      key: 'amountFromUser',
+      width: '15%',
+      render: (text: number) => (
+        <small className='text-nowrap'>
+          {formatPrice(text)}
+          <sup>₫</sup>
+        </small>
+      )
+    },
+    {
+      title: t('orderDetail.buyer'),
+      dataIndex: 'userId',
+      key: 'userId',
+      width: '15%',
+      render: (userId: any) => <UserSmallCard user={userId} />
+    },
+    {
+      title: t('orderDetail.paymentMethod'),
+      dataIndex: 'isPaidBefore',
+      key: 'isPaidBefore',
+      width: '10%',
+      render: (isPaidBefore: boolean) => (
+        <span>
+          <OrderPaymentLabel isPaidBefore={isPaidBefore} />
+        </span>
+      )
+    },
+    {
+      title: t('status.status'),
+      dataIndex: 'returnRequests',
+      key: 'returnRequests.status',
+      width: '10%',
+      render: (returnRequests: any) => (
+        <span>
+          <OrderReturnStatusLabel status={returnRequests?.status} />
+        </span>
+      )
+    },
+    {
+      title: t('orderDetail.reason'),
+      dataIndex: 'returnRequests',
+      key: 'returnRequests.reason',
+      width: '15%',
+      render: (returnRequests: any) => <span>{returnRequests?.reason}</span>
+    },
+    {
+      title: t('orderDetail.date'),
+      dataIndex: 'returnRequests',
+      key: 'returnRequests.createdAt',
+      width: '15%',
+      render: (returnRequests: any) => (
+        <small>{humanReadableDate(returnRequests?.createdAt)}</small>
+      )
+    },
+    {
+      title: t('action'),
+      key: 'action',
+      width: '10%',
+      render: (text: string, record: any) => (
+        <>
+          <button
+            className='btn btn-success rounded-1 btn-sm'
+            onClick={() => handleUpdateStatus(record._id, 'Approved')}
+            disabled={record.returnRequests?.status === 'Approved'}
+          >
+            {t('button.approve')}
+          </button>
+          <button
+            className='btn btn-outline-danger rounded-1 btn-sm ms-2'
+            onClick={() => handleUpdateStatus(record._id, 'Rejected')}
+            disabled={record.returnRequests?.status === 'Rejected'}
+          >
+            {t('button.reject')}
+          </button>
+        </>
+      )
+    }
+  ]
 
   return (
     <div className='position-relative'>
@@ -163,170 +236,14 @@ const SellerReturnTable = ({
         ) : (
           <>
             <div className='table-scroll my-2'>
-              <table className='table align-middle table-hover table-sm text-start'>
-                <thead>
-                  <tr>
-                    <th scope='col' className='text-center'></th>
-                    <th scope='col'>
-                      <SortByButton
-                        currentOrder={filter.order}
-                        currentSortBy={filter.sortBy}
-                        title={t('orderDetail.id')}
-                        sortBy='_id'
-                        onSet={(order, sortBy) =>
-                          handleSetSortBy(order, sortBy)
-                        }
-                      />
-                    </th>
-                    <th scope='col'>
-                      <SortByButton
-                        currentOrder={filter.order}
-                        currentSortBy={filter.sortBy}
-                        title={t('orderDetail.date')}
-                        sortBy='createdAt'
-                        onSet={(order, sortBy) =>
-                          handleSetSortBy(order, sortBy)
-                        }
-                      />
-                    </th>
-                    <th scope='col' className='text-end'>
-                      <SortByButton
-                        currentOrder={filter.order}
-                        currentSortBy={filter.sortBy}
-                        title={t('orderDetail.total')}
-                        sortBy='amountFromUser'
-                        onSet={(order, sortBy) =>
-                          handleSetSortBy(order, sortBy)
-                        }
-                      />
-                    </th>
-                    <th scope='col'>
-                      <SortByButton
-                        currentOrder={filter.order}
-                        currentSortBy={filter.sortBy}
-                        title={t('orderDetail.buyer')}
-                        sortBy='userId'
-                        onSet={(order, sortBy) =>
-                          handleSetSortBy(order, sortBy)
-                        }
-                      />
-                    </th>
-                    <th scope='col'>
-                      <SortByButton
-                        currentOrder={filter.order}
-                        currentSortBy={filter.sortBy}
-                        title={t('orderDetail.paymentMethod')}
-                        sortBy='isPaidBefore'
-                        onSet={(order, sortBy) =>
-                          handleSetSortBy(order, sortBy)
-                        }
-                      />
-                    </th>
-                    <th scope='col'>
-                      <SortByButton
-                        currentOrder={filter.order}
-                        currentSortBy={filter.sortBy}
-                        title={t('status.status')}
-                        sortBy='status'
-                        onSet={(order, sortBy) =>
-                          handleSetSortBy(order, sortBy)
-                        }
-                      />
-                    </th>
-                    <th scope='col'>
-                      <span>{t('orderDetail.reason')}</span>
-                    </th>
-                    <th scope='col'>
-                      <SortByButton
-                        currentOrder={filter.order}
-                        currentSortBy={filter.sortBy}
-                        title={t('orderDetail.date')}
-                        sortBy='createdAt'
-                        onSet={(order, sortBy) =>
-                          handleSetSortBy(order, sortBy)
-                        }
-                      />
-                    </th>
-                    <th scope='col'>
-                      <span>{t('action')}</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders?.map((order, index) => (
-                    <tr key={index}>
-                      <th scope='row' className='text-center'>
-                        {index +
-                          1 +
-                          ((filter.page || 1) - 1) * (filter.limit || 10)}
-                      </th>
-                      <td>
-                        <small>{order._id}</small>
-                      </td>
-                      <td style={{ whiteSpace: 'normal' }}>
-                        <small>{humanReadableDate(order.createdAt)}</small>
-                      </td>
-                      <td className='text-end'>
-                        <small className='text-nowrap'>
-                          {formatPrice(order.amountFromUser?.$numberDecimal)}
-                          <sup>₫</sup>
-                        </small>
-                      </td>
-                      <td className='hidden-avatar'>
-                        <UserSmallCard user={order.userId} />
-                      </td>
-                      <td>
-                        <span>
-                          <OrderPaymentLabel
-                            isPaidBefore={order.isPaidBefore}
-                          />
-                        </span>
-                      </td>
-                      <td>
-                        <span>
-                          <OrderReturnStatusLabel
-                            status={order.returnRequests?.status}
-                          />
-                        </span>
-                      </td>
-                      <td>
-                        <span>{order.returnRequests?.reason}</span>
-                      </td>
-                      <td>
-                        <small>
-                          {humanReadableDate(order.returnRequests?.createdAt)}
-                        </small>
-                      </td>
-                      <td>
-                        <>
-                          <button
-                            className='btn btn-success rounded-1 btn-sm'
-                            onClick={() =>
-                              handleUpdateStatus(order._id, 'Approved')
-                            }
-                            disabled={
-                              order.returnRequests?.status === 'Approved'
-                            }
-                          >
-                            {t('button.approve')}
-                          </button>
-                          <button
-                            className='btn btn-outline-danger rounded-1 btn-sm ms-2'
-                            onClick={() =>
-                              handleUpdateStatus(order._id, 'Rejected')
-                            }
-                            disabled={
-                              order.returnRequests?.status === 'Rejected'
-                            }
-                          >
-                            {t('button.reject')}
-                          </button>
-                        </>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <Table
+                columns={columns}
+                dataSource={orders}
+                rowKey='_id'
+                pagination={false}
+                className='mb-4'
+                scroll={{ x: 'max-content' }}
+              />
             </div>
             <div className='flex justify-content-between items-center px-4'>
               {pagination.size !== 0 && (

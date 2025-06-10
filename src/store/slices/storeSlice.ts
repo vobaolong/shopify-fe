@@ -34,6 +34,5 @@ export const { addStore, updateIsFollowing, updateLevel } = storeSlice.actions
 
 export default storeSlice.reducer
 
-// Selector
 export const selectStoreStore = (state: { store: StoreState }) =>
   state.store.store

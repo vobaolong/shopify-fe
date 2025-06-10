@@ -9,7 +9,6 @@ import UserSmallCard from '../card/UserSmallCard'
 import { useTranslation } from 'react-i18next'
 import {
   Table,
-  Input,
   Spin,
   Alert,
   Typography,

@@ -51,7 +51,7 @@ const UserAddAddressItem: React.FC<UserAddAddressItemProps> = ({
           onCancel={() => setIsModalOpen(false)}
           footer={null}
           title={t('userDetail.addAddress')}
-          destroyOnClose
+          destroyOnHidden
         >
           <UserAddAddressForm onSuccess={() => setIsModalOpen(false)} />
         </Modal>

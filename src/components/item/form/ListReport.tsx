@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { reportByUser } from '../../../apis/report.api'
 import { socketId } from '../../../socket'
-import { toast } from 'react-toastify'
-import ConfirmDialog from '../../ui/ConfirmDialog'
+import { Form, Radio, Input, Button, message } from 'antd'
+import { useMutation } from '@tanstack/react-query'
 
 interface Reason {
   value: string
@@ -29,119 +29,111 @@ const ListReport: React.FC<ListReportProps> = ({
   isReview,
   showOtherReason = false
 }) => {
-  const [selectedReason, setSelectedReason] = useState('')
-  const [otherReason, setOtherReason] = useState('')
   const { t } = useTranslation()
+  const [form] = Form.useForm()
+  const [api, contextHolder] = message.useMessage()
 
-  const handleReasonChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedReason(event.target.value)
-  }
-
-  const handleOtherReasonChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setOtherReason(event.target.value)
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSubmit()
-  }
-
-  const onSubmit = async () => {
-    if (selectedReason) {
+  const mutation = useMutation({
+    mutationFn: async (values: any) => {
       const reasonToSubmit =
-        selectedReason === 'other' ? otherReason : selectedReason
-      try {
-        console.log('Submitting report with data:', {
-          objectId,
-          reportBy,
-          reason: reasonToSubmit,
-          isStore,
-          isProduct,
-          isReview
-        })
-        await reportByUser({
-          objectId: objectId,
-          reportBy: reportBy,
-          reason: reasonToSubmit,
-          isStore: isStore,
-          isProduct: isProduct,
-          isReview: isReview
-        })
-        socketId.emit('notificationReport', {
-          objectId: objectId,
-          from: reportBy,
-          to: import.meta.env.ADMIN_ID
-        })
-        toast.success('Gửi báo cáo thành công')
-      } catch (error) {
-        console.error('Error reporting:', error)
-        toast.error('Error submitting report')
-      }
-    } else {
-      console.error('Please select a reason for reporting.')
-      toast.error('Please select a reason for reporting.')
+        values.reason === 'other' ? values.otherReason : values.reason
+      await reportByUser({
+        objectId,
+        reportBy,
+        reason: reasonToSubmit,
+        isStore,
+        isProduct,
+        isReview
+      })
+      socketId.emit('notificationReport', {
+        objectId: objectId,
+        from: reportBy,
+        to: import.meta.env.ADMIN_ID
+      })
+    },
+    onSuccess: () => {
+      api.success(t('toastSuccess.report'))
+      form.resetFields()
+    },
+    onError: () => {
+      api.error(t('toastError.report'))
     }
+  })
+
+  const onFinish = (values: any) => {
+    if (!values.reason) {
+      api.error(t('Please select a reason for reporting.'))
+      return
+    }
+    if (values.reason === 'other' && !values.otherReason) {
+      api.error(t('Please enter the other reason.'))
+      return
+    }
+    mutation.mutate(values)
   }
 
   return (
-    <div className='position-relative'>
-      <form onSubmit={handleSubmit}>
-        <div className='mb-3 flex flex-column'>
-          <label className='form-label'>Chọn lý do báo cáo</label>
-          {reasons.map((reason: Reason) => (
-            <div className='form-check' key={reason.value}>
-              <input
-                className='form-check-input pointer'
-                type='radio'
-                name='reportReason'
-                id={reason.value}
-                value={reason.value}
-                checked={selectedReason === reason.value}
-                onChange={handleReasonChange}
-              />
-              <label className='form-check-label' htmlFor={reason.value}>
+    <div className='relative'>
+      {contextHolder}
+      <Form
+        form={form}
+        layout='vertical'
+        onFinish={onFinish}
+        className='space-y-4'
+      >
+        <Form.Item
+          label={t('Chọn lý do báo cáo')}
+          name='reason'
+          rules={[
+            {
+              required: true,
+              message: t('Please select a reason for reporting.')
+            }
+          ]}
+        >
+          <Radio.Group className='flex flex-col gap-2'>
+            {reasons.map((reason) => (
+              <Radio key={reason.value} value={reason.value}>
                 {reason.label}
-              </label>
-              <hr className='m-3' />
-            </div>
-          ))}
-          {showOtherReason && (
-            <div className='form-check'>
-              <input
-                className='form-check-input pointer'
-                type='radio'
-                name='reportReason'
-                id='other'
-                value='other'
-                checked={selectedReason === 'other'}
-                onChange={handleReasonChange}
-              />
-              <label className='form-check-label' htmlFor='other'>
-                Khác
-              </label>
-            </div>
-          )}
-          {selectedReason === 'other' && showOtherReason && (
-            <input
-              type='text'
-              className='form-control mt-2'
-              placeholder='Nhập lý do khác'
-              value={otherReason}
-              onChange={handleOtherReasonChange}
-            />
-          )}
-        </div>
-        <div className='flex justify-content-end'>
-          <button
-            type='submit'
-            className='mt-3 btn btn-primary ripple text-nowrap rounded-1 w-50'
+              </Radio>
+            ))}
+            {showOtherReason && <Radio value='other'>{t('Khác')}</Radio>}
+          </Radio.Group>
+        </Form.Item>
+        {showOtherReason && (
+          <Form.Item
+            shouldUpdate={(prev, curr) => prev.reason !== curr.reason}
+            noStyle
+          >
+            {({ getFieldValue }) =>
+              getFieldValue('reason') === 'other' ? (
+                <Form.Item
+                  name='otherReason'
+                  rules={[
+                    {
+                      required: true,
+                      message: t('Please enter the other reason.')
+                    }
+                  ]}
+                  className='mt-2'
+                >
+                  <Input placeholder={t('Nhập lý do khác')} />
+                </Form.Item>
+              ) : null
+            }
+          </Form.Item>
+        )}
+        <Form.Item className='flex justify-end'>
+          <Button
+            type='primary'
+            htmlType='submit'
+            loading={mutation.isPending}
+            className='w-40'
           >
             {t('button.submit')}
-          </button>
-        </div>
-      </form>
+          </Button>
+        </Form.Item>
+      </Form>
     </div>
   )
 }

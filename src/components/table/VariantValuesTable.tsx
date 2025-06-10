@@ -1,258 +1,449 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect, Fragment } from 'react'
-import { getToken } from '../../apis/auth.api'
+import React, { useState, Fragment } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
-  listValues,
-  listActiveValues,
-  removeValue,
-  restoreValue
-} from '../../apis/variant.api'
+  Table,
+  Button,
+  Space,
+  Tooltip,
+  Alert,
+  Modal,
+  Typography,
+  Spin,
+  Select
+} from 'antd'
+import {
+  EditOutlined,
+  DeleteOutlined,
+  UndoOutlined,
+  SyncOutlined
+} from '@ant-design/icons'
+import { useAntdApp } from '../../hooks/useAntdApp'
 import DeletedLabel from '../label/DeletedLabel'
-import { Spin, Alert } from 'antd'
-import ConfirmDialog from '../ui/ConfirmDialog'
-import { Modal } from 'antd'
+import ActiveLabel from '../label/ActiveLabel'
 import AddVariantValueItem from '../item/AddVariantValueItem'
 import AdminEditVariantValueForm from '../item/form/AdminEditVariantValueForm'
-import ActiveLabel from '../label/ActiveLabel'
-import { useTranslation } from 'react-i18next'
-import { toast } from 'react-toastify'
+import SearchInput from '../ui/SearchInput'
 import { humanReadableDate } from '../../helper/humanReadable'
+import { ColumnsType } from 'antd/es/table'
+import { PaginationType } from '../../@types/pagination.type'
+import {
+  VariantValueFilterState,
+  defaultVariantValueFilter
+} from '../../@types/filter.type'
+import {
+  useVariantValues,
+  useRemoveVariantValue,
+  useRestoreVariantValue
+} from '../../hooks/useVariantValue'
 
-const VariantValuesTable = ({
-  heading = true,
-  variantId = '',
-  isActive = false
-}) => {
+const { Text } = Typography
+
+const VariantValuesTable = ({ variantId = '', isActive = false }) => {
   const { t } = useTranslation()
-  const [isLoading, setIsLoading] = useState(false)
-  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
-  const [isConfirmingRestore, setIsConfirmingRestore] = useState(false)
-  const [run, setRun] = useState(false)
-  const [error, setError] = useState('')
-  const [deletedVariantValue, setDeletedVariantValue] = useState({})
-  const [restoredVariantValue, setRestoredVariantValue] = useState({})
-  const [editedVariantValue, setEditedVariantValue] = useState({})
+  const { notification } = useAntdApp()
+  const [editedVariantValue, setEditedVariantValue] = useState<any>({})
   const [editModalVisible, setEditModalVisible] = useState(false)
-  const [variantValues, setVariantValues] = useState([])
-  const [variant, setVariant] = useState({})
-  const { _id } = getToken()
+  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
+  const [filter, setFilter] = useState<VariantValueFilterState>({
+    ...defaultVariantValueFilter,
+    variantId
+  })
+  const [pendingFilter, setPendingFilter] = useState<VariantValueFilterState>({
+    ...defaultVariantValueFilter,
+    variantId
+  })
 
-  const handleEditClick = (value) => {
+  const { data, isLoading, error, refetch } = useVariantValues(
+    variantId,
+    isActive,
+    isActive ? {} : filter
+  )
+  const deleteMutation = useRemoveVariantValue()
+  const restoreMutation = useRestoreVariantValue()
+
+  const variantValues = data?.variantValues || []
+  const variant = data?.variant || {}
+  const pagination: PaginationType = {
+    size: data?.size || 0,
+    pageCurrent: data?.filter?.pageCurrent || filter.page || 1,
+    pageCount: data?.filter?.pageCount || 1
+  }
+  const handleFilterChange = (updates: Partial<VariantValueFilterState>) => {
+    setPendingFilter((prev) => ({
+      ...prev,
+      ...updates,
+      page: 1
+    }))
+  }
+
+  const handleSearch = () => {
+    setFilter({ ...pendingFilter })
+  }
+
+  const handleChangePage = (page: number, pageSize: number) => {
+    setFilter((prev) => ({ ...prev, page, limit: pageSize }))
+  }
+
+  const handleFilterReset = () => {
+    const resetFilter = { ...defaultVariantValueFilter, variantId }
+    setFilter(resetFilter)
+    setPendingFilter(resetFilter)
+  }
+
+  const handleEditClick = (value: any) => {
     setEditedVariantValue(value)
     setEditModalVisible(true)
   }
-
   const handleEditModalClose = () => {
     setEditModalVisible(false)
   }
 
-  useEffect(() => {
-    setIsLoading(true)
-    if (!isActive) {
-      listValues(_id, variantId)
-        .then((data) => {
-          if (data.error) {
-            setError(data.error)
-          } else {
-            setVariantValues(data.variantValues)
-            setVariant(data.variant)
-          }
-          setIsLoading(false)
-        })
-        .catch(() => {
-          setError('Server Error')
-          setIsLoading(false)
-        })
-    } else {
-      listActiveValues(variantId)
-        .then((data) => {
-          if (data.error) setError(data.error)
-          else {
-            setVariantValues(data.variantValues)
-            setVariant(data.variant)
-          }
-          setIsLoading(false)
-        })
-        .catch(() => {
-          setError('Server Error')
-          setIsLoading(false)
-        })
+  const handleDelete = (variantValue: any) => {
+    if (!variantValue?._id) {
+      notification.error({ message: 'Invalid variant value selected' })
+      return
     }
-  }, [variantId, run])
 
-  const handleDelete = (variantValue) => {
-    setDeletedVariantValue(variantValue)
-    setIsConfirmingDelete(true)
+    Modal.confirm({
+      title: t('dialog.deleteValue'),
+      content: t('message.confirmDelete'),
+      okText: t('button.delete'),
+      cancelText: t('button.cancel'),
+      okType: 'danger',
+      onOk: () => {
+        deleteMutation.mutate(variantValue._id, {
+          onSuccess: (data) => {
+            const response = data.data || data
+            if (response.error) {
+              notification.error({ message: response.error })
+            } else {
+              notification.success({
+                message: t('toastSuccess.variantValue.delete')
+              })
+              refetch() // Refresh the data
+            }
+          },
+          onError: (error) => {
+            console.error('Delete error:', error)
+            notification.error({
+              message: 'Failed to delete item. Please try again.'
+            })
+          }
+        })
+      }
+    })
   }
 
-  const handleRestore = (variantValue) => {
-    setRestoredVariantValue(variantValue)
-    setIsConfirmingRestore(true)
-  }
+  const handleRestore = (variantValue: any) => {
+    if (!variantValue?._id) {
+      notification.error({ message: 'Invalid variant value selected' })
+      return
+    }
 
-  const onSubmitDelete = () => {
-    setIsLoading(true)
-    removeValue(_id, deletedVariantValue._id)
-      .then((data) => {
-        if (data.error) setError(data.error)
-        else {
-          toast.success(t('toastSuccess.variantValue.delete'))
-          setRun(!run)
+    Modal.confirm({
+      title: t('dialog.restoreValue'),
+      content: t('message.confirmRestore'),
+      okText: t('button.restore'),
+      cancelText: t('button.cancel'),
+      onOk: () => {
+        restoreMutation.mutate(variantValue._id, {
+          onSuccess: (data) => {
+            const response = data.data || data
+            if (response.error) {
+              notification.error({ message: response.error })
+            } else {
+              notification.success({
+                message: t('toastSuccess.variantValue.restore')
+              })
+              refetch() // Refresh the data
+            }
+          },
+          onError: (error) => {
+            console.error('Restore error:', error)
+            notification.error({
+              message: 'Failed to restore item. Please try again.'
+            })
+          }
+        })
+      }
+    })
+  }
+  const handleBulkDelete = () => {
+    if (selectedRowKeys.length === 0) return
+
+    Modal.confirm({
+      title: t('dialog.deleteValue'),
+      content: t('message.bulkDelete', { count: selectedRowKeys.length }),
+      onOk: async () => {
+        try {
+          // Process deletions sequentially to avoid overwhelming the server
+          for (const valueId of selectedRowKeys) {
+            await deleteMutation.mutateAsync(valueId)
+          }
+          notification.success({
+            message:
+              t('toastSuccess.variantValue.bulkDelete', {
+                count: selectedRowKeys.length
+              }) || `Successfully deleted ${selectedRowKeys.length} items`
+          })
+          setSelectedRowKeys([])
+          refetch() // Refresh the data
+        } catch (error) {
+          console.error('Bulk delete error:', error)
+          notification.error({
+            message: 'Failed to delete some items. Please try again.'
+          })
         }
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
-      .catch(() => {
-        setError('Server Error')
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
+      },
+      okText: t('button.delete'),
+      cancelText: t('button.cancel'),
+      okType: 'danger'
+    })
+  }
+  const handleBulkRestore = () => {
+    if (selectedRowKeys.length === 0) return
+
+    Modal.confirm({
+      title: t('dialog.restoreValue'),
+      content: t('message.bulkRestore', { count: selectedRowKeys.length }),
+      onOk: async () => {
+        try {
+          for (const valueId of selectedRowKeys) {
+            await restoreMutation.mutateAsync(valueId)
+          }
+          notification.success({
+            message:
+              t('toastSuccess.variantValue.bulkRestore', {
+                count: selectedRowKeys.length
+              }) || `Successfully restored ${selectedRowKeys.length} items`
+          })
+          setSelectedRowKeys([])
+          refetch()
+        } catch (error) {
+          notification.error({
+            message: 'Failed to restore some items. Please try again.'
+          })
+        }
+      },
+      okText: t('button.restore'),
+      cancelText: t('button.cancel')
+    })
+  }
+  const columns: ColumnsType<any> = [
+    {
+      title: '#',
+      dataIndex: 'index',
+      key: 'index',
+      width: 50,
+      render: (_: any, __: any, index: number) =>
+        (pagination.pageCurrent - 1) * (filter.limit || 8) + index + 1,
+      align: 'center' as const
+    },
+    {
+      title: t('variantDetail.value.name'),
+      dataIndex: 'name',
+      key: 'name',
+      render: (name: string) => <Text>{name}</Text>
+    },
+    ...(isActive
+      ? []
+      : [
+          {
+            title: t('status.status'),
+            dataIndex: 'isDeleted',
+            key: 'status',
+            width: 100,
+            render: (isDeleted: boolean) =>
+              isDeleted ? <DeletedLabel /> : <ActiveLabel />
+          },
+          {
+            title: t('createdAt'),
+            dataIndex: 'createdAt',
+            key: 'createdAt',
+            width: 150,
+            align: 'right' as const,
+            sorter: true,
+            render: (date: string) => <Text>{humanReadableDate(date)}</Text>
+          },
+          {
+            title: t('action'),
+            key: 'action',
+            width: 120,
+            align: 'center' as const,
+            fixed: 'right' as const,
+            render: (_: any, record: any) => (
+              <Space size='small'>
+                <Tooltip title={t('button.edit')}>
+                  <Button
+                    type='primary'
+                    ghost
+                    size='small'
+                    icon={<EditOutlined />}
+                    onClick={() => handleEditClick(record)}
+                  />
+                </Tooltip>
+                {!record.isDeleted ? (
+                  <Tooltip title={t('button.delete')}>
+                    <Button
+                      type='primary'
+                      danger
+                      ghost
+                      size='small'
+                      icon={<DeleteOutlined />}
+                      onClick={() => handleDelete(record)}
+                      loading={deleteMutation.isPending}
+                    />
+                  </Tooltip>
+                ) : (
+                  <Tooltip title={t('button.restore')}>
+                    <Button
+                      type='primary'
+                      ghost
+                      size='small'
+                      icon={<UndoOutlined />}
+                      onClick={() => handleRestore(record)}
+                      loading={restoreMutation.isPending}
+                    />
+                  </Tooltip>
+                )}
+              </Space>
+            )
+          }
+        ])
+  ]
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (selectedKeys: React.Key[]) => {
+      setSelectedRowKeys(selectedKeys as string[])
+    }
   }
 
-  const onSubmitRestore = () => {
-    setIsLoading(true)
-    restoreValue(_id, restoredVariantValue._id)
-      .then((data) => {
-        if (data.error) setError(data.error)
-        else {
-          toast.success(t('toastSuccess.variantValue.restore'))
-          setRun(!run)
-        }
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
-      .catch(() => {
-        setError('Server Error')
-        setIsLoading(false)
-        setTimeout(() => {
-          setError('')
-        }, 3000)
-      })
-  }
+  const hasSelected = selectedRowKeys.length > 0
+  const hasDeletedSelected = variantValues
+    .filter((value: any) => value?._id && selectedRowKeys.includes(value._id))
+    .some((value: any) => value.isDeleted)
+  const hasActiveSelected = variantValues
+    .filter((value: any) => value?._id && selectedRowKeys.includes(value._id))
+    .some((value: any) => !value.isDeleted)
+
+  const statusFilterOptions = [
+    { label: t('filters.all'), value: 'all' },
+    { label: t('status.active'), value: 'active' },
+    { label: t('status.deleted'), value: 'deleted' }
+  ]
+
   return (
-    <div className='position-relative'>
-      {isLoading && <Spin size='large' />}
-      {error && <Alert message={error} type='error' />}
-      {isConfirmingDelete && (
-        <ConfirmDialog
-          title={t('dialog.deleteValue')}
-          color='danger'
-          onSubmit={onSubmitDelete}
-          onClose={() => setIsConfirmingDelete(false)}
+    <div className='w-full'>
+      {error && (
+        <Alert
+          message='Error loading variant values'
+          description={error?.message || 'An error occurred'}
+          type='error'
+          showIcon
+          style={{ marginBottom: 16 }}
         />
       )}
-      {isConfirmingRestore && (
-        <ConfirmDialog
-          title={t('dialog.restoreValue')}
-          onSubmit={onSubmitRestore}
-          onClose={() => setIsConfirmingRestore(false)}
-        />
-      )}
-      {isLoading && <Spin size='large' />}
-      <div className='p-3 box-shadow bg-body rounded-2'>
-        <div className=' flex items-center justify-content-between mb-3'>
-          {heading && (
-            <h5 className='text-start'>
-              {t('variantDetail.value.valueOf')}{' '}
-              <span className='text-primary'>{variant?.name}</span>
-            </h5>
+
+      <Spin spinning={isLoading} size='large'>
+        <div className='p-3 bg-white rounded-md'>
+          {!isActive && (
+            <div className='flex gap-3 items-center flex-wrap mb-3 mt-3 justify-between'>
+              <div className='flex gap-3 items-center flex-wrap'>
+                <SearchInput
+                  value={pendingFilter.search || ''}
+                  onChange={(keyword) =>
+                    handleFilterChange({ search: keyword })
+                  }
+                  onSearch={handleSearch}
+                  loading={isLoading}
+                />
+                <Select
+                  style={{ minWidth: 140 }}
+                  value={pendingFilter.status}
+                  onChange={(value) => handleFilterChange({ status: value })}
+                  options={statusFilterOptions}
+                  placeholder={t('status.status')}
+                  allowClear
+                />
+                <Button type='primary' onClick={handleSearch}>
+                  {t('search')}
+                </Button>
+                <Button onClick={handleFilterReset} type='default'>
+                  {t('button.reset')}
+                </Button>
+                <Button
+                  onClick={() => refetch()}
+                  className='!w-10 flex items-center justify-center'
+                  type='default'
+                  loading={isLoading}
+                  icon={<SyncOutlined spin={isLoading} />}
+                />
+              </div>
+              <AddVariantValueItem
+                variantId={variantId}
+                variantName={variant?.name}
+                onRun={refetch}
+              />
+            </div>
           )}
-          <AddVariantValueItem
-            variantId={variantId}
-            variantName={variant?.name}
-            onRun={() => setRun(!run)}
+
+          {!isActive && hasSelected && (
+            <div className='mb-3 p-3 bg-blue-50 rounded-md border border-blue-200'>
+              <div className='flex items-center justify-between'>
+                <Text className='text-blue-700'>
+                  {t('table.selectedRows', { count: selectedRowKeys.length })}
+                </Text>
+                <Space>
+                  {hasActiveSelected && (
+                    <Button
+                      type='primary'
+                      danger
+                      size='small'
+                      onClick={handleBulkDelete}
+                      loading={deleteMutation.isPending}
+                    >
+                      {t('button.bulkDelete')}
+                    </Button>
+                  )}
+                  {hasDeletedSelected && (
+                    <Button
+                      type='primary'
+                      size='small'
+                      onClick={handleBulkRestore}
+                      loading={restoreMutation.isPending}
+                    >
+                      {t('button.bulkRestore')}
+                    </Button>
+                  )}
+                  <Button size='small' onClick={() => setSelectedRowKeys([])}>
+                    {t('button.clearSelection')}
+                  </Button>
+                </Space>
+              </div>
+            </div>
+          )}
+
+          <Table
+            columns={columns}
+            dataSource={variantValues}
+            loading={isLoading}
+            rowKey='_id'
+            rowSelection={!isActive ? rowSelection : undefined}
+            pagination={{
+              current: pagination.pageCurrent,
+              pageSize: filter.limit,
+              total: pagination.size,
+              onChange: handleChangePage,
+              showTotal: (total, range) =>
+                `${range[0]}-${range[1]} ${t('of')} ${total} ${t('result')}`,
+              pageSizeOptions: [5, 10, 20, 50],
+              showSizeChanger: true
+            }}
+            size='small'
           />
         </div>
-        <div className='table-scroll my-2'>
-          <table className='table align-middle table-hover table-sm text-start'>
-            <thead>
-              <tr>
-                <th scope='col' className='text-center'>
-                  #
-                </th>
-                <th scope='col'>{t('variantDetail.value.name')}</th>
-                {!isActive && (
-                  <Fragment>
-                    <th scope='col'>{t('status.status')}</th>
-                    <th scope='col'>{t('createdAt')}</th>
-                    <th scope='col'>
-                      <span>{t('action')}</span>
-                    </th>
-                  </Fragment>
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {variantValues.map((value, index) => (
-                <tr key={index}>
-                  <th scope='row' className='text-center'>
-                    {index + 1}
-                  </th>
-                  <td>{value.name}</td>
-                  {!isActive && (
-                    <Fragment>
-                      <td style={{ fontSize: '0.9rem' }}>
-                        {value.isDeleted ? <DeletedLabel /> : <ActiveLabel />}
-                      </td>
-                      <td>{humanReadableDate(value.createdAt)}</td>
-                      <td className='text-nowrap'>
-                        <div className='position-relative d-inline-block'>
-                          {' '}
-                          <button
-                            type='button'
-                            className='btn btn-sm btn-outline-primary ripple me-2 rounded-1 cus-tooltip'
-                            onClick={() => handleEditClick(value)}
-                          >
-                            <i className='fa-duotone fa-pen-to-square' />
-                          </button>
-                          <span className='cus-tooltip-msg'>
-                            {t('button.edit')}
-                          </span>
-                        </div>
-                        <div className='position-relative d-inline-block'>
-                          {!value.isDeleted ? (
-                            <button
-                              type='button'
-                              className='btn btn-sm btn-outline-danger ripple rounded-1 cus-tooltip'
-                              onClick={() => handleDelete(value)}
-                            >
-                              <i className='fa-solid fa-trash-alt ' />
-                            </button>
-                          ) : (
-                            <button
-                              type='button'
-                              className='btn btn-sm btn-outline-success ripple'
-                              onClick={() => handleRestore(value)}
-                            >
-                              <i className='fa-solid fa-trash-can-arrow-up' />
-                            </button>
-                          )}
-                          <span className='cus-tooltip-msg'>
-                            {!value.isDeleted
-                              ? t('button.delete')
-                              : t('button.restore')}
-                          </span>
-                        </div>
-                      </td>
-                    </Fragment>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className='flex justify-content-between items-center px-4'>
-          <small>
-            {t('showing')} {variantValues.length || 0} {t('result')}
-          </small>
-        </div>
-      </div>{' '}
+      </Spin>
+
       {!isActive && (
         <Modal
           title={t('variantDetail.value.edit')}
@@ -263,7 +454,7 @@ const VariantValuesTable = ({
         >
           <AdminEditVariantValueForm
             oldVariantValue={editedVariantValue}
-            onRun={() => setRun(!run)}
+            onRun={refetch}
           />
         </Modal>
       )}
