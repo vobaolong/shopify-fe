@@ -230,7 +230,14 @@ const SellerReturnTable = ({
         />
         {!isLoading && pagination.size === 0 ? (
           <div className='my-4 text-center'>
-            <img className='mb-3' src={noItem} alt='noItem' width={'100px'} />
+            <img
+              className='mb-3'
+              src={noItem}
+              alt='No items'
+              width='100'
+              height='100'
+              loading='eager'
+            />
             <h5>{t('orderDetail.noOrder')}</h5>
           </div>
         ) : (

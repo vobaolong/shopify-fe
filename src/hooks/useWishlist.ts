@@ -63,7 +63,7 @@ export const useIsFavoriteProduct = (userId: string, productId: string) => {
 }
 
 // Add new query hook for listing favorite products
-export const useFavoriteProducts = (userId: string, filters: any) => {
+export const useListWishlist = (userId: string, filters: any) => {
   return useQuery({
     queryKey: favoriteKeys.product.favoriteProducts(userId, filters),
     queryFn: () => listWishlist(userId, filters),
@@ -72,7 +72,7 @@ export const useFavoriteProducts = (userId: string, filters: any) => {
 }
 
 // Product favorite mutations
-export const useFavoriteProduct = () => {
+export const useWishlist = () => {
   const invalidate = useInvalidate()
   return useMutation({
     mutationFn: ({
@@ -83,7 +83,6 @@ export const useFavoriteProduct = () => {
       productId: string
     }) => wishlist(userId, productId),
     onSuccess: (_, variables) => {
-      // Invalidate relevant queries
       invalidate({
         queryKey: favoriteKeys.product.count(variables.productId)
       })
@@ -97,7 +96,7 @@ export const useFavoriteProduct = () => {
   })
 }
 
-export const useUnfavoriteProduct = () => {
+export const useUnWishlist = () => {
   const invalidate = useInvalidate()
   return useMutation({
     mutationFn: ({
@@ -121,13 +120,11 @@ export const useUnfavoriteProduct = () => {
     }
   })
 }
+export const useToggleWishlist = () => {
+  const wishlistMutation = useWishlist()
+  const unWishlistMutation = useUnWishlist()
 
-// Combined hook for toggling product favorite status
-export const useToggleProductFavorite = () => {
-  const favoriteMutation = useFavoriteProduct()
-  const unfavoriteMutation = useUnfavoriteProduct()
-
-  const isPending = favoriteMutation.isPending || unfavoriteMutation.isPending
+  const isPending = wishlistMutation.isPending || unWishlistMutation.isPending
 
   const toggleFavorite = (
     userId: string,
@@ -135,9 +132,9 @@ export const useToggleProductFavorite = () => {
     isCurrentlyFavorite: boolean
   ) => {
     if (isCurrentlyFavorite) {
-      return unfavoriteMutation.mutate({ userId, productId })
+      return unWishlistMutation.mutate({ userId, productId })
     } else {
-      return favoriteMutation.mutate({ userId, productId })
+      return wishlistMutation.mutate({ userId, productId })
     }
   }
 

@@ -12,21 +12,45 @@ const Offers = () => {
         style={{ flex: 1 }}
         className='flex items-center justify-content-center'
       >
-        <img src={refundImg} className='me-2' style={{ width: '10%' }} alt='' />
+        <img
+          src={refundImg}
+          className='me-2'
+          style={{ width: '10%' }}
+          width='30'
+          height='30'
+          loading='eager'
+          alt='Refund service'
+        />
         <span className=''>{t('services.refund')}</span>
       </div>
       <div
         style={{ flex: 1 }}
         className='flex items-center justify-content-center'
       >
-        <img src={returnImg} className='me-2' style={{ width: '10%' }} alt='' />
+        <img
+          src={returnImg}
+          className='me-2'
+          style={{ width: '10%' }}
+          width='30'
+          height='30'
+          loading='eager'
+          alt='Return service'
+        />
         <span>{t('services.return')}</span>
       </div>
       <div
         style={{ flex: 1 }}
         className='flex items-center justify-content-center'
       >
-        <img src={checkImg} className='me-2' style={{ width: '10%' }} alt='' />
+        <img
+          src={checkImg}
+          className='me-2'
+          style={{ width: '10%' }}
+          width='30'
+          height='30'
+          loading='eager'
+          alt='Check package service'
+        />
         <span>{t('services.checkPackage')}</span>
       </div>
     </div>

@@ -16,7 +16,7 @@ import StoreSmallCard from '../../components/card/StoreSmallCard'
 import AddToCartForm from '../../components/item/form/AddToCartForm'
 import SalePercentLabel from '../../components/label/SalePercentLabel'
 import ListProductsByStore from '../../components/list/ListProductsByStore'
-import FollowProductButton from '../../components/button/FollowProductButton'
+import FollowProductButton from '../../components/button/WishlistButton'
 import ListBestSellerProduct from '../../components/list/ListBestSellerProduct'
 import { calcPercent } from '../../helper/calcPercent'
 import StoreCardSmall from '../../components/card/StoreCardSmall'
@@ -338,10 +338,14 @@ const DetailPage = () => {
                           </b>
                           <div className=' d-grid gap-1'>
                             <span className='flex items-center'>
+                              {' '}
                               <img
                                 src={refundImg}
                                 className='me-2'
                                 style={{ width: '25px' }}
+                                width='25'
+                                height='25'
+                                loading='eager'
                                 alt='refundImg'
                               />
                               <span className='fs-9'>
@@ -350,10 +354,14 @@ const DetailPage = () => {
                             </span>
                             <hr className='my-0 opacity-100' />
                             <span className='flex items-center'>
+                              {' '}
                               <img
                                 src={returnImg}
                                 className='me-2'
                                 style={{ width: '25px' }}
+                                width='25'
+                                height='25'
+                                loading='eager'
                                 alt='returnImg'
                               />
                               <span className='fs-9'>
@@ -362,10 +370,14 @@ const DetailPage = () => {
                             </span>
                             <hr className='my-0 opacity-100' />
                             <span className='flex items-center'>
+                              {' '}
                               <img
                                 src={checkImg}
                                 className='me-2'
                                 style={{ width: '25px' }}
+                                width='25'
+                                height='25'
+                                loading='eager'
                                 alt='checkImg'
                               />
                               <span className='fs-9'>

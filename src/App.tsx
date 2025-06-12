@@ -6,6 +6,7 @@ import store from './store/store'
 import { socketId } from './socket'
 import AntdConfigProvider from './provider/AntdConfigProvider'
 import ReactQueryProvider from './provider/ReactQueryProvider'
+import { HelmetProvider } from 'react-helmet-async'
 
 export default function App() {
   useEffect(() => {
@@ -21,7 +22,9 @@ export default function App() {
     <ReactQueryProvider>
       <AntdConfigProvider>
         <Provider store={store}>
-          <Routers />
+          <HelmetProvider>
+            <Routers />
+          </HelmetProvider>
         </Provider>
       </AntdConfigProvider>
     </ReactQueryProvider>

@@ -30,7 +30,7 @@ export interface ProductType {
   rating: number
   createdAt: string
   updatedAt: string
-  isFollowing?: boolean
+  isWishlist?: boolean
   numberOfFollowers?: number
 }
 

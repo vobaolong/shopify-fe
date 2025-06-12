@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { getToken } from '../../apis/auth.api'
-import { useFavoriteProducts } from '../../hooks/useWishlist'
+import { useListWishlist } from '../../hooks/useWishlist'
 import ProductCard from '../card/ProductCard'
 import { Spin, Alert } from 'antd'
 import Pagination from '../ui/Pagination'
@@ -21,7 +21,7 @@ const WishlistCollection = ({ heading = false }) => {
     page: 1
   })
 
-  const { data, isLoading, error } = useFavoriteProducts(_id, filter)
+  const { data, isLoading, error } = useListWishlist(_id, filter)
 
   const listProducts = data?.data?.products || []
   const size = data?.data?.size || 0
@@ -55,7 +55,14 @@ const WishlistCollection = ({ heading = false }) => {
       <div className='p-3 box-shadow bg-body rounded-2'>
         {!isLoading && pagination.size === 0 ? (
           <div className='m-4 text-center'>
-            <img className='mb-3' src={boxImg} alt='boxImg' width={'80px'} />
+            <img
+              className='mb-3'
+              src={boxImg}
+              alt='boxImg'
+              width='80'
+              height='80'
+              loading='eager'
+            />
             <h5>{t('noFavProduct')}</h5>
           </div>
         ) : (

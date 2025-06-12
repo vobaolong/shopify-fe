@@ -85,9 +85,11 @@ const StoreCard = ({ store, onRun }: StoreCardProps) => {
           ) : (
             <Link to={`/store/${storeValue._id}`}>
               <img
-                loading='lazy'
+                loading='eager'
                 src={storeValue.avatar}
                 className='card-img'
+                width='100'
+                height='100'
                 alt={storeValue.name}
               />
             </Link>

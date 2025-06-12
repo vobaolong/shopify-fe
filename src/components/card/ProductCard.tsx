@@ -6,7 +6,7 @@ import {
   useProductFavoriteCount,
   useIsFavoriteProduct
 } from '../../hooks/useWishlist'
-import FollowProductButton from '../button/FollowProductButton'
+import WishlistButton from '../button/WishlistButton'
 import { useTranslation } from 'react-i18next'
 import { calcPercent } from '../../helper/calcPercent'
 import MallLabel from '../label/MallLabel'
@@ -29,26 +29,16 @@ const ProductCard = ({ product, onRun }: ProductCardProps) => {
 
   const { data: followerCount = 0, isLoading: isLoadingFollowers } =
     useProductFavoriteCount(product._id)
-  const { data: isFollowing = false, isLoading: isLoadingFollowStatus } =
+  const { data: isWishlist = false, isLoading: isLoadingWishlistStatus } =
     useIsFavoriteProduct(userId, product._id)
 
-  const isLoading = isLoadingFollowers || isLoadingFollowStatus
-
-  useMemo(() => {
-    if (!isLoading) {
-      setProductValue({
-        ...product,
-        numberOfFollowers: followerCount,
-        isFollowing: isFollowing
-      })
-    }
-  }, [product, followerCount, isFollowing, isLoading])
+  const isLoading = isLoadingFollowers || isLoadingWishlistStatus
 
   const onHandleRun = (newProduct: ProductType) => {
     if (onRun) onRun(newProduct)
     setProductValue({
       ...productValue,
-      isFollowing: newProduct.isFollowing
+      isWishlist: newProduct.isWishlist
     })
   }
 
@@ -86,6 +76,9 @@ const ProductCard = ({ product, onRun }: ProductCardProps) => {
                   src={productValue.listImages[0] || defaultImage}
                   className='cus-card-img !w-60 !h-50'
                   alt={productValue.name}
+                  width='200'
+                  height='200'
+                  loading='eager'
                 />
               </div>
             </Link>
@@ -133,14 +126,10 @@ const ProductCard = ({ product, onRun }: ProductCardProps) => {
             </div>
             <div className='flex justify-end'>
               {userId && (
-                <FollowProductButton
+                <WishlistButton
                   productId={productValue._id}
-                  isFollowing={productValue.isFollowing}
+                  isWishlist={productValue.isWishlist}
                   onRun={(product) => onHandleRun(product as ProductType)}
-                  style={{
-                    top: '7px',
-                    position: 'absolute'
-                  }}
                 />
               )}
             </div>

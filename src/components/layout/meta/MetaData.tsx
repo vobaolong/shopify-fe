@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet'
+import { Helmet } from 'react-helmet-async'
 
 const MetaData = ({ title }: { title: string }) => {
   return (

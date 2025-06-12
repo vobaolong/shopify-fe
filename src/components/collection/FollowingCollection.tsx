@@ -75,7 +75,14 @@ const FollowingCollection = ({ heading = false }) => {
       <div className='p-3 box-shadow bg-body rounded-2'>
         {!isLoading && pagination.size === 0 ? (
           <div className='m-4 text-center'>
-            <img className='mb-3' src={boxImg} alt='boxImg' width={'80px'} />
+            <img
+              className='mb-3'
+              src={boxImg}
+              alt='boxImg'
+              width='80'
+              height='80'
+              loading='eager'
+            />
             <h5>{t('noFavStore')}</h5>
           </div>
         ) : (

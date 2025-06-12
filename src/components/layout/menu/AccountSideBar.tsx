@@ -9,10 +9,10 @@ import {
   ShopOutlined,
   HeartOutlined,
   MenuFoldOutlined,
-  MenuUnfoldOutlined
+  MenuUnfoldOutlined,
+  AppstoreOutlined
 } from '@ant-design/icons'
 import { UserType } from '../../../@types/entity.types'
-import { UserIcon } from 'lucide-react'
 
 const { Sider } = Layout
 const { Text } = Typography
@@ -31,6 +31,7 @@ const AccountSideBar = ({
   const { t } = useTranslation()
   const location = useLocation()
   const path = location.pathname.split('/')[2]
+  const subPath = location.pathname.split('/')[3]
 
   const menuItems = [
     {
@@ -81,13 +82,40 @@ const AccountSideBar = ({
     {
       key: 'following',
       icon: <HeartOutlined />,
-      label: (
-        <Link to='/account/following' className='!no-underline'>
-          {t('favorite')}
-        </Link>
-      )
+      label: t('favorite'),
+      children: [
+        {
+          key: 'wishlist',
+          icon: <AppstoreOutlined />,
+          label: (
+            <Link to='/account/wishlist' className='!no-underline'>
+              {t('favProduct')}
+            </Link>
+          )
+        },
+        {
+          key: 'following-shop',
+          icon: <ShopOutlined />,
+          label: (
+            <Link to='/account/following-shop' className='!no-underline'>
+              {t('favStore')}
+            </Link>
+          )
+        }
+      ]
     }
   ]
+  // Handle current path selection logic
+  let selectedKey = path
+
+  // Special case for our new routes
+  if (path === 'wishlist') {
+    selectedKey = 'wishlist'
+  } else if (path === 'following-shop') {
+    selectedKey = 'following-shop'
+  }
+
+  const selectedKeys = [selectedKey]
 
   if (!user) return null
 
@@ -133,7 +161,7 @@ const AccountSideBar = ({
           </div>
         </div>
       )}
-      <Menu mode='inline' selectedKeys={[path]} items={menuItems} />
+      <Menu mode='inline' selectedKeys={selectedKeys} items={menuItems} />
     </Sider>
   )
 }

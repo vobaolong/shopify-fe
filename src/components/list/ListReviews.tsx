@@ -145,7 +145,14 @@ const ListReviews = ({ productId = '', storeId = '', userId = '' }) => {
           </>
         ) : (
           <div className='my-4 text-center'>
-            <img className='mb-3' src={boxImg} alt='boxImg' width={'80px'} />
+            <img
+              className='mb-3'
+              src={boxImg}
+              alt='No reviews'
+              width='80'
+              height='80'
+              loading='eager'
+            />
             <h6>{t('reviewDetail.noReview')}</h6>
           </div>
         )}

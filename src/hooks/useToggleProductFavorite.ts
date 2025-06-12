@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 import { wishlist, unWishlist } from '../apis/wishlist.api'
 
-export function useToggleProductFavorite() {
+export function useToggleWishlist() {
   return useMutation({
     mutationFn: ({
       userId,
