@@ -30,29 +30,20 @@ const StoreEditProfileItem = ({ store }: StoreEditProfileItemProps) => {
 
   const showModal = () => {
     setIsModalOpen(true)
-  } // Get address string from the populated Address object
+  }
+ // Get address string from the populated Address object
   const getAddressString = (address: any) => {
     if (!address) {
       return ''
     }
 
-    // Handle the populated Address object format
-    if (typeof address === 'object') {
-      // If it has the main address field, use it
-      if (address.address) {
-        return address.address
-      }
-
-      // Otherwise, construct from location components
-      if (address.provinceName || address.districtName || address.wardName) {
-        const parts = []
-        if (address.wardName) parts.push(address.wardName)
-        if (address.districtName) parts.push(address.districtName)
-        if (address.provinceName) parts.push(address.provinceName)
-        return parts.length > 0 ? parts.join(', ') : ''
-      }
+    // Since backend now consistently returns populated Address objects,
+    // we can directly access the address property
+    if (typeof address === 'object' && address.address) {
+      return address.address
     }
 
+    // Fallback for any edge cases
     return ''
   }
 

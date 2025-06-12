@@ -2,7 +2,14 @@ import { useTranslation } from 'react-i18next'
 import StoreEditProfileItem from '../item/StoreEditProfileItem'
 import { StoreType } from '../../@types/entity.types'
 import { Typography, Card, Space, Divider } from 'antd'
-import { ShopOutlined, TrophyOutlined, UserOutlined } from '@ant-design/icons'
+import {
+  ShopOutlined,
+  MessageOutlined,
+  EnvironmentOutlined,
+  TrophyOutlined,
+  UserOutlined
+} from '@ant-design/icons'
+import store from '../../store/store'
 
 interface StoreProfileInfoProps {
   store: StoreType
@@ -15,25 +22,9 @@ const getDisplayAddress = (address: any): string => {
   if (!address) {
     return '-'
   }
-
-  if (typeof address === 'string') {
-    return address
+  if (typeof address === 'object' && address.address) {
+    return address.address
   }
-
-  if (typeof address === 'object') {
-    if (address.address) {
-      return address.address
-    }
-
-    if (address.provinceName || address.districtName || address.wardName) {
-      const parts = []
-      if (address.wardName) parts.push(address.wardName)
-      if (address.districtName) parts.push(address.districtName)
-      if (address.provinceName) parts.push(address.provinceName)
-      return parts.length > 0 ? parts.join(', ') : '-'
-    }
-  }
-
   return '-'
 }
 
@@ -43,6 +34,7 @@ const StoreProfileInfo = ({
   showProfile = true
 }: StoreProfileInfoProps) => {
   const { t } = useTranslation()
+  console.log(store.address)
 
   return (
     <div className='w-full max-w-4xl mx-auto space-y-6'>
@@ -79,7 +71,7 @@ const StoreProfileInfo = ({
 
         {isEditable && (
           <div className='flex justify-end mt-6 pt-4 border-t border-gray-100'>
-            <StoreEditProfileItem store={store as any} />
+            <StoreEditProfileItem store={store as StoreType} />
           </div>
         )}
       </Card>

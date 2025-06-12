@@ -5,13 +5,13 @@ import { formatPrice } from '../../helper/formatPrice'
 import {
   useProductFavoriteCount,
   useIsFavoriteProduct
-} from '../../hooks/useFavorite'
+} from '../../hooks/useWishlist'
 import FollowProductButton from '../button/FollowProductButton'
 import { useTranslation } from 'react-i18next'
 import { calcPercent } from '../../helper/calcPercent'
 import MallLabel from '../label/MallLabel'
 import defaultImage from '../../assets/default.webp'
-import { Card, Skeleton, Typography, Rate, Tag, Badge } from 'antd'
+import { Card, Skeleton, Typography, Rate, Tag, Badge, Image } from 'antd'
 import { ProductType } from '../../@types/entity.types'
 import clsx from 'clsx'
 
@@ -57,24 +57,6 @@ const ProductCard = ({ product, onRun }: ProductCardProps) => {
     [productValue.price, productValue.salePrice]
   )
 
-  if (isLoading) {
-    return (
-      <Card className='card border-0 m-auto' bordered={false}>
-        <Skeleton.Image className='card-img-top' active />
-        <Card.Meta
-          className='card-body'
-          title={<Skeleton.Input active style={{ width: 94 }} />}
-          description={
-            <>
-              <Skeleton.Input active style={{ width: 120 }} />
-              <Skeleton active paragraph={{ rows: 2 }} />
-            </>
-          }
-        />
-      </Card>
-    )
-  }
-
   return (
     <Card
       hoverable
@@ -97,29 +79,14 @@ const ProductCard = ({ product, onRun }: ProductCardProps) => {
               title={productValue.name}
             >
               <div
-                className='card-img-top cus-card-img-top position-relative'
+                className='card-img-top cus-card-img-top relative'
                 style={{ position: 'relative' }}
               >
                 <img
                   src={productValue.listImages[0] || defaultImage}
-                  className='cus-card-img'
+                  className='cus-card-img !w-60 !h-50'
                   alt={productValue.name}
                 />
-                {/* {productValue.numberOfFollowers &&
-                  productValue.numberOfFollowers > 2 && (
-                    <Tag
-                      color='blue'
-                      className='fav-tag'
-                      style={{
-                        position: 'absolute',
-                        bottom: '8px',
-                        left: '8px',
-                        margin: 0
-                      }}
-                    >
-                      {t('favorite')}
-                    </Tag>
-                  )} */}
               </div>
             </Link>
           </Badge.Ribbon>

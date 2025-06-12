@@ -1,19 +1,25 @@
 import { useState } from 'react'
 import { Modal, Button, Tooltip } from 'antd'
-import { ImportOutlined, ExportOutlined } from '@ant-design/icons'
-import CreateStoreTransactionForm from './form/CreateStoreTransactionForm'
+import {
+  ImportOutlined,
+  ExportOutlined,
+  DollarOutlined
+} from '@ant-design/icons'
+import CreateTransactionForm from './form/CreateTransactionForm'
 import { useTranslation } from 'react-i18next'
 
 interface CreateTransactionItemProps {
   eWallet?: number
   storeId?: string
   onRun?: () => void
+  type: 'store' | 'user'
 }
 
 const CreateTransactionItem = ({
   eWallet = 0,
   storeId = '',
-  onRun
+  onRun,
+  type
 }: CreateTransactionItemProps) => {
   const { t } = useTranslation()
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false)
@@ -31,6 +37,34 @@ const CreateTransactionItem = ({
     if (onRun) onRun()
   }
 
+  if (type === 'user') {
+    return (
+      <div>
+        <Tooltip title={t('transactionDetail.empty')}>
+          <Button
+            type='default'
+            disabled={eWallet <= 0}
+            onClick={showWithdrawModal}
+            icon={<DollarOutlined />}
+            danger
+          >
+            {t('transactionDetail.withdraw')}
+          </Button>
+        </Tooltip>
+        <Modal
+          title={t('transactionDetail.withdraw')}
+          open={isWithdrawModalOpen}
+          onCancel={hideWithdrawModal}
+          footer={null}
+          destroyOnHidden={true}
+        >
+          <CreateTransactionForm eWallet={eWallet} onRun={hideWithdrawModal} />
+        </Modal>
+      </div>
+    )
+  }
+
+  // type === 'store'
   return (
     <div className='flex gap-3'>
       <Tooltip title={t('transactionDetail.deposit')}>
@@ -38,7 +72,6 @@ const CreateTransactionItem = ({
           type='default'
           icon={<ImportOutlined />}
           onClick={showDepositModal}
-          className='border-green-500 text-green-500 hover:bg-green-50 hover:border-green-600 hover:text-green-600'
         >
           {t('transactionDetail.deposit')}
         </Button>
@@ -56,7 +89,7 @@ const CreateTransactionItem = ({
           icon={<ExportOutlined />}
           onClick={showWithdrawModal}
           disabled={eWallet <= 0}
-          className='border-red-500 text-red-500 hover:bg-red-50 hover:border-red-600 hover:text-red-600 disabled:border-gray-300 disabled:text-gray-300'
+          danger
         >
           {t('transactionDetail.withdraw')}
         </Button>
@@ -67,10 +100,10 @@ const CreateTransactionItem = ({
         open={isDepositModalOpen}
         onCancel={hideDepositModal}
         footer={null}
-        width={600}
-        className='custom-modal'
+        width={500}
+        destroyOnHidden
       >
-        <CreateStoreTransactionForm
+        <CreateTransactionForm
           type='deposit'
           eWallet={eWallet}
           storeId={storeId}
@@ -84,9 +117,9 @@ const CreateTransactionItem = ({
         onCancel={hideWithdrawModal}
         footer={null}
         width={500}
-        className='custom-modal'
+        destroyOnHidden
       >
-        <CreateStoreTransactionForm
+        <CreateTransactionForm
           type='withdraw'
           eWallet={eWallet}
           storeId={storeId}

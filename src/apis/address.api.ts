@@ -1,4 +1,4 @@
-import axiosClient from './client.api'
+import client from './client.api'
 import axios from 'axios'
 // Giao Hàng Nhanh (GHN) API config
 export const getProvinceGHN = import.meta.env.VITE_GHN_API_PROVINCE
@@ -68,15 +68,15 @@ export const getWardsGHN = async (districtId: string) => {
 }
 
 export const getAddress = async (address: string) => {
-  return await axiosClient.get(`/address/${address}`)
+  return await client.get(`/address/${address}`)
 }
 
 export const getAddressById = async (id: string) => {
-  return await axiosClient.get(`/address/id/${id}`)
+  return await client.get(`/address/id/${id}`)
 }
 
 export const getAddresses = async (page = 1, limit = 10) => {
-  return await axiosClient.get(`/addresses?page=${page}&limit=${limit}`)
+  return await client.get(`/addresses?page=${page}&limit=${limit}`)
 }
 
 export const createAddress = async (addressData: {
@@ -88,7 +88,7 @@ export const createAddress = async (addressData: {
   wardName?: string
   address: string
 }) => {
-  return await axiosClient.post('/address', addressData)
+  return await client.post('/address', addressData)
 }
 
 export const updateAddress = async (
@@ -103,11 +103,11 @@ export const updateAddress = async (
     address?: string
   }
 ) => {
-  return await axiosClient.put(`/address/${id}`, addressData)
+  return await client.put(`/address/${id}`, addressData)
 }
 
 export const deleteAddress = async (id: string) => {
-  return await axiosClient.delete(`/address/${id}`)
+  return await client.delete(`/address/${id}`)
 }
 
 export const getProvinces = async (search?: string, page = 1, limit = 100) => {
@@ -116,14 +116,14 @@ export const getProvinces = async (search?: string, page = 1, limit = 100) => {
   params.append('page', page.toString())
   params.append('limit', limit.toString())
 
-  return await axiosClient.get(`/provinces?${params.toString()}`)
+  return await client.get(`/provinces?${params.toString()}`)
 }
 
 export const getDistricts = async (provinceId: string, search?: string) => {
   const params = new URLSearchParams()
   if (search) params.append('search', search)
 
-  return await axiosClient.get(
+  return await client.get(
     `/provinces/${provinceId}/districts?${params.toString()}`
   )
 }
@@ -132,7 +132,5 @@ export const getWards = async (districtId: string, search?: string) => {
   const params = new URLSearchParams()
   if (search) params.append('search', search)
 
-  return await axiosClient.get(
-    `/districts/${districtId}/wards?${params.toString()}`
-  )
+  return await client.get(`/districts/${districtId}/wards?${params.toString()}`)
 }

@@ -14,5 +14,11 @@ export enum ReturnStatus {
 
 export enum Role {
   USER = 'user',
+  STORE = 'store',
   ADMIN = 'admin'
+}
+
+export enum TransactionType {
+  DEPOSIT = 'deposit',
+  WITHDRAW = 'withdraw'
 }

@@ -1,22 +1,20 @@
-import { getToken } from '../../../apis/auth.api'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
 import { toast } from 'react-toastify'
 import { useTranslation } from 'react-i18next'
 import { updateAvatar } from '../../../apis/store.api'
 import { useMutation } from '@tanstack/react-query'
-import { Alert, Spin } from 'antd'
+import { Spin, Alert } from 'antd'
 
 interface StoreAvatarUploadProps {
   storeId?: string
 }
 
 const StoreAvatarUpload = ({ storeId = '' }: StoreAvatarUploadProps) => {
-  const { _id } = getToken()
   const [updateDispatch] = useUpdateDispatch()
   const { t } = useTranslation()
 
   const avatarMutation = useMutation({
-    mutationFn: (formData: FormData) => updateAvatar(_id, formData, storeId),
+    mutationFn: (formData: FormData) => updateAvatar(formData, storeId),
     onSuccess: (res) => {
       const data = res.data || res
       if (!data.error) {

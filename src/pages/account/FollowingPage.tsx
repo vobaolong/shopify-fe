@@ -1,8 +1,8 @@
 import { useSelector } from 'react-redux'
 import useToggle from '../../hooks/useToggle'
 import AccountLayout from '../../components/layout/AccountLayout'
-import FollowingProductsCollection from '../../components/collection/FollowingProductsCollection'
-import FollowingStoresCollection from '../../components/collection/FollowingStoreCollection'
+import WishlistCollection from '../../components/collection/WishlistCollection'
+import FollowingCollection from '../../components/collection/FollowingCollection'
 import { useTranslation } from 'react-i18next'
 import MetaData from '../../components/layout/meta/MetaData'
 
@@ -42,7 +42,7 @@ const FollowingPage = () => {
         </ul>
       </div>
 
-      {flag ? <FollowingProductsCollection /> : <FollowingStoresCollection />}
+      {flag ? <WishlistCollection /> : <FollowingCollection />}
     </AccountLayout>
   )
 }

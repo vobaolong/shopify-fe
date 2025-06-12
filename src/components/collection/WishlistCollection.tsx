@@ -1,26 +1,18 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { getToken } from '../../apis/auth.api'
-import { listFollowingStores } from '../../apis/followStore.api'
+import { useFavoriteProducts } from '../../hooks/useWishlist'
+import ProductCard from '../card/ProductCard'
 import { Spin, Alert } from 'antd'
-import StoreCard from '../card/StoreCard'
 import Pagination from '../ui/Pagination'
 import { useTranslation } from 'react-i18next'
-import ShowResult from '../ui/ShowResult'
 import boxImg from '../../assets/box.svg'
+import ShowResult from '../ui/ShowResult'
 
-const FollowingStoresCollection = ({ heading = false }) => {
+const WishlistCollection = ({ heading = false }) => {
   const { t } = useTranslation()
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
   const [run, setRun] = useState(false)
+  const { _id } = getToken()
 
-  const [listStores, setListStores] = useState([])
-  const [pagination, setPagination] = useState({
-    size: 0,
-    pageCurrent: 1,
-    pageCount: 1
-  })
   const [filter, setFilter] = useState({
     search: '',
     sortBy: 'name',
@@ -29,33 +21,15 @@ const FollowingStoresCollection = ({ heading = false }) => {
     page: 1
   })
 
-  const { _id } = getToken()
+  const { data, isLoading, error } = useFavoriteProducts(_id, filter)
 
-  const init = () => {
-    setError('')
-    setIsLoading(true)
-    listFollowingStores(_id, filter)
-      .then((data) => {
-        if (data.data?.error) setError(data.data.error)
-        else {
-          setListStores(data.data?.stores)
-          setPagination({
-            size: data.data?.size,
-            pageCurrent: data.data?.filter?.pageCurrent,
-            pageCount: data.data?.filter?.pageCount
-          })
-        }
-        setIsLoading(false)
-      })
-      .catch((error) => {
-        setError(error)
-        setIsLoading(false)
-      })
+  const listProducts = data?.data?.products || []
+  const size = data?.data?.size || 0
+  const pagination = {
+    size,
+    pageCurrent: data?.data?.filter?.pageCurrent || 1,
+    pageCount: data?.data?.filter?.pageCount || 1
   }
-
-  useEffect(() => {
-    init()
-  }, [filter, run])
 
   const handleChangePage = (newPage: number) => {
     setFilter({
@@ -70,22 +44,27 @@ const FollowingStoresCollection = ({ heading = false }) => {
           <Spin size='large' />
         </div>
       )}
-      {error && <Alert message={error} type='error' showIcon />}
-
-      {heading && <h4 className='text-center'>{t('favStore')}</h4>}
+      {error && (
+        <Alert
+          message={error?.message || 'Server Error'}
+          type='error'
+          showIcon
+        />
+      )}
+      {heading && <h4 className='text-center'>{t('favProduct')}</h4>}
       <div className='p-3 box-shadow bg-body rounded-2'>
         {!isLoading && pagination.size === 0 ? (
           <div className='m-4 text-center'>
             <img className='mb-3' src={boxImg} alt='boxImg' width={'80px'} />
-            <h5>{t('noFavStore')}</h5>
+            <h5>{t('noFavProduct')}</h5>
           </div>
         ) : (
           <>
             <div className='container-fluid p-0 mt-3'>
               <div className='row'>
-                {listStores?.map((store: any, index: number) => (
+                {listProducts?.map((product: any, index: number) => (
                   <div className='col-lg-3 col-sm-4 col-6 mb-4' key={index}>
-                    <StoreCard store={store} onRun={() => setRun(!run)} />
+                    <ProductCard product={product} onRun={() => setRun(!run)} />
                   </div>
                 ))}
               </div>
@@ -110,4 +89,4 @@ const FollowingStoresCollection = ({ heading = false }) => {
   )
 }
 
-export default FollowingStoresCollection
+export default WishlistCollection

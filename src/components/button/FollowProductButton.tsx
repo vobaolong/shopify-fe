@@ -39,11 +39,11 @@ const FollowProductButton = ({
             onRun(product)
             if (updatedFollowingState) {
               notification.success({
-                message: t('toastSuccess.favoriteProduct.follow')
+                message: t('toastSuccess.wishlist.follow')
               })
             } else {
               notification.success({
-                message: t('toastSuccess.favoriteProduct.unfollow')
+                message: t('toastSuccess.wishlist.unfollow')
               })
             }
           }

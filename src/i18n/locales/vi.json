@@ -118,7 +118,7 @@
       "follow": "Theo dõi shop thành công",
       "unfollow": "Bỏ theo dõi shop thành công"
     },
-    "favoriteProduct": {
+    "wishlist": {
       "follow": "Đã thêm sản phẩm vào yêu thích",
       "unfollow": "Đã bỏ sản phẩm khỏi yêu thích"
     },
@@ -520,8 +520,8 @@
     "createdAt": "Ngày thực hiện",
     "amount": "Số tiền",
     "amountValid": "Vui lòng nhập số tiền phù hợp!",
-    "currentPw": "Mật khẩu hiện tại",
-    "currentPwValid": "Vui lòng cung cấp mật khẩu đúng!"
+    "password": "Mật khẩu",
+    "passwordValid": "Vui lòng cung cấp mật khẩu đúng!"
   },
   "manageStore": "Shop",
   "myStore": "Shop của tôi",

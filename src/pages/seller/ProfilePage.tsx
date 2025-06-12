@@ -20,7 +20,7 @@ const ProfilePage = () => {
   const user = useSelector(selectAccountUser)
   const store = useSelector(selectSellerStore)
   const [updateDispatch] = useUpdateDispatch()
-  const onHandleRun = (newStore) => {
+  const onHandleRun = (newStore: any) => {
     updateDispatch('seller', newStore)
   }
 
@@ -30,13 +30,13 @@ const ProfilePage = () => {
   ]
 
   return (
-    <SellerLayout user={user} store={store} paths={paths}>
+    <SellerLayout user={user as any} store={store as any} paths={paths}>
       <div className='res-mx--12-md'>
-        <div className='position-relative bg-white p-2 rounded-2 box-shadow'>
+        <div className='relative bg-white p-2 rounded shadow'>
           <Cover
             cover={store.cover}
             alt={store.name}
-            isEditable='store'
+            isEditStore={true}
             storeId={store._id}
           />
 
@@ -44,11 +44,8 @@ const ProfilePage = () => {
             <Avatar
               avatar={store.avatar}
               alt={store.name}
-              name={store.name}
-              borderName={true}
               isEditable='store'
               storeId={store._id}
-              status={<StoreStatusLabel isOpen={store.isOpen} />}
             />
           </div>
 
@@ -61,7 +58,7 @@ const ProfilePage = () => {
           <div className='my-2'>
             <Carousel
               listImages={store.featured_images}
-              alt={store.name}
+              alt={store.name as string}
               isEditStore
               storeId={store._id}
               style={{ minHeight: 'auto' }}
@@ -106,13 +103,13 @@ const ProfilePage = () => {
             <OpenCloseStoreButton
               storeId={store._id}
               isOpen={store.isOpen}
-              onRun={(store) => onHandleRun(store)}
+              onRun={(store: any) => onHandleRun(store)}
             />
           </div>
         </div>
         <div className='mt-3'>
           <StoreProfileInfo
-            store={store}
+            store={store as any}
             showProfile={true}
             isEditable={true}
           />

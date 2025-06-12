@@ -110,7 +110,7 @@
       "follow": "Follow store successfully",
       "unfollow": "UnFollow store successfully"
     },
-    "favoriteProduct": {
+    "wishlist": {
       "follow": "Add to wishlist successfully",
       "unfollow": "Remove from wishlist successfully"
     },

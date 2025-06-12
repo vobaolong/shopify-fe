@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import { favoriteProduct, unFavoriteProduct } from '../apis/favoriteProduct.api'
+import { wishlist, unWishlist } from '../apis/wishlist.api'
 
 export function useToggleProductFavorite() {
   return useMutation({
@@ -12,8 +12,6 @@ export function useToggleProductFavorite() {
       productId: string
       isFollowing: boolean
     }) =>
-      isFollowing
-        ? unFavoriteProduct(userId, productId)
-        : favoriteProduct(userId, productId)
+      isFollowing ? unWishlist(userId, productId) : wishlist(userId, productId)
   })
 }

@@ -2,10 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { getToken } from '../../apis/auth.api'
 import { Link, useParams } from 'react-router-dom'
 import { getProduct } from '../../apis/product.api'
-import {
-  getFavoriteCount,
-  checkFavoriteProduct
-} from '../../apis/favoriteProduct.api'
+import { getWishlistCount, checkWishlist } from '../../apis/wishlist.api'
 import { Spin, Alert, Modal, Breadcrumb } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { FacebookShareButton } from 'react-share'
@@ -82,14 +79,14 @@ const DetailPage = () => {
         else {
           const newProduct = data.product
           try {
-            const res = await getFavoriteCount(newProduct._id)
+            const res = await getWishlistCount(newProduct._id)
             newProduct.numberOfFollowers = res.data.count
           } catch {
             newProduct.numberOfFollowers = 0
           }
           try {
             const { _id } = getToken()
-            const res = await checkFavoriteProduct(_id, newProduct._id)
+            const res = await checkWishlist(_id, newProduct._id)
             newProduct.isFollowing = res.data.success ? true : false
           } catch {
             newProduct.isFollowing = false

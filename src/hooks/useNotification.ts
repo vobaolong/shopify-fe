@@ -13,11 +13,11 @@ import {
 // Query keys
 export const notificationKeys = {
   all: ['notifications'],
-  byUser: (userId) => [...notificationKeys.all, userId]
+  byUser: (userId: string) => [...notificationKeys.all, userId]
 }
 
 // Get notifications hook
-export const useNotifications = (userId) => {
+export const useNotifications = (userId: string) => {
   return useQuery({
     queryKey: notificationKeys.byUser(userId),
     queryFn: () => getNotifications(userId),
@@ -31,7 +31,7 @@ export const useMarkNotificationsRead = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (userId) => updateRead(userId),
+    mutationFn: (userId: string) => updateRead(userId),
     onSuccess: (data, userId) => {
       queryClient.invalidateQueries({
         queryKey: notificationKeys.byUser(userId)
@@ -45,7 +45,7 @@ export const useDeleteNotifications = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (userId) => deleteNotifications(userId),
+    mutationFn: (userId: string) => deleteNotifications(userId),
     onSuccess: (data, userId) => {
       queryClient.invalidateQueries({
         queryKey: notificationKeys.byUser(userId)
@@ -57,30 +57,33 @@ export const useDeleteNotifications = () => {
 // Email notification hooks
 export const useSendBanStoreEmail = () => {
   return useMutation({
-    mutationFn: ({ userId, storeId }) => sendBanStoreEmail(userId, storeId)
+    mutationFn: ({ userId, storeId }: { userId: string; storeId: string }) =>
+      sendBanStoreEmail(userId, storeId)
   })
 }
 
 export const useSendCreateStoreEmail = () => {
   return useMutation({
-    mutationFn: ({ userId, storeId }) => sendCreateStoreEmail(userId, storeId)
+    mutationFn: ({ userId, storeId }: { userId: string; storeId: string }) =>
+      sendCreateStoreEmail(userId, storeId)
   })
 }
 
 export const useSendActiveStoreEmail = () => {
   return useMutation({
-    mutationFn: ({ userId, storeId }) => sendActiveStoreEmail(userId, storeId)
+    mutationFn: ({ userId, storeId }: { userId: string; storeId: string }) =>
+      sendActiveStoreEmail(userId, storeId)
   })
 }
 
 export const useSendActiveProductEmail = () => {
   return useMutation({
-    mutationFn: (userId) => sendActiveProductEmail(userId)
+    mutationFn: (userId: string) => sendActiveProductEmail(userId)
   })
 }
 
 export const useSendBanProductEmail = () => {
   return useMutation({
-    mutationFn: (userId) => sendBanProductEmail(userId)
+    mutationFn: (userId: string) => sendBanProductEmail(userId)
   })
 }

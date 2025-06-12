@@ -1,17 +1,17 @@
-import axiosClient from './client.api'
+import client from './client.api'
 
 export const listReviews = async (params: any) => {
-  return await axiosClient.get('/reviews', {
+  return await client.get('/reviews', {
     params
   })
 }
 
 export const checkReview = async (userId: string, data: any) => {
-  return await axiosClient.post(`/review/check/${userId}`, data)
+  return await client.post(`/review/check/${userId}`, data)
 }
 
 export const reviewProduct = async (userId: string, review: any) => {
-  return await axiosClient.post(`/review/create/${userId}`, review)
+  return await client.post(`/review/create/${userId}`, review)
 }
 
 export const updateReview = async (
@@ -19,17 +19,17 @@ export const updateReview = async (
   review: any,
   reviewId: string
 ) => {
-  return await axiosClient.put(`/review/${reviewId}/${userId}`, review)
+  return await client.put(`/review/${reviewId}/${userId}`, review)
 }
 
 export const deleteReview = async (userId: string, reviewId: string) => {
-  return await axiosClient.delete(`/review/${reviewId}/${userId}`)
+  return await client.delete(`/review/${reviewId}/${userId}`)
 }
 
 export const deleteReviewByAdmin = async (reviewId: string) => {
-  return await axiosClient.delete(`/admin/review/${reviewId}`)
+  return await client.delete(`/admin/review/${reviewId}`)
 }
 
 export const restoreReview = async (userId: string, reviewId: string) => {
-  return await axiosClient.get(`/review/restore/${reviewId}/${userId}`)
+  return await client.get(`/review/restore/${reviewId}/${userId}`)
 }

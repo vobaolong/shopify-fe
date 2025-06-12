@@ -1,7 +1,7 @@
-import axiosClient from './client.api'
+import client from './client.api'
 
 export const listTransactionsByUser = async (userId: string, params: any) => {
-  return await axiosClient.get(`/user/transactions/${userId}`, {
+  return await client.get(`/user/transactions/${userId}`, {
     params
   })
 }
@@ -11,13 +11,13 @@ export const listTransactionsByStore = async (
   params: any,
   storeId: string
 ) => {
-  return await axiosClient.get(`/store/transactions/${storeId}/${userId}`, {
+  return await client.get(`/store/transactions/${storeId}/${userId}`, {
     params
   })
 }
 
 export const listTransactionsForAdmin = async (params: any) => {
-  return axiosClient.get(`/admin/transactions`, {
+  return client.get(`/admin/transactions`, {
     params
   })
 }
@@ -26,7 +26,7 @@ export const getTransactionByUser = async (
   userId: string,
   transactionId: string
 ) => {
-  return await axiosClient.get(`/user/transaction/${transactionId}/${userId}`)
+  return await client.get(`/user/transaction/${transactionId}/${userId}`)
 }
 
 export const getTransactionByStore = async (
@@ -34,7 +34,7 @@ export const getTransactionByStore = async (
   transactionId: string,
   storeId: string
 ) => {
-  return await axiosClient.get(
+  return await client.get(
     `/store/transaction/${transactionId}/${storeId}/${userId}`
   )
 }
@@ -43,13 +43,13 @@ export const getTransactionForAdmin = async (
   userId: string,
   transactionId: string
 ) => {
-  return await axiosClient.get(`/admin/transaction/${transactionId}/${userId}`)
+  return await client.get(`/admin/transaction/${transactionId}/${userId}`)
 }
 export const createTransactionByUser = async (
   userId: string,
   transaction: any
 ) => {
-  return await axiosClient.post(`/user/transaction/${userId}`, transaction)
+  return await client.post(`/user/transaction/${userId}`, transaction)
 }
 
 export const createTransactionByStore = async (
@@ -57,7 +57,7 @@ export const createTransactionByStore = async (
   transaction: any,
   storeId: string
 ) => {
-  return await axiosClient.post(
+  return await client.post(
     `/store/transaction/${storeId}/${userId}`,
     transaction
   )

@@ -12,7 +12,6 @@ import { formatPrice } from '../../helper/formatPrice'
 import TransactionStatusLabel from '../label/TransactionStatusLabel'
 import EWalletInfo from '../info/EWalletInfo'
 import CreateTransactionItem from '../item/CreateTransactionItem'
-import CreateTransactionItemForUser from '../item/CreateTransactionItemForUser'
 import StoreSmallCard from '../card/StoreSmallCard'
 import UserSmallCard from '../card/UserSmallCard'
 import { useTranslation } from 'react-i18next'
@@ -24,6 +23,7 @@ import dayjs from 'dayjs'
 import { SyncOutlined } from '@ant-design/icons'
 import { PaginationType } from '../../@types/pagination.type'
 import { CopyOutlined } from '@ant-design/icons'
+import { TransactionType } from '../../enums/OrderStatus.enum'
 interface TransactionType {
   _id: string
   amount: { $numberDecimal: string }
@@ -243,6 +243,7 @@ const TransactionsTable = ({
                     storeId={storeId}
                     eWallet={eWallet}
                     onRun={() => refetch()}
+                    type='store'
                   />
                 </div>
               )}
@@ -256,9 +257,10 @@ const TransactionsTable = ({
                 type='user'
               />
               <div className='ms-auto'>
-                <CreateTransactionItemForUser
+                <CreateTransactionItem
                   eWallet={eWallet}
                   onRun={() => refetch()}
+                  type='user'
                 />
               </div>
             </>
@@ -289,13 +291,19 @@ const TransactionsTable = ({
 
           <Select
             style={{ minWidth: 140 }}
-            value={pendingFilter.type || 'all'}
+            value={pendingFilter.type || ''}
             placeholder={t('transactionDetail.type') || ''}
             onChange={handleTypeChange}
             options={[
-              { label: t('transactionDetail.type'), value: 'all' },
-              { label: t('transactionDetail.deposit'), value: 'deposit' },
-              { label: t('transactionDetail.withdraw'), value: 'withdraw' }
+              { label: t('transactionDetail.type'), value: '' },
+              {
+                label: t('transactionDetail.deposit'),
+                value: TransactionType.DEPOSIT
+              },
+              {
+                label: t('transactionDetail.withdraw'),
+                value: TransactionType.WITHDRAW
+              }
             ]}
             allowClear
           />

@@ -48,34 +48,47 @@ const useUpdateDispatch = (): [
   const dispatch = useDispatch()
   const { notification } = useAntdApp()
 
-  const mergeUser = (oldUser: any, newUser: any) => {
+  const mergeUser = useCallback((oldUser: any, newUser: any) => {
     return {
       ...oldUser,
       ...Object.fromEntries(
         Object.entries(newUser).filter(([_, v]) => v !== undefined)
       )
     }
-  }
+  }, [])
 
   const updateDispatch = useCallback(
     async (name: DispatchType, data: UpdateDispatchData): Promise<void> => {
       try {
         switch (name) {
           case 'account': {
+            // Batch API calls để giảm số lượng requests
+            const promises = []
+
             // Get level
-            try {
-              const res = await getUserLevel(_id)
-              data.level = (res as any)?.level
-            } catch {
-              data.level = account?.level
+            if (!data.level) {
+              promises.push(
+                getUserLevel(_id).catch(() => ({ level: account?.level }))
+              )
             }
 
             // Get count carts
-            try {
-              const res = await getCartCount(_id)
-              data.cartCount = (res as any)?.count
-            } catch {
-              data.cartCount = account?.cartCount
+            if (data.cartCount === undefined) {
+              promises.push(
+                getCartCount(_id).catch(() => ({ count: account?.cartCount }))
+              )
+            }
+
+            // Await all promises concurrently
+            const results = await Promise.allSettled(promises)
+
+            if (results[0]?.status === 'fulfilled') {
+              data.level =
+                (results[0].value as any)?.level ||
+                (results[0].value as any)?.data?.level
+            }
+            if (results[1]?.status === 'fulfilled') {
+              data.cartCount = (results[1].value as any)?.count
             }
 
             const dataKeys = Object.keys(data)

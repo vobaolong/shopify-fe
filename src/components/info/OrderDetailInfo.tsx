@@ -20,7 +20,7 @@ import ListOrderItems from '../list/ListOrderItems'
 interface OrderDetailInfoProps {
   orderId: string
   storeId?: string | null
-  by?: Role.USER | 'store' | 'admin'
+  by?: Role.USER | Role.STORE | Role.ADMIN
   isEditable?: boolean
 }
 
@@ -44,9 +44,9 @@ const OrderDetailInfo: React.FC<OrderDetailInfoProps> = ({
   } = useQuery({
     queryKey: ['order', by, orderId, storeId, _id],
     queryFn: async () => {
-      if (by === 'store' && storeId)
+      if (by === Role.STORE && storeId)
         return await getOrderByStore(orderId, storeId)
-      if (by === 'admin') return await getOrderForAdmin(orderId)
+      if (by === Role.ADMIN) return await getOrderForAdmin(orderId)
       return await getOrderByUser(_id, orderId)
     },
     enabled: !!orderId && !!_id
@@ -220,7 +220,6 @@ const OrderDetailInfo: React.FC<OrderDetailInfoProps> = ({
         </div>
       )}
 
-      {/* Return order button & modal */}
       {by === Role.USER &&
         order.status === OrderStatus.DELIVERED &&
         calcTime(order.updatedAt) < 360 && (
@@ -232,7 +231,8 @@ const OrderDetailInfo: React.FC<OrderDetailInfoProps> = ({
                 order.returnRequests.status !== ReturnStatus.REJECTED
               }
               onClick={() => {
-                // open return modal logic here
+                if (order.returnRequests) return
+                return
               }}
             >
               {(() => {

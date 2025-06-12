@@ -1,11 +1,11 @@
 import { useQuery, useMutation } from '@tanstack/react-query'
 import {
-  favoriteProduct,
-  unFavoriteProduct,
-  getFavoriteCount,
-  checkFavoriteProduct,
-  listFavoriteProducts
-} from '../apis/favoriteProduct.api'
+  wishlist,
+  unWishlist,
+  getWishlistCount,
+  checkWishlist,
+  listWishlist
+} from '../apis/wishlist.api'
 import useInvalidate from './useInvalidate'
 
 // Query keys
@@ -47,7 +47,7 @@ export const favoriteKeys = {
 export const useProductFavoriteCount = (productId: string) => {
   return useQuery({
     queryKey: favoriteKeys.product.count(productId),
-    queryFn: () => getFavoriteCount(productId),
+    queryFn: () => getWishlistCount(productId),
     select: (data: any) => data?.count || 0,
     enabled: !!productId
   })
@@ -56,7 +56,7 @@ export const useProductFavoriteCount = (productId: string) => {
 export const useIsFavoriteProduct = (userId: string, productId: string) => {
   return useQuery({
     queryKey: favoriteKeys.product.isFavorite(userId, productId),
-    queryFn: () => checkFavoriteProduct(userId, productId),
+    queryFn: () => checkWishlist(userId, productId),
     select: (data: any) => !!data?.success,
     enabled: !!userId && !!productId
   })
@@ -66,7 +66,7 @@ export const useIsFavoriteProduct = (userId: string, productId: string) => {
 export const useFavoriteProducts = (userId: string, filters: any) => {
   return useQuery({
     queryKey: favoriteKeys.product.favoriteProducts(userId, filters),
-    queryFn: () => listFavoriteProducts(userId, filters),
+    queryFn: () => listWishlist(userId, filters),
     enabled: !!userId
   })
 }
@@ -81,7 +81,7 @@ export const useFavoriteProduct = () => {
     }: {
       userId: string
       productId: string
-    }) => favoriteProduct(userId, productId),
+    }) => wishlist(userId, productId),
     onSuccess: (_, variables) => {
       // Invalidate relevant queries
       invalidate({
@@ -106,7 +106,7 @@ export const useUnfavoriteProduct = () => {
     }: {
       userId: string
       productId: string
-    }) => unFavoriteProduct(userId, productId),
+    }) => unWishlist(userId, productId),
     onSuccess: (_, variables) => {
       // Invalidate relevant queries
       invalidate({

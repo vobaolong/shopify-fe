@@ -1,18 +1,18 @@
-import axiosClient from './client.api'
+import client from './client.api'
 
 export const getCartCount = async (userId: string): Promise<any> => {
-  return await axiosClient.get(`/user/${userId}/cart/count`)
+  return await client.get(`/user/${userId}/cart/count`)
 }
 
 export const addToCart = async (
   userId: string,
   cartItem: any
 ): Promise<any> => {
-  return await axiosClient.post(`/user/${userId}/cart`, cartItem)
+  return await client.post(`/user/${userId}/cart`, cartItem)
 }
 
 export const listCarts = async (userId: string, params: any): Promise<any> => {
-  return await axiosClient.get(`/user/${userId}/cart`, {
+  return await client.get(`/user/${userId}/cart`, {
     params
   })
 }
@@ -21,14 +21,14 @@ export const listItemsByCart = async (
   userId: string,
   cartId: string
 ): Promise<any> => {
-  return await axiosClient.get(`/user/${userId}/cart/${cartId}/items`)
+  return await client.get(`/user/${userId}/cart/${cartId}/items`)
 }
 
 export const deleteFromCart = async (
   userId: string,
   cartItemId: string
 ): Promise<any> => {
-  return await axiosClient.delete(`/user/${userId}/cart/item/${cartItemId}`)
+  return await client.delete(`/user/${userId}/cart/item/${cartItemId}`)
 }
 
 export const updateCartItem = async (
@@ -36,5 +36,5 @@ export const updateCartItem = async (
   count: number,
   cartItemId: string
 ): Promise<any> => {
-  return await axiosClient.put(`/user/${userId}/cart/item/${cartItemId}`, count)
+  return await client.put(`/user/${userId}/cart/item/${cartItemId}`, count)
 }

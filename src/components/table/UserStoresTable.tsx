@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getToken } from '../../apis/auth.api'
 import { getStoresByUser } from '../../apis/store.api'
@@ -19,7 +19,7 @@ const UserStoresTable = () => {
   const { t } = useTranslation()
   const { _id } = getToken()
   const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false)
-
+  const navigate = useNavigate()
   const [filter, setFilter] = useState({
     search: '',
     sortBy: 'point',
@@ -130,16 +130,11 @@ const UserStoresTable = () => {
       width: 120,
       align: 'center',
       render: (_, store) => (
-        <Link to={`/seller/${store._id}`}>
-          <Button
-            type='primary'
-            size='small'
-            icon={<EyeOutlined />}
-            title={t('storeDetail.manage')}
-          >
-            <span className='hidden sm:inline'>{t('storeDetail.manage')}</span>
-          </Button>
-        </Link>
+        <Button
+          size='small'
+          icon={<EyeOutlined />}
+          onClick={() => navigate(`/seller/${store._id}`)}
+        />
       )
     }
   ]

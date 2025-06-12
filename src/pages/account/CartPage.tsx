@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { getToken } from '../../apis/auth.api'
 import { useTranslation } from 'react-i18next'
 import { listCarts } from '../../apis/cart.api'
@@ -17,13 +17,13 @@ import useUpdateDispatch from '../../hooks/useUpdateDispatch'
 import { socketId } from '../../socket'
 import { CartType } from '../../@types/entity.types'
 
+// Memoized hook để tối ưu URLSearchParams
 function useQuery() {
   const { search } = useLocation()
-
-  return React.useMemo(() => new URLSearchParams(search), [search])
+  return useMemo(() => new URLSearchParams(search), [search])
 }
 
-const CartPage = () => {
+const CartPage = React.memo(() => {
   const { _id } = getToken()
   const { t } = useTranslation()
   const [error, setError] = useState('')
@@ -32,26 +32,62 @@ const CartPage = () => {
   const [isLoading, setIsLoading] = useState(false)
   const { cartCount } = useSelector((state: any) => state.account.user)
   const [updateDispatch] = useUpdateDispatch()
-  let query = useQuery()
-
+  const query = useQuery()
   const navigate = useNavigate()
 
-  useEffect(() => {
+  // Memoized fetch function
+  const fetchCarts = useCallback(async () => {
     setIsLoading(true)
     setError('')
-    listCarts(_id, { limit: '1000', page: '1' })
-      .then((data) => {
-        if (data?.data?.error) setError(data.data.error)
-        else setCarts(data?.data?.carts || [])
-        setTimeout(() => setError(''), 3000)
-        setIsLoading(false)
-      })
-      .catch(() => {
+    try {
+      const data = await listCarts(_id, { limit: '1000', page: '1' })
+      if (data?.data?.error) {
+        setError(data.data.error)
+      } else {
+        setCarts(data?.data?.carts || [])
+      }
+    } catch {
+      setError('Server Error')
+    } finally {
+      setIsLoading(false)
+      setTimeout(() => setError(''), 3000)
+    }
+  }, [_id])
+
+  useEffect(() => {
+    fetchCarts()
+  }, [fetchCarts, run])
+
+  // Memoized order creation logic
+  const handleOrderCreation = useCallback(
+    async (isOrder: string, cartId: string, storeId: string) => {
+      const orderString = localStorage.getItem('order')
+      const orderBody = orderString ? JSON.parse(orderString) : null
+
+      try {
+        const data = await createOrder(_id, cartId, orderBody)
+        if (data?.data?.error) {
+          setError(data.data.error)
+        } else {
+          updateDispatch('account', data.data.user)
+          socketId.emit('createNotificationOrder', {
+            objectId: data.data.order?._id,
+            from: _id,
+            to: storeId
+          })
+          navigate('/account/order')
+          toast.success(t('toastSuccess.order.create'))
+        }
+      } catch {
         setError('Server Error')
+      } finally {
         setIsLoading(false)
         setTimeout(() => setError(''), 3000)
-      })
-  }, [run])
+        localStorage.removeItem('order')
+      }
+    },
+    [_id, updateDispatch, navigate, t]
+  )
 
   useEffect(() => {
     const isOrder = query.get('isOrder')
@@ -59,35 +95,9 @@ const CartPage = () => {
     const storeId = query.get('storeId')
 
     if (isOrder && cartId && storeId) {
-      const orderString = localStorage.getItem('order')
-      const orderBody = orderString ? JSON.parse(orderString) : null
-
-      createOrder(_id, cartId, orderBody)
-        .then((data) => {
-          if (data?.data?.error) setError(data.data.error)
-          else {
-            updateDispatch('account', data.data.user)
-            socketId.emit('createNotificationOrder', {
-              objectId: data.data.order?._id,
-              from: _id,
-              to: storeId
-            })
-            navigate('/account/order')
-            toast.success(t('toastSuccess.order.create'))
-          }
-          setIsLoading(false)
-          setTimeout(() => setError(''), 3000)
-        })
-        .catch(() => {
-          setError('Server Error')
-          setTimeout(() => setError(''), 3000)
-          setIsLoading(false)
-        })
-        .finally(() => {
-          localStorage.removeItem('order')
-        })
+      handleOrderCreation(isOrder, cartId, storeId)
     }
-  }, [query])
+  }, [query, handleOrderCreation])
 
   return (
     <MainLayout>
@@ -214,6 +224,6 @@ const CartPage = () => {
       </div>
     </MainLayout>
   )
-}
+})
 
 export default CartPage

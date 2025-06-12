@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const axiosClient = axios.create({
+const client = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   headers: {
     'Content-Type': 'application/json',
@@ -8,7 +8,7 @@ const axiosClient = axios.create({
   }
 })
 
-export const axiosClientImg = axios.create({
+export const clientImg = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   headers: {
     'Content-Type': 'multipart/form-data',
@@ -16,7 +16,7 @@ export const axiosClientImg = axios.create({
   }
 })
 
-axiosClient.interceptors.request.use(
+client.interceptors.request.use(
   (config) => {
     const user = JSON.parse(localStorage.getItem('jwt') || '{}')
     if (user?.accessToken) {
@@ -29,7 +29,7 @@ axiosClient.interceptors.request.use(
   }
 )
 
-axiosClientImg.interceptors.request.use(
+clientImg.interceptors.request.use(
   (config) => {
     const user = JSON.parse(localStorage.getItem('jwt') || '{}')
     if (user?.accessToken) {
@@ -42,7 +42,7 @@ axiosClientImg.interceptors.request.use(
   }
 )
 
-axiosClient.interceptors.response.use(
+client.interceptors.response.use(
   (response) => {
     return response.data
   },
@@ -58,7 +58,7 @@ axiosClient.interceptors.response.use(
   }
 )
 
-axiosClientImg.interceptors.response.use(
+clientImg.interceptors.response.use(
   (response) => {
     return response.data
   },
@@ -75,4 +75,4 @@ axiosClientImg.interceptors.response.use(
   }
 )
 
-export default axiosClient
+export default client

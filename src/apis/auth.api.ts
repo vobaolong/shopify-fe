@@ -1,4 +1,4 @@
-import axiosClient from './client.api'
+import client from './client.api'
 
 export const setToken = (data: any, next: () => void) => {
   if (typeof window !== 'undefined') {
@@ -30,7 +30,7 @@ export const refreshTokenApi = async (
   role: string
 ) => {
   try {
-    const res = await axiosClient.post('/auth/refresh-token', { refreshToken })
+    const res = await client.post('/auth/refresh-token', { refreshToken })
     if (res.data.error) {
       signout(refreshToken, () => {})
     } else {
@@ -52,16 +52,16 @@ export const refreshTokenApi = async (
 
 //auth apis
 export const signup = async (user: any) => {
-  return await axiosClient.post('/auth/signup', user)
+  return await client.post('/auth/signup', user)
 }
 
 export const signin = async (user: any) => {
-  return await axiosClient.post('/auth/signin', user)
+  return await client.post('/auth/signin', user)
 }
 
 export const signout = async (refreshToken: string, next: () => void) => {
   try {
-    await axiosClient.post('/auth/signout', { refreshToken })
+    await client.post('/auth/signout', { refreshToken })
   } catch (error: any) {
     console.log(error)
   } finally {
@@ -71,26 +71,23 @@ export const signout = async (refreshToken: string, next: () => void) => {
 }
 
 export const authSocial = async (user: any) => {
-  return await axiosClient.post('/auth/social', user)
+  return await client.post('/auth/social', user)
 }
 
 export const forgotPassword = async (username: string) => {
-  return await axiosClient.post('/auth/forgot-password', username)
+  return await client.post('/auth/forgot-password', username)
 }
 
 export const changePassword = async (
   passwordCode: string,
   newPassword: string
 ) => {
-  return await axiosClient.put(
-    `/auth/change-password/${passwordCode}`,
-    newPassword
-  )
+  return await client.put(`/auth/change-password/${passwordCode}`, newPassword)
 }
 
 // Kiểm tra email đã tồn tại chưa
 export const checkEmailExists = async (email: string): Promise<boolean> => {
-  const res = (await axiosClient.post('/auth/check-email', { email })) as {
+  const res = (await client.post('/auth/check-email', { email })) as {
     exists: boolean
   }
   return res?.exists || false
@@ -98,10 +95,10 @@ export const checkEmailExists = async (email: string): Promise<boolean> => {
 
 // Gửi OTP về email
 export const sendOtpToEmail = async (email: string): Promise<any> => {
-  return await axiosClient.post('/auth/send-otp', { email })
+  return await client.post('/auth/send-otp', { email })
 }
 
 // Xác thực OTP
 export const verifyOtp = async (email: string, otp: string): Promise<any> => {
-  return await axiosClient.post('/auth/verify-otp', { email, otp })
+  return await client.post('/auth/verify-otp', { email, otp })
 }

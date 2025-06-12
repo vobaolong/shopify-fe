@@ -1,10 +1,10 @@
-import axiosClient from './client.api'
+import client from './client.api'
 
 export const getOrderByUser = async (
   userId: string,
   orderId: string
 ): Promise<any> => {
-  return await axiosClient.get(`/order/user/${orderId}/${userId}`)
+  return await client.get(`/order/user/${orderId}/${userId}`)
 }
 
 export const createReturnRequest = async (
@@ -12,7 +12,7 @@ export const createReturnRequest = async (
   orderId: string,
   reason: string
 ): Promise<any> => {
-  return await axiosClient.post(`/order/return/${orderId}/${userId}`, {
+  return await client.post(`/order/return/${orderId}/${userId}`, {
     reason
   })
 }
@@ -21,11 +21,11 @@ export const getOrderByStore = async (
   orderId: string,
   storeId: string
 ): Promise<any> => {
-  return await axiosClient.get(`/store/${storeId}/order/${orderId}`)
+  return await client.get(`/store/${storeId}/order/${orderId}`)
 }
 
 export const getOrderForAdmin = async (orderId: string): Promise<any> => {
-  return await axiosClient.get(`/admin/order/${orderId}`)
+  return await client.get(`/admin/order/${orderId}`)
 }
 
 export const createOrder = async (
@@ -33,14 +33,14 @@ export const createOrder = async (
   cartId: string,
   order: any
 ): Promise<any> => {
-  return await axiosClient.post(`/order/create/${cartId}/${userId}`, order)
+  return await client.post(`/order/create/${cartId}/${userId}`, order)
 }
 
 export const listItemsByOrder = async (
   userId: string,
   orderId: string
 ): Promise<any> => {
-  return await axiosClient.get(`/order/user/${userId}/${orderId}/items`)
+  return await client.get(`/order/user/${userId}/${orderId}/items`)
 }
 
 export const listItemsByOrderByStore = async (
@@ -48,7 +48,7 @@ export const listItemsByOrderByStore = async (
   orderId: string,
   storeId: string
 ): Promise<any> => {
-  return await axiosClient.get(
+  return await client.get(
     `/order/items/by/store/${orderId}/${storeId}/${userId}`
   )
 }
@@ -56,14 +56,14 @@ export const listItemsByOrderByStore = async (
 export const listItemsByOrderForAdmin = async (
   orderId: string
 ): Promise<any> => {
-  return await axiosClient.get(`/admin/order/${orderId}/items`)
+  return await client.get(`/admin/order/${orderId}/items`)
 }
 
 export const listOrdersByUser = async (
   userId: string,
   params: any
 ): Promise<any> => {
-  return await axiosClient.get(`/order/user/${userId}`, {
+  return await client.get(`/order/user/${userId}`, {
     params
   })
 }
@@ -72,7 +72,7 @@ export const listOrdersByStore = async (
   storeId: string,
   params: any
 ): Promise<any> => {
-  return await axiosClient.get(`/store/${storeId}/orders`, {
+  return await client.get(`/store/${storeId}/orders`, {
     params
   })
 }
@@ -82,7 +82,7 @@ export const listReturnByStore = async (
   filter: any,
   storeId: string
 ): Promise<any> => {
-  return await axiosClient.get(`/store/${storeId}/return`, {
+  return await client.get(`/store/${storeId}/return`, {
     params: {
       userId,
       ...filter
@@ -91,7 +91,7 @@ export const listReturnByStore = async (
 }
 
 export const listOrdersForAdmin = async (params: any): Promise<any> => {
-  return axiosClient.get('/admin/orders', { params })
+  return client.get('/admin/orders', { params })
 }
 
 export const userCancelOrder = async (
@@ -99,10 +99,7 @@ export const userCancelOrder = async (
   status: string,
   orderId: string
 ): Promise<any> => {
-  return await axiosClient.put(
-    `/order/update/by/user/${orderId}/${userId}`,
-    status
-  )
+  return await client.put(`/order/update/by/user/${orderId}/${userId}`, status)
 }
 
 export const sellerUpdateStatusOrder = async (
@@ -111,7 +108,7 @@ export const sellerUpdateStatusOrder = async (
   orderId: string,
   storeId: string
 ): Promise<any> => {
-  return await axiosClient.put(
+  return await client.put(
     `/order/update/by/store/${orderId}/${storeId}/${userId}`,
     status
   )
@@ -123,7 +120,7 @@ export const sellerUpdateReturnStatusOrder = async (
   orderId: string,
   storeId: string
 ): Promise<any> => {
-  return await axiosClient.post(
+  return await client.post(
     `/order/return/${orderId}/${storeId}/${userId}/approve`,
     { status }
   )
@@ -134,7 +131,7 @@ export const countOrder = async (
   userId: string,
   storeId: string
 ): Promise<any> => {
-  return await axiosClient.get('/order/count', {
+  return await client.get('/order/count', {
     params: {
       status,
       userId,

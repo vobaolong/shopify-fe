@@ -1,4 +1,3 @@
-import { getToken } from '../../../apis/auth.api'
 import { updateCover } from '../../../apis/store.api'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
 import { toast } from 'react-toastify'
@@ -11,12 +10,11 @@ interface StoreCoverUploadProps {
 }
 
 const StoreCoverUpload = ({ storeId }: StoreCoverUploadProps) => {
-  const { _id } = getToken()
   const [updateDispatch] = useUpdateDispatch()
   const { t } = useTranslation()
 
   const coverMutation = useMutation({
-    mutationFn: (formData: FormData) => updateCover(_id, formData, storeId),
+    mutationFn: (formData: FormData) => updateCover(formData, storeId),
     onSuccess: (res) => {
       const data = res.data || res
       if (!data.error) {

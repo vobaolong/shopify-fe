@@ -13,6 +13,10 @@ import { humanReadableDate } from '../../../helper/humanReadable'
 import { socketId } from '../../../socket'
 import { selectAccountUser } from '../../../store/slices/accountSlice'
 import { selectSellerStore } from '../../../store/slices/sellerSlice'
+import {
+  useNotifications,
+  useMarkNotificationsRead
+} from '../../../hooks/useNotification'
 
 interface Notification {
   _id: string
@@ -28,17 +32,19 @@ interface BellButtonProps {
 
 const BellButton = ({ navFor = '' }: BellButtonProps) => {
   const { t } = useTranslation()
-  const [list, setList] = useState<Notification[]>([])
   const user = useSelector(selectAccountUser)
   const store = useSelector(selectSellerStore)
-  const [notificationCount, setNotificationCount] = useState<number>(
-    list.length
-  )
+  const { data, isLoading, refetch } = useNotifications(user?._id)
+  const markReadMutation = useMarkNotificationsRead()
+  const list: Notification[] = data?.notifications || []
+  const notificationCount = data?.numberHidden || list.length
 
   const handleDelete = async () => {
     try {
-      await deleteNotifications(user._id)
-      setList([])
+      if (user && user._id) {
+        await deleteNotifications(user._id)
+        refetch()
+      }
     } catch (error) {
       console.log(error)
     }
@@ -46,54 +52,21 @@ const BellButton = ({ navFor = '' }: BellButtonProps) => {
 
   const handleNotificationClick = async (notificationId: string) => {
     try {
-      await updateRead(user._id)
-      setList((prevList) =>
-        prevList.map((n) =>
-          n._id === notificationId ? { ...n, isRead: true } : n
-        )
-      )
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  const fetchNotifications = async (id: string) => {
-    try {
-      const res = await getNotifications(id)
-      // Support both AxiosResponse and fallback array
-      let notifications: Notification[] = []
-      let numberHidden = 0
-      if (Array.isArray(res)) {
-        notifications = []
-        numberHidden = 0
-      } else if ('data' in res && res.data) {
-        notifications = res.data.notifications || []
-        numberHidden = res.data.numberHidden || 0
-      } else if (!('data' in res)) {
-        // Only access these if res is not an AxiosResponse
-        notifications = (res as any).notifications || []
-        numberHidden = (res as any).numberHidden || 0
+      if (user && user._id) {
+        markReadMutation.mutate(user._id, {
+          onSuccess: () => refetch()
+        })
       }
-      const sortedNotifications = notifications.sort(
-        (a: Notification, b: Notification) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )
-      setList(sortedNotifications)
-      setNotificationCount(numberHidden)
     } catch (error) {
       console.log(error)
     }
   }
-
-  useEffect(() => {
-    fetchNotifications(user._id)
-  }, [user])
 
   useEffect(() => {
     socketId.on('notification', (id) => {
-      fetchNotifications(id)
+      refetch()
     })
-  }, [])
+  }, [refetch])
 
   const popoverClickRootClose = (
     <Popover
@@ -156,7 +129,7 @@ const BellButton = ({ navFor = '' }: BellButtonProps) => {
   )
 
   return (
-    <div onClick={() => setNotificationCount(0)}>
+    <div onClick={() => refetch()}>
       <OverlayTrigger
         trigger='click'
         rootClose

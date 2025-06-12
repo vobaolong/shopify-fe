@@ -24,6 +24,7 @@ import { useQuery } from '@tanstack/react-query'
 import { ColumnsType } from 'antd/es/table'
 import { OrderType } from '../../@types/entity.types'
 import OrderDetailInfo from '../info/OrderDetailInfo'
+import { Role } from '../../enums/OrderStatus.enum'
 const { Text, Title } = Typography
 interface UserOrdersTableProps {
   heading?: boolean
@@ -155,10 +156,10 @@ const UserOrdersTable: React.FC<UserOrdersTableProps> = ({
       title: t('action'),
       key: 'action',
       fixed: 'right',
+      align: 'center',
       width: 80,
       render: (_: any, record: OrderType) => (
         <Button
-          type='primary'
           size='small'
           icon={<EyeOutlined />}
           title={t('button.detail')}
@@ -246,7 +247,7 @@ const UserOrdersTable: React.FC<UserOrdersTableProps> = ({
         destroyOnHidden
       >
         {selectedOrderId && (
-          <OrderDetailInfo orderId={selectedOrderId} by='user' />
+          <OrderDetailInfo orderId={selectedOrderId} by={Role.USER} />
         )}
       </Drawer>
     </div>
