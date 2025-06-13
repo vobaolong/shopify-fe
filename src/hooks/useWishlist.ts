@@ -1,6 +1,6 @@
 import { useQuery, useMutation } from '@tanstack/react-query'
 import {
-  wishlist,
+  addWishlist,
   unWishlist,
   getWishlistCount,
   checkWishlist,
@@ -8,34 +8,33 @@ import {
 } from '../apis/wishlist.api'
 import useInvalidate from './useInvalidate'
 
-// Query keys
-export const favoriteKeys = {
+export const wishlistKeys = {
   all: ['favorites'],
   product: {
-    all: () => [...favoriteKeys.all, 'product'],
+    all: () => [...wishlistKeys.all, 'product'],
     count: (productId: string) => [
-      ...favoriteKeys.product.all(),
+      ...wishlistKeys.product.all(),
       'count',
       productId
     ],
-    isFavorite: (userId: string, productId: string) => [
-      ...favoriteKeys.product.all(),
-      'isFavorite',
+    isWishlist: (userId: string, productId: string) => [
+      ...wishlistKeys.product.all(),
+      'isWishlist',
       userId,
       productId
     ],
-    favoriteProducts: (userId: string, filters: any) => [
-      ...favoriteKeys.product.all(),
-      'favoriteProducts',
+    listWishlist: (userId: string, filters: any) => [
+      ...wishlistKeys.product.all(),
+      'listWishlist',
       userId,
       { filters }
     ]
   },
   store: {
-    all: () => [...favoriteKeys.all, 'store'],
-    count: (storeId: string) => [...favoriteKeys.store.all(), 'count', storeId],
+    all: () => [...wishlistKeys.all, 'store'],
+    count: (storeId: string) => [...wishlistKeys.store.all(), 'count', storeId],
     isFavorite: (userId: string, storeId: string) => [
-      ...favoriteKeys.store.all(),
+      ...wishlistKeys.store.all(),
       'isFavorite',
       userId,
       storeId
@@ -43,36 +42,33 @@ export const favoriteKeys = {
   }
 }
 
-// Product favorite queries
-export const useProductFavoriteCount = (productId: string) => {
+export const useAddWishlistCount = (productId: string) => {
   return useQuery({
-    queryKey: favoriteKeys.product.count(productId),
+    queryKey: wishlistKeys.product.count(productId),
     queryFn: () => getWishlistCount(productId),
     select: (data: any) => data?.count || 0,
     enabled: !!productId
   })
 }
 
-export const useIsFavoriteProduct = (userId: string, productId: string) => {
+export const useIsWishlist = (userId: string, productId: string) => {
   return useQuery({
-    queryKey: favoriteKeys.product.isFavorite(userId, productId),
+    queryKey: wishlistKeys.product.isWishlist(userId, productId),
     queryFn: () => checkWishlist(userId, productId),
     select: (data: any) => !!data?.success,
     enabled: !!userId && !!productId
   })
 }
 
-// Add new query hook for listing favorite products
 export const useListWishlist = (userId: string, filters: any) => {
   return useQuery({
-    queryKey: favoriteKeys.product.favoriteProducts(userId, filters),
+    queryKey: wishlistKeys.product.listWishlist(userId, filters),
     queryFn: () => listWishlist(userId, filters),
     enabled: !!userId
   })
 }
 
-// Product favorite mutations
-export const useWishlist = () => {
+export const useAddWishlist = () => {
   const invalidate = useInvalidate()
   return useMutation({
     mutationFn: ({
@@ -81,16 +77,19 @@ export const useWishlist = () => {
     }: {
       userId: string
       productId: string
-    }) => wishlist(userId, productId),
+    }) => addWishlist(userId, productId),
     onSuccess: (_, variables) => {
       invalidate({
-        queryKey: favoriteKeys.product.count(variables.productId)
+        queryKey: wishlistKeys.product.count(variables.productId)
       })
       invalidate({
-        queryKey: favoriteKeys.product.isFavorite(
+        queryKey: wishlistKeys.product.isWishlist(
           variables.userId,
           variables.productId
         )
+      })
+      invalidate({
+        queryKey: wishlistKeys.product.all()
       })
     }
   })
@@ -107,36 +106,36 @@ export const useUnWishlist = () => {
       productId: string
     }) => unWishlist(userId, productId),
     onSuccess: (_, variables) => {
-      // Invalidate relevant queries
       invalidate({
-        queryKey: favoriteKeys.product.count(variables.productId)
+        queryKey: wishlistKeys.product.count(variables.productId)
       })
       invalidate({
-        queryKey: favoriteKeys.product.isFavorite(
+        queryKey: wishlistKeys.product.isWishlist(
           variables.userId,
           variables.productId
         )
+      })
+      invalidate({
+        queryKey: wishlistKeys.product.all()
       })
     }
   })
 }
 export const useToggleWishlist = () => {
-  const wishlistMutation = useWishlist()
+  const wishlistMutation = useAddWishlist()
   const unWishlistMutation = useUnWishlist()
-
   const isPending = wishlistMutation.isPending || unWishlistMutation.isPending
 
-  const toggleFavorite = (
+  const toggleWishlist = (
     userId: string,
     productId: string,
-    isCurrentlyFavorite: boolean
+    isCurrentlyWishlist: boolean
   ) => {
-    if (isCurrentlyFavorite) {
-      return unWishlistMutation.mutate({ userId, productId })
+    if (isCurrentlyWishlist) {
+      return unWishlistMutation.mutateAsync({ userId, productId })
     } else {
-      return wishlistMutation.mutate({ userId, productId })
+      return wishlistMutation.mutateAsync({ userId, productId })
     }
   }
-
-  return { toggleFavorite, isPending }
+  return { toggleWishlist, isPending }
 }

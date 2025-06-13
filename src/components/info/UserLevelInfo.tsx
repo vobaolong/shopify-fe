@@ -4,18 +4,11 @@ import { Row, Col, Typography } from 'antd'
 import { formatDate } from '../../helper/humanReadable'
 import UserRoleLabel from '../label/UserRoleLabel'
 import { LevelType } from '../../@types/entity.types'
-
-interface UserLevelInfoProps {
-  user: {
-    createdAt?: string
-    level?: LevelType
-    role?: string
-  }
-}
+import { UserState } from '../../store/slices/userSlice'
 
 const { Text, Paragraph } = Typography
 
-const UserLevelInfo = ({ user }: UserLevelInfoProps) => {
+const UserLevelInfo = ({ user }: UserState) => {
   const { t } = useTranslation()
 
   return (

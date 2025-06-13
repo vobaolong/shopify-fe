@@ -2,16 +2,13 @@ import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { getToken } from '../../apis/auth.api'
 import { formatPrice } from '../../helper/formatPrice'
-import {
-  useProductFavoriteCount,
-  useIsFavoriteProduct
-} from '../../hooks/useWishlist'
+import { useAddWishlistCount, useIsWishlist } from '../../hooks/useWishlist'
 import WishlistButton from '../button/WishlistButton'
 import { useTranslation } from 'react-i18next'
 import { calcPercent } from '../../helper/calcPercent'
 import MallLabel from '../label/MallLabel'
 import defaultImage from '../../assets/default.webp'
-import { Card, Skeleton, Typography, Rate, Tag, Badge, Image } from 'antd'
+import { Card, Typography, Rate, Badge } from 'antd'
 import { ProductType } from '../../@types/entity.types'
 import clsx from 'clsx'
 
@@ -27,19 +24,14 @@ const ProductCard = ({ product, onRun }: ProductCardProps) => {
   const { t } = useTranslation()
   const { _id: userId } = getToken() || {}
 
-  const { data: followerCount = 0, isLoading: isLoadingFollowers } =
-    useProductFavoriteCount(product._id)
+  const { data, isLoading: isLoadingFollowers } = useAddWishlistCount(
+    product._id
+  )
   const { data: isWishlist = false, isLoading: isLoadingWishlistStatus } =
-    useIsFavoriteProduct(userId, product._id)
-
-  const isLoading = isLoadingFollowers || isLoadingWishlistStatus
+    useIsWishlist(userId, product._id)
 
   const onHandleRun = (newProduct: ProductType) => {
     if (onRun) onRun(newProduct)
-    setProductValue({
-      ...productValue,
-      isWishlist: newProduct.isWishlist
-    })
   }
 
   const salePercent = useMemo(
@@ -50,40 +42,36 @@ const ProductCard = ({ product, onRun }: ProductCardProps) => {
   return (
     <Card
       hoverable
-      className='card border-0 m-auto'
+      className='max-w-[230px] h-[full] relative'
       cover={
-        <div className='position-relative'>
-          <Badge.Ribbon
-            placement='start'
-            text={
-              salePercent > 0
-                ? `-${salePercent}% ${t('productDetail.sale')}`
-                : ''
-            }
-            color='red'
-            className={clsx(salePercent > 0 ? 'd-block' : 'd-none')}
+        <Badge.Ribbon
+          placement='start'
+          text={
+            salePercent > 0 ? `-${salePercent}% ${t('productDetail.sale')}` : ''
+          }
+          color='red'
+          className={clsx(salePercent > 0 ? 'd-block' : 'd-none')}
+        >
+          <Link
+            className='text-reset text-decoration-none product-card'
+            to={`/product/${productValue._id}`}
+            title={productValue.name}
           >
-            <Link
-              className='text-reset text-decoration-none product-card'
-              to={`/product/${productValue._id}`}
-              title={productValue.name}
+            <div
+              className='card-img-top cus-card-img-top relative'
+              style={{ position: 'relative' }}
             >
-              <div
-                className='card-img-top cus-card-img-top relative'
-                style={{ position: 'relative' }}
-              >
-                <img
-                  src={productValue.listImages[0] || defaultImage}
-                  className='cus-card-img !w-60 !h-50'
-                  alt={productValue.name}
-                  width='200'
-                  height='200'
-                  loading='eager'
-                />
-              </div>
-            </Link>
-          </Badge.Ribbon>
-        </div>
+              <img
+                src={productValue.listImages[0] || defaultImage}
+                className='cus-card-img !w-60 !h-50'
+                alt={productValue.name}
+                width='200'
+                height='200'
+                loading='eager'
+              />
+            </div>
+          </Link>
+        </Badge.Ribbon>
       }
     >
       <Card.Meta
@@ -113,7 +101,7 @@ const ProductCard = ({ product, onRun }: ProductCardProps) => {
                 {productValue.name}
               </Title>
             </Link>
-            <div>
+            <div className='flex items-center justify-between mt-2'>
               <Rate
                 allowHalf
                 disabled
@@ -123,12 +111,10 @@ const ProductCard = ({ product, onRun }: ProductCardProps) => {
               <Text type='secondary'>
                 {productValue.sold} {t('productDetail.sold')}
               </Text>
-            </div>
-            <div className='flex justify-end'>
               {userId && (
                 <WishlistButton
                   productId={productValue._id}
-                  isWishlist={productValue.isWishlist}
+                  isWishlist={isWishlist}
                   onRun={(product) => onHandleRun(product as ProductType)}
                 />
               )}

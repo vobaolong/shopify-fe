@@ -7,8 +7,9 @@ import { socketId } from './socket'
 import AntdConfigProvider from './provider/AntdConfigProvider'
 import ReactQueryProvider from './provider/ReactQueryProvider'
 import { HelmetProvider } from 'react-helmet-async'
+import ErrorBoundary from './components/error/ErrorBoundary'
 
-export default function App() {
+function AppContent() {
   useEffect(() => {
     const jwt = getToken()
     socketId.on('connection', () => {})
@@ -18,15 +19,21 @@ export default function App() {
     }
   }, [])
 
+  return <Routers />
+}
+
+export default function App() {
   return (
-    <ReactQueryProvider>
-      <AntdConfigProvider>
-        <Provider store={store}>
-          <HelmetProvider>
-            <Routers />
-          </HelmetProvider>
-        </Provider>
-      </AntdConfigProvider>
-    </ReactQueryProvider>
+    <ErrorBoundary>
+      <ReactQueryProvider>
+        <AntdConfigProvider>
+          <Provider store={store}>
+            <HelmetProvider>
+              <AppContent />
+            </HelmetProvider>
+          </Provider>
+        </AntdConfigProvider>
+      </ReactQueryProvider>
+    </ErrorBoundary>
   )
 }

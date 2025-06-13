@@ -727,6 +727,12 @@
     "delete": "Xóa báo cáo",
     "bulkDelete": "Bạn có chắc chắn muốn xóa các báo cáo đã chọn? Hành động này không thể hoàn tác."
   },
+  "tooltip": {
+    "wishlist": {
+      "add": "Thêm yêu thích",
+      "remove": "Bỏ yêu thích"
+    }
+  },
   "button": {
     "reset": "Đặt lại",
     "refresh": "Làm mới",

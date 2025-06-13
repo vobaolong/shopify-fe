@@ -1,10 +1,11 @@
 import { createSlice } from '@reduxjs/toolkit'
+import { LevelType, UserType } from '../../@types/entity.types'
 
-interface UserState {
+export interface UserState {
   user: {
-    id?: string
-    name?: string
-    [key: string]: any
+    createdAt?: string
+    level?: LevelType
+    role?: string
   }
 }
 

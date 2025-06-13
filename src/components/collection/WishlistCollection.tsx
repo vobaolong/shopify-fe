@@ -3,10 +3,8 @@ import { getToken } from '../../apis/auth.api'
 import { useListWishlist } from '../../hooks/useWishlist'
 import ProductCard from '../card/ProductCard'
 import { Spin, Alert } from 'antd'
-import Pagination from '../ui/Pagination'
 import { useTranslation } from 'react-i18next'
-import boxImg from '../../assets/box.svg'
-import ShowResult from '../ui/ShowResult'
+import CardMini from '../card/CardMini'
 
 const WishlistCollection = ({ heading = false }) => {
   const { t } = useTranslation()
@@ -20,79 +18,31 @@ const WishlistCollection = ({ heading = false }) => {
     limit: 8,
     page: 1
   })
-
   const { data, isLoading, error } = useListWishlist(_id, filter)
+  const listProducts = data?.products || []
 
-  const listProducts = data?.data?.products || []
-  const size = data?.data?.size || 0
-  const pagination = {
-    size,
-    pageCurrent: data?.data?.filter?.pageCurrent || 1,
-    pageCount: data?.data?.filter?.pageCount || 1
-  }
-
-  const handleChangePage = (newPage: number) => {
-    setFilter({
-      ...filter,
-      page: newPage
-    })
-  }
   return (
-    <div className='position-relative'>
-      {isLoading && (
-        <div className='flex justify-content-center p-4'>
-          <Spin size='large' />
-        </div>
-      )}
-      {error && (
-        <Alert
-          message={error?.message || 'Server Error'}
-          type='error'
-          showIcon
-        />
-      )}
-      {heading && <h4 className='text-center'>{t('favProduct')}</h4>}
-      <div className='p-3 box-shadow bg-body rounded-2'>
-        {!isLoading && pagination.size === 0 ? (
-          <div className='m-4 text-center'>
-            <img
-              className='mb-3'
-              src={boxImg}
-              alt='boxImg'
-              width='80'
-              height='80'
-              loading='eager'
-            />
-            <h5>{t('noFavProduct')}</h5>
-          </div>
-        ) : (
-          <>
-            <div className='container-fluid p-0 mt-3'>
-              <div className='row'>
-                {listProducts?.map((product: any, index: number) => (
-                  <div className='col-lg-3 col-sm-4 col-6 mb-4' key={index}>
-                    <ProductCard product={product} onRun={() => setRun(!run)} />
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className='flex justify-content-between items-center px-4'>
-              <ShowResult
-                limit={filter.limit}
-                size={pagination.size}
-                pageCurrent={pagination.pageCurrent}
-              />
-              {pagination.size !== 0 && (
-                <Pagination
-                  pagination={pagination}
-                  onChangePage={handleChangePage}
-                />
-              )}
-            </div>
-          </>
+    <Spin spinning={isLoading}>
+      <div className='bg-white p-3 rounded shadow-sm'>
+        {error && (
+          <Alert
+            message={error?.message || 'Server Error'}
+            type='error'
+            showIcon
+          />
         )}
+        <h4 className='text-center'>{t('favProduct')}</h4>
+        <div className='container-fluid p-0 mt-3'>
+          <div className='row'>
+            {listProducts?.map((product: any, index: number) => (
+              <div className='col-auto' key={product._id || index}>
+                <CardMini product={product} />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-    </div>
+    </Spin>
   )
 }
 

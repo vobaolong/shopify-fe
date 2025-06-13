@@ -1,0 +1,120 @@
+import { notification } from 'antd'
+import { AxiosError } from 'axios'
+
+interface ApiError extends Error {
+  status?: number
+  response?: {
+    status: number
+    data?: any
+  }
+}
+
+const showError = (
+  message: string,
+  type: 'error' | 'warning' | 'info' = 'error',
+  duration: number = 6
+) => {
+  notification[type]({
+    message:
+      type === 'error'
+        ? 'Error'
+        : type === 'warning'
+          ? 'Warning'
+          : 'Information',
+    description: message,
+    duration,
+    placement: 'topRight',
+    style: { width: 400 }
+  })
+}
+
+export const handleQueryError = (error: Error) => {
+  if (error instanceof AxiosError) {
+    const status = error.status || error.response?.status
+
+    // Only log serious errors
+    if (!status || status >= 500) {
+      console.error('TanStack Query Error:', error)
+    } else if (process.env.NODE_ENV === 'development') {
+      console.warn(`API Error ${status}:`, error.message)
+    }
+
+    if (status) {
+      switch (status) {
+        case 401:
+          showError('Session expired. Please log in again.', 'warning')
+          break
+        case 403:
+          showError(
+            'You do not have permission to access this resource.',
+            'warning'
+          )
+          break
+        case 404:
+          // Silent for 404 - just log in dev
+          if (process.env.NODE_ENV === 'development') {
+            console.info('Resource not found (404):', error.message)
+          }
+          break
+        case 429:
+          showError('Too many requests. Please try again later.', 'warning')
+          break
+        case 500:
+          showError('Server error. Please try again later.', 'error')
+          break
+        case 502:
+        case 503:
+        case 504:
+          showError(
+            'Service temporarily unavailable. Please try again later.',
+            'error'
+          )
+          break
+        default:
+          if (status >= 400 && status < 500) {
+            showError(
+              'Client error. Please check your request and try again.',
+              'warning'
+            )
+          } else if (status >= 500) {
+            showError('Server error. Please try again later.', 'error')
+          }
+      }
+    } else {
+      // Network errors
+      if (
+        error.code === 'NETWORK_ERROR' ||
+        error.message.includes('Network Error')
+      ) {
+        showError(
+          'Network error. Please check your connection and try again.',
+          'error'
+        )
+      } else if (
+        error.code === 'ECONNABORTED' ||
+        error.message.includes('timeout')
+      ) {
+        showError('Request timeout. Please try again.', 'error')
+      } else {
+        showError('Connection error. Please try again.', 'error')
+      }
+    }
+  } else {
+    showError('An unexpected error occurred. Please try again.', 'error')
+  }
+}
+
+export const shouldRetry = (
+  failureCount: number,
+  error: unknown,
+  maxRetries: number = 3
+) => {
+  if (error instanceof AxiosError) {
+    const status = error.status || error.response?.status
+    // Don't retry 4xx errors
+    if (status && status >= 400 && status < 500) {
+      return false
+    }
+  }
+  return failureCount < maxRetries
+}

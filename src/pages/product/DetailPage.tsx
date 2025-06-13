@@ -433,7 +433,6 @@ const DetailPage = () => {
                                   isFollowing: !product.isFollowing
                                 })
                               }}
-                              className='btn-lg'
                             />
                           </>
                         )}
