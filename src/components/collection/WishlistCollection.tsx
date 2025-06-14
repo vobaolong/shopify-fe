@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { getToken } from '../../apis/auth.api'
 import { useListWishlist } from '../../hooks/useWishlist'
 import ProductCard from '../card/ProductCard'
-import { Spin, Alert } from 'antd'
+import { Spin, Alert, Row, Col } from 'antd'
 import { useTranslation } from 'react-i18next'
-import CardMini from '../card/CardMini'
+import WishlistCard from '../card/WishlistCard'
 
 const WishlistCollection = ({ heading = false }) => {
   const { t } = useTranslation()
@@ -33,13 +33,13 @@ const WishlistCollection = ({ heading = false }) => {
         )}
         <h4 className='text-center'>{t('favProduct')}</h4>
         <div className='container-fluid p-0 mt-3'>
-          <div className='row'>
+          <Row gutter={[16, 16]}>
             {listProducts?.map((product: any, index: number) => (
-              <div className='col-auto' key={product._id || index}>
-                <CardMini product={product} />
-              </div>
+              <Col key={product._id || index}>
+                <WishlistCard product={product} />
+              </Col>
             ))}
-          </div>
+          </Row>
         </div>
       </div>
     </Spin>

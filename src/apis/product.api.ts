@@ -43,7 +43,6 @@ export const listProductsForAdmin = async (params: any): Promise<any> => {
   return client.get('/admin/products', { params })
 }
 
-//sell-store product
 export const sellingProduct = async (
   userId: string,
   value: any,
@@ -94,26 +93,26 @@ export const updateProduct = async (
 //list listImages
 export const addListImages = async (
   userId: string,
-  photo: any,
+  image: any,
   productId: string,
   storeId: string
 ): Promise<any> => {
   return await clientImg.post(
     `/store/${storeId}/user/${userId}/product/${productId}/images`,
-    photo
+    image
   )
 }
 
 export const updateListImages = async (
   userId: string,
-  photo: any,
+  image: any,
   index: number,
   productId: string,
   storeId: string
 ): Promise<any> => {
   return await clientImg.put(
     `/store/${storeId}/user/${userId}/product/${productId}/images`,
-    photo,
+    image,
     {
       params: { index }
     }

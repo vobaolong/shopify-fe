@@ -27,7 +27,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
     <div className='relative w-24 h-24'>
       <img
         src={avatar ? avatar : defaultImage}
-        className='object-cover w-full h-full border rounded-full'
+        className='object-cover rounded-full'
         alt={alt}
       />
       {isEditable === 'user' && <UserAvatarUpload />}

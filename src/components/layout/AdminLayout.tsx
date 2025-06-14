@@ -19,7 +19,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, user, paths }) => {
     <Layout style={{ minHeight: '100vh' }}>
       <AdminSideBar />
       <Layout>
-        <Header className='bg-white px-6 flex justify-end items-center sticky top-0 z-50 shadow-md'>
+        <Header className='bg-white px-6 flex justify-end items-center sticky top-0 z-50 border'>
           <div className='flex items-center gap-4'>
             <Suspense fallback={<Spin size='small' />}>
               <BellButton navFor='admin' />

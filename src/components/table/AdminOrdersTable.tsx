@@ -25,7 +25,7 @@ import { ColumnsType } from 'antd/es/table'
 import { CopyOutlined, EyeOutlined, SyncOutlined } from '@ant-design/icons'
 import { PaginationType } from '../../@types/pagination.type'
 import SearchInput from '../ui/SearchInput'
-import { OrderStatus } from '../../enums/OrderStatus.enum'
+import { OrderStatus, Role } from '../../enums/OrderStatus.enum'
 import OrderDetailInfo from '../info/OrderDetailInfo'
 import { Dayjs } from 'dayjs'
 
@@ -392,7 +392,7 @@ const AdminOrdersTable = ({ status = '' }: { status?: string }) => {
         destroyOnHidden
       >
         {selectedOrderId && (
-          <OrderDetailInfo orderId={selectedOrderId} by='admin' />
+          <OrderDetailInfo orderId={selectedOrderId} by={Role.ADMIN} />
         )}
       </Drawer>
     </div>

@@ -49,12 +49,12 @@ const StoreLevelInfo = ({ store = {} }: StoreLevelInfoProps) => {
   )
 
   return (
-    <div className='w-full max-w-4xl mx-auto p-4'>
-      <div className='flex flex-wrap gap-6 items-center justify-between relative'>
+    <div>
+      <div className='relative '>
         <Space
           direction='horizontal'
           size='large'
-          className='flex flex-wrap gap-6'
+          className='flex flex-col items-center justify-between'
         >
           <div className='flex items-center gap-2 min-w-[180px]'>
             <Text>{t('storeDetail.rating')}:</Text>
@@ -80,7 +80,7 @@ const StoreLevelInfo = ({ store = {} }: StoreLevelInfoProps) => {
 
         {canReport && (
           <Popover
-            className='!absolute -top-4 -right-4'
+            className='!absolute top-0 right-0'
             content={reportMenu}
             trigger='click'
             placement='bottomRight'

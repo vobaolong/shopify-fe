@@ -41,13 +41,13 @@ export const updateProfile = async (
 
 export const updateAvatar = async (
   userId: string,
-  photo: any
+  image: any
 ): Promise<any> => {
-  return await clientImg.put(`/user/avatar/${userId}`, photo)
+  return await clientImg.put(`/user/avatar/${userId}`, image)
 }
 
-export const updateCover = async (userId: string, photo: any): Promise<any> => {
-  return await clientImg.put(`/user/cover/${userId}`, photo)
+export const updateCover = async (userId: string, image: any): Promise<any> => {
+  return await clientImg.put(`/user/cover/${userId}`, image)
 }
 
 export const updatePassword = async (

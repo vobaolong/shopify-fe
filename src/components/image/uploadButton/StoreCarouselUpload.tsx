@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { getToken } from '../../../apis/auth.api'
 import {
   updateFeaturedImage,
   removeFeaturedImage
@@ -22,12 +21,11 @@ const StoreCarouselUpload = ({
 }: StoreCarouselUploadProps) => {
   const { t } = useTranslation()
   const [isConfirming, setIsConfirming] = useState(false)
-  const { _id } = getToken()
   const [updateDispatch] = useUpdateDispatch()
 
   const updateMutation = useMutation({
     mutationFn: (formData: FormData) =>
-      updateFeaturedImage(_id, formData, index, storeId),
+      updateFeaturedImage(formData, index, storeId),
     onSuccess: (res) => {
       const data = res.data || res
       if (!data.error) {
@@ -38,7 +36,7 @@ const StoreCarouselUpload = ({
   })
 
   const removeMutation = useMutation({
-    mutationFn: () => removeFeaturedImage(_id, index, storeId),
+    mutationFn: () => removeFeaturedImage(index, storeId),
     onSuccess: (res) => {
       const data = res.data || res
       if (!data.error) {
@@ -54,7 +52,7 @@ const StoreCarouselUpload = ({
   ) => {
     if (e.target.files && e.target.files[0] == null) return
     const formData = new FormData()
-    formData.set('photo', e.target.files![0])
+    formData.set('image', e.target.files![0])
     updateMutation.mutate(formData)
   }
 

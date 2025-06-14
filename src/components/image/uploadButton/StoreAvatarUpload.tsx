@@ -3,7 +3,9 @@ import { toast } from 'react-toastify'
 import { useTranslation } from 'react-i18next'
 import { updateAvatar } from '../../../apis/store.api'
 import { useMutation } from '@tanstack/react-query'
-import { Spin, Alert } from 'antd'
+import { Upload, Spin, Alert, message } from 'antd'
+import type { RcFile, UploadFile, UploadProps } from 'antd/es/upload/interface'
+import { CameraOutlined } from '@ant-design/icons'
 
 interface StoreAvatarUploadProps {
   storeId?: string
@@ -14,7 +16,7 @@ const StoreAvatarUpload = ({ storeId = '' }: StoreAvatarUploadProps) => {
   const { t } = useTranslation()
 
   const avatarMutation = useMutation({
-    mutationFn: (formData: FormData) => updateAvatar(formData, storeId),
+    mutationFn: (formData: FormData) => updateAvatar(storeId, formData),
     onSuccess: (res) => {
       const data = res.data || res
       if (!data.error) {
@@ -24,13 +26,31 @@ const StoreAvatarUpload = ({ storeId = '' }: StoreAvatarUploadProps) => {
     }
   })
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0] == null) return
-    const formData = new FormData()
-    formData.set('photo', e.target.files![0])
-    avatarMutation.mutate(formData)
+  const beforeUpload = (file: RcFile) => {
+    const isValidFormat = /\.(jpg|jpeg|png|gif|webp)$/i.test(file.name)
+    if (!isValidFormat) {
+      message.error(t('validation.imageFormat'))
+      return Upload.LIST_IGNORE
+    }
+
+    const isLessThan5M = file.size / 1024 / 1024 < 5
+    if (!isLessThan5M) {
+      message.error(t('validation.imageTooLarge', { size: 5 }))
+      return Upload.LIST_IGNORE
+    }
+    return true
   }
 
+  const customUpload = async (options: any) => {
+    const { file, onError } = options
+    try {
+      const formData = new FormData()
+      formData.set('image', file)
+      avatarMutation.mutate(formData)
+    } catch (err) {
+      onError(err)
+    }
+  }
   const error =
     (avatarMutation.error && (avatarMutation.error as any).message) ||
     (avatarMutation.data &&
@@ -41,16 +61,20 @@ const StoreAvatarUpload = ({ storeId = '' }: StoreAvatarUploadProps) => {
   return (
     <>
       {error && <Alert type='error' message={error} className='mb-2' />}
-      {isLoading && <Spin />}
-      <label className='cus-avatar-icon'>
-        <i className='fa-solid fa-camera' />
-        <input
-          className='visually-hidden'
-          type='file'
+      <div className='cus-avatar-icon'>
+        <Upload
+          name='image'
+          showUploadList={false}
+          beforeUpload={beforeUpload}
+          customRequest={customUpload}
           accept='image/png, image/jpeg, image/jpg, image/gif, image/webp'
-          onChange={handleChange}
-        />
-      </label>
+          disabled={isLoading}
+        >
+          <Spin spinning={isLoading}>
+            <CameraOutlined />
+          </Spin>
+        </Upload>
+      </div>
     </>
   )
 }

@@ -43,7 +43,7 @@ const ProductUpload = ({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0] == null) return
     const formData = new FormData()
-    formData.set('photo', e.target.files![0])
+    formData.set('image', e.target.files![0])
     updateImageMutation.mutate(formData)
   }
 

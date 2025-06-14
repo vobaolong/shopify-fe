@@ -104,7 +104,6 @@ export default defineConfig({
     reportCompressedSize: true
   },
   server: {
-    port: 3000,
     host: true,
     // Preconnect để tăng tốc kết nối
     hmr: {

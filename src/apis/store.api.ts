@@ -39,32 +39,32 @@ export const createStore = async (userId: string, store: any): Promise<any> => {
 }
 
 export const updateAvatar = async (
-  photo: any,
-  storeId: string
+  storeId: string,
+  image: any
 ): Promise<any> => {
-  return await clientImg.put(`/store/avatar/${storeId}`, photo)
+  return await clientImg.put(`/store/avatar/${storeId}`, image)
 }
 
 export const updateCover = async (
-  photo: any,
+  image: any,
   storeId: string
 ): Promise<any> => {
-  return await clientImg.put(`/store/cover/${storeId}`, photo)
+  return await clientImg.put(`/store/cover/${storeId}`, image)
 }
 
 export const addFeaturedImage = async (
-  photo: any,
+  image: any,
   storeId: string
 ): Promise<any> => {
-  return await clientImg.post(`/store/featured/image/${storeId}`, photo)
+  return await clientImg.post(`/store/featured/image/${storeId}`, image)
 }
 
 export const updateFeaturedImage = async (
-  photo: any,
+  image: any,
   index: number,
   storeId: string
 ): Promise<any> => {
-  return await clientImg.put(`/store/featured/image/${storeId}`, photo, {
+  return await clientImg.put(`/store/featured/image/${storeId}`, image, {
     params: { index }
   })
 }

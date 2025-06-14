@@ -71,7 +71,7 @@ const SellerAddProductImageForm = ({
     if (fileList.length === 0) return
 
     const formData = new FormData()
-    formData.set('photo', fileList[0].originFileObj as File)
+    formData.set('image', fileList[0].originFileObj as File)
     setIsLoading(true)
     addListImages(_id, formData, productId, storeId)
       .then((res: { data: { error?: string } }) => {

@@ -31,25 +31,25 @@ const ProfilePage = () => {
 
   return (
     <SellerLayout user={user as any} store={store as any} paths={paths}>
-      <div className='res-mx--12-md'>
-        <div className='relative bg-white p-2 rounded shadow'>
-          <Cover
-            cover={store.cover}
-            alt={store.name}
-            isEditStore={true}
-            storeId={store._id}
-          />
-
-          <div className='avatar-absolute avatar-absolute--store'>
-            <Avatar
-              avatar={store.avatar}
+      <div>
+        <div className='flex items-center bg-white rounded-md shadow p-3 gap-3 w-full'>
+          <div className='relative w-1/2'>
+            <Cover
+              cover={store.cover}
               alt={store.name}
-              isEditable='store'
+              isEditStore={true}
               storeId={store._id}
             />
+            <div className='absolute left-6 transform -translate-y-1/2 top-1/2'>
+              <Avatar
+                avatar={store.avatar}
+                alt={store.name}
+                isEditable='store'
+                storeId={store._id}
+              />
+            </div>
           </div>
-
-          <div className='level-group-absolute res-hide bg-white w-50 h-100'>
+          <div className='flex-1'>
             <StoreLevelInfo store={store} />
           </div>
         </div>

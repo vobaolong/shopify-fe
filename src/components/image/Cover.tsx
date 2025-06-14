@@ -12,10 +12,10 @@ const Cover = ({
     <img
       loading='lazy'
       src={cover ? cover : defaultCover}
-      className='w-full h-full absolute top-0 left-0 rounded-t-lg object-cover'
+      className='w-full h-full absolute top-0 left-0 rounded-lg object-cover'
       alt={alt}
     />
-    <div className='position-absolute overlay'></div>
+    <div className='overlay rounded-sm'></div>
     {isEditStore ? <StoreCoverUpload storeId={storeId} /> : <UserCoverUpload />}
   </div>
 )
