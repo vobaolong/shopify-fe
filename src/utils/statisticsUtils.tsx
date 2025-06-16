@@ -21,42 +21,6 @@ export const calculateTotalRevenue = (orders: any[], by: string): number => {
   }, 0)
 }
 
-export const getLastWeekData = (
-  items: any[],
-  type: 'count' | 'revenue' = 'count',
-  by?: string
-) => {
-  const oneWeekAgo = new Date()
-  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
-
-  if (type === 'revenue') {
-    return items
-      .filter((item) => new Date(item.createdAt) >= oneWeekAgo)
-      .reduce((total, order) => {
-        if (order.status === OrderStatus.DELIVERED) {
-          const amount =
-            by === Role.ADMIN
-              ? (order?.amountToPlatform?.$numberDecimal ?? 0)
-              : (order?.amountToStore?.$numberDecimal ?? 0)
-          return total + parseFloat(amount)
-        }
-        return total
-      }, 0)
-  }
-
-  return items.filter(
-    (item) => new Date(item.createdAt || item.joinedAt) >= oneWeekAgo
-  ).length
-}
-
-export const calculatePercentageChange = (
-  current: number,
-  previous: number
-): number => {
-  if (previous === 0) return current > 0 ? 100 : 0
-  return ((current - previous) / previous) * 100
-}
-
 export const getChartIcon = (flag: string): React.ReactNode => {
   const iconStyle = {
     fontSize: '20px',

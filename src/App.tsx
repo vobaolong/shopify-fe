@@ -6,6 +6,7 @@ import store from './store/store'
 import { socketId } from './socket'
 import AntdConfigProvider from './provider/AntdConfigProvider'
 import ReactQueryProvider from './provider/ReactQueryProvider'
+import { CurrencyProvider } from './provider/CurrencyProvider'
 import { HelmetProvider } from 'react-helmet-async'
 import ErrorBoundary from './components/error/ErrorBoundary'
 
@@ -27,11 +28,13 @@ export default function App() {
     <ErrorBoundary>
       <ReactQueryProvider>
         <AntdConfigProvider>
-          <Provider store={store}>
-            <HelmetProvider>
-              <AppContent />
-            </HelmetProvider>
-          </Provider>
+          <CurrencyProvider>
+            <Provider store={store}>
+              <HelmetProvider>
+                <AppContent />
+              </HelmetProvider>
+            </Provider>
+          </CurrencyProvider>
         </AntdConfigProvider>
       </ReactQueryProvider>
     </ErrorBoundary>

@@ -1,18 +1,18 @@
 import React from 'react'
-import { Row, Col, Form } from 'antd'
+import { Form } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { StatisticsOptions } from '../../@types/statistics.type'
 import LineChart from './LineChart'
 import BarChart from './BarChart'
 import DropDownMenu from '../ui/DropDownMenu'
 import { groupByDate, groupByJoined, groupBySold } from '../../helper/groupBy'
-import { Calendar, CalendarDaysIcon, ClockIcon } from 'lucide-react'
+import { Role } from '../../enums/OrderStatus.enum'
 
 interface ChartSectionProps {
   options: StatisticsOptions
   onOptionsChange: (newOptions: StatisticsOptions) => void
   items: any[]
-  by: string
+  by: Role
 }
 
 const ChartSection: React.FC<ChartSectionProps> = ({
@@ -22,36 +22,35 @@ const ChartSection: React.FC<ChartSectionProps> = ({
   by
 }) => {
   const { t } = useTranslation()
-
   const titles: Record<string, string> = {
-    order: t('admin.adDashboard.salesStatisticsByOrders'),
-    product: t('admin.adDashboard.statisticsByProducts'),
-    user: t('admin.adDashboard.statisticsNewUser'),
-    store: t('admin.adDashboard.statisticsNewStore')
+    orders: t('admin.dashboard.salesStatisticsByOrders'),
+    products: t('admin.dashboard.statisticsByProducts'),
+    users: t('admin.dashboard.statisticsNewUser'),
+    stores: t('admin.dashboard.statisticsNewStore')
   }
 
   const groupByFunc: Record<string, any> = {
-    order: groupByDate,
-    product: groupBySold,
-    user: groupByJoined,
-    store: groupByJoined
+    orders: groupByDate,
+    products: groupBySold,
+    users: groupByJoined,
+    stores: groupByJoined
   }
 
   const timeRangeOptions = [
     {
-      label: t('admin.adDashboard.hour'),
+      label: t('admin.dashboard.hour'),
       value: 'hours'
     },
     {
-      label: t('admin.adDashboard.day'),
+      label: t('admin.dashboard.day'),
       value: 'date'
     },
     {
-      label: t('admin.adDashboard.month'),
+      label: t('admin.dashboard.month'),
       value: 'month'
     },
     {
-      label: t('admin.adDashboard.year'),
+      label: t('admin.dashboard.year'),
       value: 'year'
     }
   ]
@@ -62,24 +61,23 @@ const ChartSection: React.FC<ChartSectionProps> = ({
     { label: `50 ${t('admin.products')}`, value: '50' },
     { label: `100 ${t('admin.products')}`, value: '100' }
   ]
-
   const chartTypeOptions = [
     {
-      label: t('admin.adDashboard.line'),
+      label: t('admin.dashboard.line'),
       value: 'line'
     },
     {
-      label: t('admin.adDashboard.bar'),
+      label: t('admin.dashboard.bar'),
       value: 'bar'
     }
   ]
 
   return (
     <div className='relative bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden'>
-      {/* Controls */}
+      {' '}
       <div className='absolute top-4 right-4 z-10'>
         <Form className='flex gap-2'>
-          {options.flag !== 'product' ? (
+          {options.flag !== 'products' ? (
             <DropDownMenu
               listItem={timeRangeOptions}
               value={options.by}

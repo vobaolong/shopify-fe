@@ -2,13 +2,12 @@ import React from 'react'
 import { Card } from 'antd'
 import { FlagOption } from '../../@types/statistics.type'
 import { Link } from 'react-router-dom'
+import { t } from 'i18next'
 
 interface StatisticCardProps {
   option: FlagOption
   value: number
   isSelected: boolean
-  percentageChange: number
-  lastWeekValue: number
   chartIcon: React.ReactNode
   onClick: () => void
 }
@@ -17,12 +16,9 @@ const StatisticCard: React.FC<StatisticCardProps> = ({
   option,
   value,
   isSelected,
-  percentageChange,
   chartIcon,
   onClick
 }) => {
-  const isPositive = percentageChange >= 0
-
   return (
     <Card
       className={`min-h-[140px] cursor-pointer transition-all duration-300 relative overflow-hidden
@@ -35,21 +31,6 @@ const StatisticCard: React.FC<StatisticCardProps> = ({
           <span className='text-gray-500 text-sm font-medium uppercase tracking-wide'>
             {option.label}
           </span>
-          <div
-            className={`
-              flex items-center gap-1 text-sm font-medium
-              ${
-                percentageChange === 999
-                  ? 'text-blue-600'
-                  : isPositive
-                    ? 'text-green-500'
-                    : 'text-red-500'
-              }
-            `}
-          >
-            {isPositive ? '↗' : '↘'}
-            <span>{Math.abs(percentageChange).toFixed(2)}%</span>
-          </div>
         </div>
         <div className='flex items-end justify-between'>
           <div className='flex flex-col justify-between'>
@@ -60,7 +41,11 @@ const StatisticCard: React.FC<StatisticCardProps> = ({
               to={`/admin/${option.value.toLowerCase()}`}
               className=' text-gray-500 hover:text-blue-600 transition-colors'
             >
-              Xem tất cả {option.value.toLowerCase()}
+              {t('admin.dashboard.viewAll', {
+                type: t(
+                  `admin.dashboard.type${option.value.charAt(0).toUpperCase() + option.value.slice(1)}`
+                )
+              })}
             </Link>
           </div>
           <div className='rounded-md'>{chartIcon}</div>

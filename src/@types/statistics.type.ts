@@ -11,14 +11,7 @@ export interface AdminStats {
     users: number
     stores: number
   }
-  lastWeekSizes: {
-    orders: number
-    products: number
-    users: number
-    stores: number
-  }
   totalRevenue: number
-  lastWeekRevenue: number
 }
 
 export interface SellerStats {
@@ -30,12 +23,7 @@ export interface SellerStats {
     orders: number
     products: number
   }
-  lastWeekSizes: {
-    orders: number
-    products: number
-  }
   totalRevenue: number
-  lastWeekRevenue: number
 }
 
 export interface StatisticsOptions {

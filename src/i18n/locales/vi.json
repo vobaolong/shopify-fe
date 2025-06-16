@@ -288,9 +288,27 @@
   "action": "Lựa chọn",
   "showing": "Hiển thị",
   "of": "trên",
+  "chart": {
+    "categorySalesByDate": "Sản phẩm bán ra theo danh mục mỗi ngày",
+    "categorySalesDescription": "Biểu đồ hiển thị số lượng sản phẩm bán ra từng danh mục theo ngày",
+    "selectCategories": "Chọn danh mục",
+    "noDataAvailable": "Không có dữ liệu trong khoảng thời gian này",
+    "total": "Tổng",
+    "date": "Ngày",
+    "month": "Tháng",
+    "year": "Năm",
+    "productQuantity": "Số lượng",
+    "bestSellingCategoriesByDate": "Danh mục bán chạy nhất theo thời gian",
+    "bestCategory": "Danh mục",
+    "productsSold": "Sản phẩm đã bán",
+    "composed": "Tổng hợp",
+    "revenue": "Doanh thu",
+    "orderCount": "Số đơn hàng",
+    "returnCount": "Đơn trả hàng"
+  },
   "admin": {
     "brands": "Thương hiệu",
-    "adDashboard": {
+    "dashboard": {
       "overview": "Tổng quan",
       "dashboard": "Quản lý",
       "hour": "Giờ",
@@ -305,7 +323,12 @@
       "statisticsByProducts": "Thống kê lượt bán",
       "statisticsNewStore": "Thống kê cửa hàng mới",
       "statisticsNewUser": "Thống kê người dùng mới",
-      "totalRevenue": "Tổng doanh thu"
+      "totalRevenue": "Tổng doanh thu",
+      "viewAll": "Xem tất cả {{type}}",
+      "typeProducts": "sản phẩm",
+      "typeOrders": "đơn hàng",
+      "typeUsers": "người dùng",
+      "typeStores": "shop"
     },
     "users": "Người dùng",
     "stores": "Shop",
@@ -436,7 +459,6 @@
     "toDate": "Đến ngày"
   },
   "transactions": "Giao dịch trong hệ thống",
-
   "cartDetail": {
     "yourOrder": "Đơn hàng của bạn",
     "proceedToCheckout": "Tiến hành đặt hàng",
@@ -657,7 +679,7 @@
     "followers": "Người theo dõi",
     "vacationMode": "Chế độ tạm nghỉ",
     "vacationModeContent": "Kích hoạt Chế độ Tạm nghỉ để ngăn khách hàng đặt đơn hàng mới. Nhưng những đơn hàng đang tiến hành vẫn phải được xử lý.",
-    "banned": "Shop đang tạm thời bị zenpi khóa, liên hệ để biết thêm chi tiết",
+    "banned": "Shop đang tạm thời bị buynow khóa, liên hệ để biết thêm chi tiết",
     "active": "Shop đang hoạt động",
     "viewShop": "Xem shop",
     "staple": "Ngành hàng chủ lực",
@@ -913,5 +935,10 @@
   "confirmPw": "Xác nhận mật khẩu",
   "backToLogin": "Quay lại đăng nhập",
   "user": "Người dùng",
-  "addValue": "Thêm thuộc tính cho"
+  "addValue": "Thêm thuộc tính cho",
+  "currency": {
+    "title": "Tiền tệ",
+    "switchTo": "Chuyển sang {{currency}}",
+    "current": "Hiện tại: {{currency}}"
+  }
 }

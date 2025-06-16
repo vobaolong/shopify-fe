@@ -5,6 +5,7 @@ import BellButton from './menu/BellButton'
 import AccountInit from '../init/AccountInit'
 import Breadcrumb, { BreadcrumbPath } from '../ui/Breadcrumb'
 import { UserType } from '../../@types/entity.types'
+import { Role } from '../../enums/OrderStatus.enum'
 
 const { Header, Content } = Layout
 
@@ -19,10 +20,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, user, paths }) => {
     <Layout style={{ minHeight: '100vh' }}>
       <AdminSideBar />
       <Layout>
-        <Header className='bg-white px-6 flex justify-end items-center sticky top-0 z-50 border'>
+        <Header className='bg-white !px-6 flex justify-end items-center sticky top-0 z-50 border'>
           <div className='flex items-center gap-4'>
             <Suspense fallback={<Spin size='small' />}>
-              <BellButton navFor='admin' />
+              <BellButton navFor={Role.ADMIN} />
             </Suspense>
             <Suspense fallback={<Spin size='small' />}>
               <AccountInit />

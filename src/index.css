@@ -663,16 +663,6 @@ header {
 	flex: 1;
 }
 
-/* customs main-nav sub-nav */
-.cus-sub-nav {
-	display: flex;
-	flex-wrap: nowrap;
-	min-width: var(--header-sub-nav-width);
-}
-
-.cus-sub-nav>li+li {
-	margin-left: 6px;
-}
 
 .sticky-sidebar {
 	position: sticky;
@@ -935,10 +925,6 @@ header {
 	font-size: 1.2rem;
 	width: 24px;
 	margin-right: 2px;
-}
-
-.main-nav {
-	transition: background-color 0.5s ease;
 }
 
 .bg-main-solid {

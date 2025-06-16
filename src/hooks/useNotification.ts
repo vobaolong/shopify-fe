@@ -16,7 +16,6 @@ export const notificationKeys = {
   byUser: (userId: string) => [...notificationKeys.all, userId]
 }
 
-// Get notifications hook
 export const useNotifications = (userId: string) => {
   return useQuery({
     queryKey: notificationKeys.byUser(userId),
@@ -26,7 +25,6 @@ export const useNotifications = (userId: string) => {
   })
 }
 
-// Mark notifications as read
 export const useMarkNotificationsRead = () => {
   const queryClient = useQueryClient()
 
@@ -40,7 +38,6 @@ export const useMarkNotificationsRead = () => {
   })
 }
 
-// Delete notifications
 export const useDeleteNotifications = () => {
   const queryClient = useQueryClient()
 
@@ -54,7 +51,6 @@ export const useDeleteNotifications = () => {
   })
 }
 
-// Email notification hooks
 export const useSendBanStoreEmail = () => {
   return useMutation({
     mutationFn: ({ userId, storeId }: { userId: string; storeId: string }) =>

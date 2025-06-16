@@ -1,8 +1,11 @@
+import { useEffect, useState } from 'react'
+import { Button, Dropdown, Space } from 'antd'
+import { DownOutlined, GlobalOutlined } from '@ant-design/icons'
+import type { MenuProps } from 'antd'
 import vietnam from '../../assets/vietnam-flag-icon.svg'
 import english from '../../assets/united-kingdom-flag-icon.svg'
 import { locales } from '../../i18n/i18n'
 import { useTranslation } from 'react-i18next'
-import { useEffect, useState } from 'react'
 
 interface LanguageProps {
   vertical?: boolean
@@ -14,6 +17,7 @@ const Language: React.FC<LanguageProps> = ({ vertical = true }) => {
 
   const currentLanguage =
     locales[i18n.language as keyof typeof locales] || locales.en
+
   const changeLanguage = (lang: string) => {
     i18n.changeLanguage(lang)
     localStorage.setItem('language', lang)
@@ -27,73 +31,72 @@ const Language: React.FC<LanguageProps> = ({ vertical = true }) => {
     }
   }, [i18n.language])
 
+  const menuItems: MenuProps['items'] = [
+    {
+      key: 'vi',
+      label: (
+        <Space>
+          <img src={vietnam} alt='Vietnamese flag' className='w-6' />
+          Tiếng Việt
+        </Space>
+      ),
+      onClick: () => changeLanguage('vi')
+    },
+    {
+      key: 'en',
+      label: (
+        <Space>
+          <img src={english} alt='English flag' className='w-6' />
+          English
+        </Space>
+      ),
+      onClick: () => changeLanguage('en')
+    }
+  ]
+
+  if (vertical) {
+    return (
+      <Dropdown
+        menu={{ items: menuItems }}
+        placement='bottomLeft'
+        trigger={['click']}
+      >
+        <Button
+          type='text'
+          className='text-white hover:bg-white hover:text-blue-600 flex items-center p-2'
+        >
+          <Space>
+            <img
+              src={currentLanguage === 'English' ? english : vietnam}
+              alt='Current language flag'
+              className='w-6'
+            />
+            <DownOutlined style={{ fontSize: '10px' }} />
+          </Space>
+        </Button>
+      </Dropdown>
+    )
+  }
+
   return (
-    <>
-      {vertical ? (
-        <div className='ms-2 inherit'>
-          <div className='your-account'>
-            <div className='flex items-center justify-content-center rounded-1 p-2 inherit lang'>
-              <img
-                loading='lazy'
-                style={{ maxWidth: '30px', width: '100%' }}
-                src={currentLanguage === 'English' ? english : vietnam}
-                alt=''
-              />
-              <i
-                style={{ fontSize: '10px' }}
-                className='fa-solid fa-angle-down ms-1'
-              />
-            </div>
-            <ul
-              style={{ width: 'unset', left: '10%' }}
-              className='list-group your-account-options z-10 p-2 bg-white'
-            >
-              <li
-                className='list-group-item rounded-1 bg-value border-0 your-account-options-item ripple'
-                onClick={() => changeLanguage('vi')}
-              >
-                Tiếng Việt
-              </li>
-              <li
-                className='list-group-item rounded-1 bg-value border-0 your-account-options-item ripple mt-2'
-                onClick={() => changeLanguage('en')}
-              >
-                English
-              </li>
-            </ul>
-          </div>
-        </div>
-      ) : (
-        <div className='flex items-center justify-content-between gap-2'>
-          <button
-            className={`btn rounded-1 btn-with-img ${
-              activeLang === 'en' ? 'btn-value' : 'btn-outline-value'
-            }`}
-            onClick={() => changeLanguage('en')}
-          >
-            <img
-              style={{ marginRight: '3px', maxWidth: '30px', width: '100%' }}
-              src={english}
-              alt='English flag'
-            />
-            English
-          </button>
-          <button
-            className={`btn rounded-1 btn-with-img ${
-              activeLang === 'vi' ? 'btn-value' : 'btn-outline-value'
-            }`}
-            onClick={() => changeLanguage('vi')}
-          >
-            <img
-              style={{ marginRight: '3px', maxWidth: '30px', width: '100%' }}
-              src={vietnam}
-              alt='Vietnamese flag'
-            />
-            Tiếng Việt
-          </button>
-        </div>
-      )}
-    </>
+    <div className='flex gap-2'>
+      <Button
+        type={activeLang === 'en' ? 'primary' : 'default'}
+        onClick={() => changeLanguage('en')}
+        className='flex items-center gap-1'
+      >
+        <img src={english} alt='English flag' className='w-4 h-3' />
+        <span className='hidden sm:inline'>English</span>
+      </Button>
+      <Button
+        type={activeLang === 'vi' ? 'primary' : 'default'}
+        onClick={() => changeLanguage('vi')}
+        className='flex items-center gap-1'
+      >
+        <img src={vietnam} alt='Vietnamese flag' className='w-4 h-3' />
+        <span className='hidden sm:inline'>Tiếng Việt</span>
+      </Button>
+    </div>
   )
 }
 

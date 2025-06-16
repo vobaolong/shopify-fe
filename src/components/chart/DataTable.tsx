@@ -25,11 +25,11 @@ const DataTable: React.FC<DataTableProps> = ({
 
   const getTitle = () => {
     switch (options.flag) {
-      case 'user':
+      case 'users':
         return t('topUser')
-      case 'store':
+      case 'stores':
         return t('topShop')
-      case 'product':
+      case 'products':
         return t('topProduct')
       default:
         return t('orderRecent')
@@ -46,11 +46,11 @@ const DataTable: React.FC<DataTableProps> = ({
 
   const getLinkText = () => {
     switch (options.flag) {
-      case 'user':
+      case 'users':
         return t('goToUserManager')
-      case 'store':
+      case 'stores':
         return t('goToShopManager')
-      case 'product':
+      case 'products':
         return t('goToProductManager')
       default:
         return t('goToOrderManager')
@@ -69,27 +69,27 @@ const DataTable: React.FC<DataTableProps> = ({
     {
       title: (() => {
         switch (options.flag) {
-          case 'user':
+          case 'users':
             return t('userDetail.name')
-          case 'store':
+          case 'stores':
             return t('storeDetail.storeName')
-          case 'product':
+          case 'products':
             return t('productDetail.name')
           default:
             return t('orderDetail.id')
         }
       })(),
       render: (_: any, item: any) => {
-        if (options.flag === 'user') {
+        if (options.flag === 'users') {
           return <UserSmallCard user={item} />
         }
-        if (options.flag === 'store') {
+        if (options.flag === 'stores') {
           return <StoreSmallCard store={item} />
         }
-        if (options.flag === 'product') {
+        if (options.flag === 'products') {
           return <ProductSmallCard product={item} rating={true} />
         }
-        if (options.flag === 'order') {
+        if (options.flag === 'orders') {
           return (
             <Link
               className='text-blue-500 hover:text-blue-700 transition-colors duration-200'
@@ -104,32 +104,32 @@ const DataTable: React.FC<DataTableProps> = ({
     },
     {
       title: (() => {
-        if (options.flag === 'user' || options.flag === 'store') {
+        if (options.flag === 'users' || options.flag === 'stores') {
           return t('point')
         }
-        if (options.flag === 'product') {
+        if (options.flag === 'products') {
           return t('productDetail.sold')
         }
         return t('orderDetail.date')
       })(),
       width: 120,
       render: (_: any, item: any) => {
-        if (options.flag === 'user') {
+        if (options.flag === 'users') {
           return (
             <span className='text-yellow-600 font-semibold'>{item.point}</span>
           )
         }
-        if (options.flag === 'store') {
+        if (options.flag === 'stores') {
           return (
             <span className='text-purple-600 font-semibold'>{item.point}</span>
           )
         }
-        if (options.flag === 'product') {
+        if (options.flag === 'products') {
           return (
             <span className='text-green-600 font-semibold'>{item.sold}</span>
           )
         }
-        if (options.flag === 'order') {
+        if (options.flag === 'orders') {
           return (
             <span className='text-gray-600 text-sm'>
               {humanReadableDate(item.createdAt)}
@@ -142,7 +142,7 @@ const DataTable: React.FC<DataTableProps> = ({
   ]
 
   const dataSource = (
-    options.flag === 'order' ? items.slice(-5).reverse() : items.slice(0, 5)
+    options.flag === 'orders' ? items.slice(-5).reverse() : items.slice(0, 5)
   ).map((item: any, idx: any) => ({ ...item, key: idx }))
 
   return (

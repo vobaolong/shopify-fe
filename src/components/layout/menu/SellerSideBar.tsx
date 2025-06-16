@@ -29,7 +29,7 @@ const menuItems = (t: (key: string) => string, storeId: string) => [
     icon: <DashboardOutlined />,
     label: (
       <Link to={`/seller/${storeId}`} className='!no-underline'>
-        {t('admin.adDashboard.overview')}
+        {t('admin.dashboard.overview')}
       </Link>
     )
   },

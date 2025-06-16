@@ -7,14 +7,14 @@ import { useStatistics } from '../../hooks/useStatistics'
 import StatisticsGrid from './StatisticsGrid'
 import RevenueCard from './RevenueCard'
 import ChartSection from './ChartSection'
-import DataTable from './DataTable'
 import { Role } from '../../enums/OrderStatus.enum'
 import { Typography } from 'antd/lib'
+import RecentOrdersTable from './RecentOrdersTable'
 
 const { RangePicker } = DatePicker
 
 interface ListStatisticsItemsProps {
-  by: string
+  by: Role
   storeId?: string
 }
 
@@ -145,14 +145,12 @@ const ListStatisticsItems: React.FC<ListStatisticsItemsProps> = ({
           className='w-80'
         />
       </div>
-
       <StatisticsGrid
         data={data}
         options={options}
         flagOptions={flagOptions}
         onOptionChange={handleOptionChange}
       />
-
       {/* <Row>
         <Col span={24}>
           <RevenueCard
@@ -163,7 +161,6 @@ const ListStatisticsItems: React.FC<ListStatisticsItemsProps> = ({
           />
         </Col>
       </Row> */}
-
       <Row gutter={[24, 24]}>
         <Col xs={24} lg={16}>
           <ChartSection
@@ -173,13 +170,20 @@ const ListStatisticsItems: React.FC<ListStatisticsItemsProps> = ({
             by={by}
           />
         </Col>
-        <Col xs={24} lg={8}>
+        {/* <Col xs={24} lg={8}>
           <DataTable
             options={options}
             items={currentItems}
             by={by}
             storeId={storeId}
           />
+        </Col> */}
+      </Row>
+      <Row>
+        <Col span={16}>
+          <Card className='shadow-md'>
+            <RecentOrdersTable />
+          </Card>
         </Col>
       </Row>
     </div>

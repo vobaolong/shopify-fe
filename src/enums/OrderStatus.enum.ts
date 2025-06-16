@@ -15,7 +15,8 @@ export enum ReturnStatus {
 export enum Role {
   USER = 'user',
   STORE = 'store',
-  ADMIN = 'admin'
+  ADMIN = 'admin',
+  SELLER = 'seller'
 }
 
 export enum TransactionType {

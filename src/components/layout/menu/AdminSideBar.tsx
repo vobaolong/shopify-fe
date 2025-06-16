@@ -29,7 +29,7 @@ const menuItems = (t: (key: string) => string) => [
     icon: <DashboardOutlined />,
     label: (
       <Link to='/admin/dashboard' className='!no-underline'>
-        {t('admin.adDashboard.dashboard')}
+        {t('admin.dashboard.dashboard')}
       </Link>
     )
   },

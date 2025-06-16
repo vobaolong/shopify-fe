@@ -28,7 +28,7 @@ export default defineConfig({
             'react-redux',
             '@tanstack/react-query'
           ],
-          'chart-vendor': ['chart.js', 'react-chartjs-2'],
+          'chart-vendor': ['recharts'],
           'form-vendor': ['react-hook-form', 'react-color'],
           'ui-extras': ['react-slick', 'slick-carousel', 'react-helmet']
         },

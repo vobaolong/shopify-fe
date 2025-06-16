@@ -1,10 +1,22 @@
 import { useState, useEffect } from 'react'
 import { groupByDate } from '../../helper/groupBy'
-import { Line } from 'react-chartjs-2'
-import { Chart, registerables } from 'chart.js'
 import { useTranslation } from 'react-i18next'
-
-Chart.register(...registerables)
+import {
+  ResponsiveContainer,
+  LineChart as RechartsLineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend
+} from 'recharts'
+import { Role } from '../../enums/OrderStatus.enum'
+import {
+  formatChartPriceWithCurrency,
+  formatThousands
+} from '../../utils/formats'
+import { useCurrency } from '../../provider/CurrencyProvider'
 
 const LineChart = ({
   by = 'hours',
@@ -15,91 +27,84 @@ const LineChart = ({
   sliceEnd = 6,
   value = ''
 }) => {
-  const [data, setData] = useState<{ labels: string[]; datasets: any[] }>({
-    labels: [],
-    datasets: []
-  })
+  const [chartData, setChartData] = useState<any[]>([])
   const { t } = useTranslation()
+  const { currency } = useCurrency()
+
+  const formatTooltip = (tooltipValue: any, name: string) => {
+    if (value === 'orders' && typeof tooltipValue === 'number') {
+      return [formatChartPriceWithCurrency(tooltipValue, 'VND', currency), name]
+    }
+    return [formatThousands(tooltipValue), name]
+  }
+
+  const formatYAxis = (yValue: number) => {
+    if (value === 'orders') {
+      return formatChartPriceWithCurrency(yValue, 'VND', currency)
+    }
+    return formatThousands(yValue)
+  }
 
   useEffect(() => {
     const newData = groupBy(items, by, role)
+    const formattedData =
+      newData?.map((item) => {
+        const dataPoint: Record<string, any> = {
+          name: item[0],
+          value: item[1]
+        }
+        if (role === Role.SELLER && value === 'orders') {
+          dataPoint.commission = item[2]
+        }
+        return dataPoint
+      }) || []
 
-    const datasets = [
-      {
-        data: newData?.map((item) => item[1]),
-        label: title,
-        fill: false,
-        tension: 0.4,
-        borderWidth: 2,
-        borderColor: '#3b82f6',
-        backgroundColor: '#86d3ff',
-        pointHoverRadius: 4,
-        pointHoverBackgroundColor: '#3b82f6'
-      }
-    ]
-
-    if (role === 'seller' && value === 'order') {
-      datasets.push({
-        data: newData?.map((item) => item[2]),
-        label: 'Chiết khấu',
-        fill: false,
-        tension: 0.4,
-        borderWidth: 2,
-        borderColor: '#F66',
-        backgroundColor: '#ffbbbb',
-        pointHoverRadius: 4,
-        pointHoverBackgroundColor: '#F66'
-      })
-    }
-
-    setData({
-      labels: newData?.map((item) => item[0]),
-      datasets
-    })
-  }, [items, by, role, sliceEnd])
+    setChartData(formattedData)
+  }, [items, by, role, sliceEnd, value])
 
   return (
-    <div className='bg-body box-shadow rounded-1 w-100'>
-      <h5 className='text-capitalize border-bottom p-3 text-start'>
+    <div className='bg-white shadow rounded w-100'>
+      <h5 className='capitalize border-b-gray-100 border-b p-3 text-start'>
         {t('breadcrumbs.overview')} {t(`${value}`)}
       </h5>
-      <div className='p-3'>
-        <Line
-          data={data}
-          options={{
-            interaction: {
-              mode: 'index',
-              intersect: false
-            },
-            responsive: true,
-            scales: {
-              x: { display: false },
-              y: { beginAtZero: true }
-            },
-            elements: {
-              point: {
-                radius: 1,
-                hoverRadius: 3
-              }
-            },
-            plugins: {
-              title: {
-                display: true,
-                text: title
-              },
-              legend: {
-                display: true,
-                position: 'bottom'
-              },
-              tooltip: {
-                enabled: true,
-                mode: 'index',
-                intersect: false
-              }
-            }
+      <ResponsiveContainer width='100%' height={300}>
+        <RechartsLineChart
+          data={chartData}
+          margin={{
+            top: 20,
+            right: 20,
+            left: 20,
+            bottom: 30
           }}
-        />
-      </div>
+        >
+          {' '}
+          <CartesianGrid strokeDasharray='3 3' stroke='#f0f0f0' />
+          <XAxis dataKey='name' tick={{ fontSize: 12 }} />
+          <YAxis tick={{ fontSize: 12 }} tickFormatter={formatYAxis} />
+          <Tooltip formatter={formatTooltip} />
+          <Legend verticalAlign='bottom' height={36} />
+          <Line
+            type='monotone'
+            dataKey='value'
+            name={title}
+            stroke='#3b82f6'
+            strokeWidth={2}
+            activeDot={{ r: 6 }}
+            dot={{ r: 2 }}
+          />
+          {role === Role.SELLER && value === 'orders' && (
+            <Line
+              type='monotone'
+              dataKey='commission'
+              name='Chiết khấu'
+              stroke='#F66'
+              strokeWidth={2}
+              activeDot={{ r: 6 }}
+              dot={{ r: 2 }}
+            />
+          )}
+        </RechartsLineChart>
+      </ResponsiveContainer>
     </div>
   )
 }

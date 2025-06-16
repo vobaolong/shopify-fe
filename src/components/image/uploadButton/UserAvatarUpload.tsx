@@ -2,13 +2,15 @@ import { getToken } from '../../../apis/auth.api'
 import { useTranslation } from 'react-i18next'
 import { updateAvatar } from '../../../apis/user.api'
 import { useMutation } from '@tanstack/react-query'
-import { notification, Spin } from 'antd'
 import useInvalidate from '../../../hooks/useInvalidate'
+import { useAntdApp } from '../../../hooks/useAntdApp'
+import ImageUploader from './ImageUploader'
 
 const UserAvatarUpload = () => {
   const { t } = useTranslation()
   const { _id } = getToken()
   const invalidate = useInvalidate()
+  const { notification } = useAntdApp()
 
   const avatarMutation = useMutation({
     mutationFn: (formData: FormData) => updateAvatar(_id, formData),
@@ -23,28 +25,19 @@ const UserAvatarUpload = () => {
     }
   })
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0] == null) return
+  const handleUpload = (file: File) => {
     const formData = new FormData()
-    formData.set('image', e.target.files![0])
+    formData.set('image', file)
     avatarMutation.mutate(formData)
   }
 
-  const isLoading = avatarMutation.isPending
-
+  const error = avatarMutation.error?.message
   return (
-    <>
-      {isLoading && <Spin />}
-      <label className='cus-avatar-icon'>
-        <i className='fa-solid fa-camera' />
-        <input
-          className='visually-hidden'
-          type='file'
-          accept='image/png, image/jpeg, image/jpg, image/gif, image/webp'
-          onChange={handleChange}
-        />
-      </label>
-    </>
+    <ImageUploader
+      onUpload={handleUpload}
+      error={error}
+      isLoading={avatarMutation.isPending}
+    />
   )
 }
 

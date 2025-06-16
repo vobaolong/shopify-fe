@@ -8,10 +8,7 @@ import { listUserForAdmin } from '../apis/user.api'
 import { getStoresForAdmin } from '../apis/store.api'
 import { OrderStatus, Role } from '../enums/OrderStatus.enum'
 import { AdminStats, SellerStats } from '../@types/statistics.type'
-import {
-  calculateTotalRevenue,
-  getLastWeekData
-} from '../utils/statisticsUtils'
+import { calculateTotalRevenue } from '../utils/statisticsUtils'
 
 export const useStatistics = (
   by: string,
@@ -89,12 +86,6 @@ export const useStatistics = (
         const storeSize =
           storeData.pagination?.total || storeData.size || stores.length
 
-        const lastWeekOrderSize = getLastWeekData(orders, 'count')
-        const lastWeekProductSize = getLastWeekData(products, 'count')
-        const lastWeekUserSize = getLastWeekData(users, 'count')
-        const lastWeekStoreSize = getLastWeekData(stores, 'count')
-        const lastWeekRevenue = getLastWeekData(orders, 'revenue', by)
-
         const adminStats: AdminStats = {
           items: {
             orders: orders.slice().reverse(),
@@ -108,14 +99,7 @@ export const useStatistics = (
             users: userSize,
             stores: storeSize
           },
-          lastWeekSizes: {
-            orders: lastWeekOrderSize,
-            products: lastWeekProductSize,
-            users: lastWeekUserSize,
-            stores: lastWeekStoreSize
-          },
-          totalRevenue: calculateTotalRevenue(orders, by),
-          lastWeekRevenue: lastWeekRevenue
+          totalRevenue: calculateTotalRevenue(orders, by)
         }
         return adminStats
       } else if (storeId) {
@@ -160,11 +144,6 @@ export const useStatistics = (
           productData?.data?.pagination?.total ||
           productData?.data?.size ||
           products.length
-
-        const lastWeekOrderSize = getLastWeekData(orders, 'count')
-        const lastWeekProductSize = getLastWeekData(products, 'count')
-        const lastWeekRevenue = getLastWeekData(orders, 'revenue', by)
-
         const sellerStats: SellerStats = {
           items: {
             orders: orders.slice().reverse(),
@@ -174,12 +153,7 @@ export const useStatistics = (
             orders: orderSize,
             products: productSize
           },
-          lastWeekSizes: {
-            orders: lastWeekOrderSize,
-            products: lastWeekProductSize
-          },
-          totalRevenue: calculateTotalRevenue(orders, by),
-          lastWeekRevenue: lastWeekRevenue
+          totalRevenue: calculateTotalRevenue(orders, by)
         }
         return sellerStats
       }
@@ -198,14 +172,7 @@ export const useStatistics = (
           users: 0,
           stores: 0
         },
-        lastWeekSizes: {
-          orders: 0,
-          products: 0,
-          users: 0,
-          stores: 0
-        },
-        totalRevenue: 0,
-        lastWeekRevenue: 0
+        totalRevenue: 0
       }
       return fallbackData
     } catch (error) {

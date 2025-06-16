@@ -5,7 +5,7 @@ import { getUser } from '../../apis/user.api'
 import { getUserLevel } from '../../apis/level.api'
 import { getCartCount } from '../../apis/cart.api'
 import { useTranslation } from 'react-i18next'
-import { Alert, Avatar, Dropdown, Modal, Spin } from 'antd'
+import { Alert, Avatar, Button, Dropdown, Modal, Spin } from 'antd'
 import {
   UserOutlined,
   ShopOutlined,
@@ -15,16 +15,15 @@ import {
 import { addAccount } from '../../store/slices/accountSlice'
 import { useEffect, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
+import { Role } from '../../enums/OrderStatus.enum'
+import { ChevronDown } from 'lucide-react'
 
-const AccountInit = () => {
+const AccountInit = ({ className }: { className?: string }) => {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
-  const token = getToken()
-  const _id = token ? token._id : null
-  const refreshToken = token ? token.refreshToken : null
-  const role = token ? token.role : null
+  const { _id, refreshToken, role } = getToken() || {}
 
   const {
     data: userData,
@@ -37,18 +36,10 @@ const AccountInit = () => {
       const res = await getUser(_id)
       const newUser = res.user
       if (!newUser) throw new Error('User data not found')
-      try {
-        const levelRes = await getUserLevel(_id)
-        newUser.level = levelRes.level || {}
-      } catch {
-        newUser.level = {}
-      }
-      try {
-        const cartRes = await getCartCount(_id)
-        newUser.cartCount = cartRes.count || 0
-      } catch {
-        newUser.cartCount = 0
-      }
+      const levelRes = await getUserLevel(_id)
+      newUser.level = levelRes.level || {}
+      const cartRes = await getCartCount(_id)
+      newUser.cartCount = cartRes.count || 0
       return newUser
     },
     enabled: !!_id,
@@ -89,7 +80,7 @@ const AccountInit = () => {
           </Link>
         )
       },
-      ...(role === 'user'
+      ...(role === Role.USER
         ? [
             {
               key: 'store',
@@ -126,7 +117,6 @@ const AccountInit = () => {
     ],
     [role, t]
   )
-
   useEffect(() => {
     if (userData && Object.keys(userData).length > 0) {
       const userDataWithId = { ...userData, _id }
@@ -134,11 +124,9 @@ const AccountInit = () => {
       dispatch(addAccount(userDataWithId))
     }
   }, [userData, _id, queryClient, dispatch])
-
   if (isLoading) {
     return <Spin size='small' />
   }
-
   if (error) {
     return (
       <Alert message={error.message} type='error' showIcon className='mb-4' />
@@ -151,7 +139,14 @@ const AccountInit = () => {
       trigger={['click']}
       placement='bottomRight'
     >
-      <Avatar className='cursor-pointer' src={userData?.avatar} size={32} />
+      <Button
+        type='text'
+        className={`flex items-center gap-2 cursor-pointer text-sm rounded p-1 ${className}`}
+      >
+        <Avatar src={userData?.avatar} size={32} />
+        <span>{userData?.name}</span>
+        <ChevronDown size={17} />
+      </Button>
     </Dropdown>
   )
 }

@@ -1,10 +1,7 @@
-import { useEffect, useState } from 'react'
-import { OverlayTrigger, Popover } from 'react-bootstrap'
-import {
-  deleteNotifications,
-  getNotifications,
-  updateRead
-} from '../../../apis/notification.api'
+import { useEffect } from 'react'
+import { Badge, Button, Popover, Empty, Divider } from 'antd'
+import { BellOutlined, DeleteOutlined } from '@ant-design/icons'
+import { deleteNotifications } from '../../../apis/notification.api'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -17,6 +14,7 @@ import {
   useNotifications,
   useMarkNotificationsRead
 } from '../../../hooks/useNotification'
+import { Role } from '../../../enums/OrderStatus.enum'
 
 interface Notification {
   _id: string
@@ -34,124 +32,114 @@ const BellButton = ({ navFor = '' }: BellButtonProps) => {
   const { t } = useTranslation()
   const user = useSelector(selectAccountUser)
   const store = useSelector(selectSellerStore)
-  const { data, isLoading, refetch } = useNotifications(user?._id)
+  const { data, isLoading, refetch } = useNotifications(user?._id as string)
   const markReadMutation = useMarkNotificationsRead()
   const list: Notification[] = data?.notifications || []
   const notificationCount = data?.numberHidden || list.length
 
   const handleDelete = async () => {
-    try {
-      if (user && user._id) {
-        await deleteNotifications(user._id)
-        refetch()
-      }
-    } catch (error) {
-      console.log(error)
+    if (user && user._id) {
+      await deleteNotifications(user._id)
+      refetch()
     }
   }
 
-  const handleNotificationClick = async (notificationId: string) => {
-    try {
-      if (user && user._id) {
-        markReadMutation.mutate(user._id, {
-          onSuccess: () => refetch()
-        })
-      }
-    } catch (error) {
-      console.log(error)
+  const handleNotificationClick = async (_notificationId: string) => {
+    if (user && user._id) {
+      markReadMutation.mutate(user._id, {
+        onSuccess: () => refetch()
+      })
     }
   }
 
   useEffect(() => {
-    socketId.on('notification', (id) => {
+    socketId.on('notification', (_id) => {
       refetch()
     })
   }, [refetch])
-
-  const popoverClickRootClose = (
-    <Popover
-      id='popover-trigger-click-root-close'
-      style={{
-        borderRadius: '5px',
-        minWidth: '420px'
-      }}
-    >
-      <div className='text-secondary p-2 px-3'>{t('newNotification')}</div>
-      <div
-        style={{
-          height: '300px',
-          overflow: 'auto'
-        }}
-      >
-        {list.map((l) => (
-          <Link
-            onClick={() => handleNotificationClick(l._id)}
-            to={
-              navFor === 'user'
-                ? `/account/order/detail/${l.objectId}`
-                : navFor === 'seller'
-                  ? `/seller/orders/detail/${l.objectId}/${store._id}`
-                  : navFor === 'admin'
-                    ? '/admin/reports'
-                    : '#'
-            }
-            key={l._id}
-            style={{ fontSize: '14px' }}
-            className={`${
-              l.isRead ? 'cus-notification-is-read' : 'cus-notification'
-            } nolink cus-dropdown w-100 px-3 py-2 border-top`}
-          >
-            {l.message} <p>{l.objectId}</p>
-            <p className='flex justify-content-between'>
-              <span>{timeAgo(l.createdAt)}</span>
-              <small>{humanReadableDate(l.createdAt)}</small>
-            </p>
-          </Link>
-        ))}
-        {list.length === 0 && (
-          <p className='text-center mt-5 pt-5'>{t('noneNotification')}</p>
+  const popoverContent = (
+    <div className='w-96 max-w-sm'>
+      <div className='text-gray-600 p-2 px-3 font-medium'>
+        {t('newNotification')}
+      </div>
+      <div className='max-h-80 overflow-auto'>
+        {list.length === 0 ? (
+          <Empty
+            description={t('noneNotification')}
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            className='py-8'
+          />
+        ) : (
+          list.map((l) => (
+            <Link
+              key={l._id}
+              onClick={() => handleNotificationClick(l._id)}
+              to={
+                navFor === Role.USER
+                  ? `/account/order/detail/${l.objectId}`
+                  : navFor === Role.SELLER
+                    ? `/seller/orders/detail/${l.objectId}/${store._id}`
+                    : navFor === Role.ADMIN
+                      ? '/admin/reports'
+                      : '#'
+              }
+              className={`block p-3 border-t hover:bg-gray-50 transition-colors ${
+                l.isRead ? 'bg-gray-50 text-gray-600' : 'bg-white text-gray-900'
+              }`}
+            >
+              <div className='text-sm'>{l.message}</div>
+              <div className='text-xs text-gray-500 mt-1'>{l.objectId}</div>
+              <div className='flex justify-between items-center mt-2'>
+                <span className='text-xs text-blue-600'>
+                  {timeAgo(l.createdAt)}
+                </span>
+                <span className='text-xs text-gray-400'>
+                  {humanReadableDate(l.createdAt)}
+                </span>
+              </div>
+            </Link>
+          ))
         )}
       </div>
-      {list.length !== 0 && (
+      {list.length > 0 && (
         <>
-          <hr className='m-0' />
-          <div className='flex justify-content-center'>
-            <button
-              className='btn rounded-0 w-100 btn-primary'
+          <Divider className='my-0' />
+          <div className='p-2'>
+            <Button
+              type='primary'
+              danger
+              icon={<DeleteOutlined />}
+              className='w-full'
               onClick={handleDelete}
             >
               {t('deleteAll')}
-            </button>
+            </Button>
           </div>
         </>
       )}
-    </Popover>
+    </div>
   )
 
   return (
-    <div onClick={() => refetch()}>
-      <OverlayTrigger
-        trigger='click'
-        rootClose
-        placement='bottom'
-        overlay={popoverClickRootClose}
+    <Popover
+      content={popoverContent}
+      title={null}
+      trigger='click'
+      placement='bottomRight'
+      arrow={false}
+      onOpenChange={() => refetch()}
+    >
+      <Badge
+        count={notificationCount > 100 ? '99+' : notificationCount}
+        size='small'
       >
-        <div className='cart-item-wrap position-relative'>
-          <span className='rounded-circle btn inherit cus-tooltip ripple mx-2 bell'>
-            <i className='fa-solid fa-bell' />
-          </span>
-          {notificationCount > 0 && (
-            <span
-              style={{ top: '20%', left: '80%' }}
-              className='position-absolute translate-middle badge rounded-pill bg-danger'
-            >
-              {notificationCount < 100 ? notificationCount : '99+'}
-            </span>
-          )}
-          <small className='cus-tooltip-msg'>{t('notification')}</small>
-        </div>
-      </OverlayTrigger>
-    </div>
+        <Button
+          type='text'
+          icon={<BellOutlined />}
+          className={` ${navFor === Role.ADMIN ? '' : 'text-white'} hover:bg-white hover:text-blue-600`}
+        />
+      </Badge>
+    </Popover>
   )
 }
 
