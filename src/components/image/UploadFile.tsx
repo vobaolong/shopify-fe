@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
-import { Upload, Button, Image, notification } from 'antd'
+import { Upload, Button, Image } from 'antd'
 import type { UploadProps, UploadFile } from 'antd/es/upload/interface'
 import { UploadOutlined } from '@ant-design/icons'
+import { useAntdApp } from '../../hooks/useAntdApp'
 
 interface UploadFileProps {
   fileList: UploadFile[]
@@ -36,7 +37,7 @@ const UploadFile: React.FC<UploadFileProps> = ({
 }) => {
   const [previewOpen, setPreviewOpen] = useState(false)
   const [previewImage, setPreviewImage] = useState('')
-
+  const { notification } = useAntdApp()
   const handlePreview = async (file: UploadFile) => {
     if (!file.url && !file.preview) {
       file.preview = await getBase64(file.originFileObj as File)

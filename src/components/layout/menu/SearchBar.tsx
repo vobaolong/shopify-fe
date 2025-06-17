@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Input, Select, Button } from 'antd'
+import { Input, Select } from 'antd'
 import {
   SearchOutlined,
   ShopOutlined,
@@ -64,7 +64,7 @@ const SearchBar = () => {
         onChange={(e) => setQuery(e.target.value)}
         onSearch={handleSearch}
         enterButton={<SearchOutlined />}
-        className='!w-full !flex-1'
+        className='!w-full !flex-1 border rounded-md'
       />
     </div>
   )

@@ -144,8 +144,7 @@ const AccountInit = ({ className }: { className?: string }) => {
         className={`flex items-center gap-2 cursor-pointer text-sm rounded p-1 ${className}`}
       >
         <Avatar src={userData?.avatar} size={32} />
-        <span>{userData?.name}</span>
-        <ChevronDown size={17} />
+        <span>{userData?.userName}</span>
       </Button>
     </Dropdown>
   )

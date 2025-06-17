@@ -1,4 +1,3 @@
-import { notification } from 'antd'
 import { AxiosError } from 'axios'
 
 interface ApiError extends Error {
@@ -9,7 +8,14 @@ interface ApiError extends Error {
   }
 }
 
+interface NotificationInstance {
+  error: (config: any) => void
+  warning: (config: any) => void
+  info: (config: any) => void
+}
+
 const showError = (
+  notification: NotificationInstance,
   message: string,
   type: 'error' | 'warning' | 'info' = 'error',
   duration: number = 6
@@ -28,7 +34,10 @@ const showError = (
   })
 }
 
-export const handleQueryError = (error: Error) => {
+export const handleQueryError = (
+  error: Error,
+  notification: NotificationInstance
+) => {
   if (error instanceof AxiosError) {
     const status = error.status || error.response?.status
 
@@ -42,10 +51,15 @@ export const handleQueryError = (error: Error) => {
     if (status) {
       switch (status) {
         case 401:
-          showError('Session expired. Please log in again.', 'warning')
+          showError(
+            notification,
+            'Session expired. Please log in again.',
+            'warning'
+          )
           break
         case 403:
           showError(
+            notification,
             'You do not have permission to access this resource.',
             'warning'
           )
@@ -57,15 +71,24 @@ export const handleQueryError = (error: Error) => {
           }
           break
         case 429:
-          showError('Too many requests. Please try again later.', 'warning')
+          showError(
+            notification,
+            'Too many requests. Please try again later.',
+            'warning'
+          )
           break
         case 500:
-          showError('Server error. Please try again later.', 'error')
+          showError(
+            notification,
+            'Server error. Please try again later.',
+            'error'
+          )
           break
         case 502:
         case 503:
         case 504:
           showError(
+            notification,
             'Service temporarily unavailable. Please try again later.',
             'error'
           )
@@ -73,11 +96,16 @@ export const handleQueryError = (error: Error) => {
         default:
           if (status >= 400 && status < 500) {
             showError(
+              notification,
               'Client error. Please check your request and try again.',
               'warning'
             )
           } else if (status >= 500) {
-            showError('Server error. Please try again later.', 'error')
+            showError(
+              notification,
+              'Server error. Please try again later.',
+              'error'
+            )
           }
       }
     } else {
@@ -87,6 +115,7 @@ export const handleQueryError = (error: Error) => {
         error.message.includes('Network Error')
       ) {
         showError(
+          notification,
           'Network error. Please check your connection and try again.',
           'error'
         )
@@ -94,13 +123,17 @@ export const handleQueryError = (error: Error) => {
         error.code === 'ECONNABORTED' ||
         error.message.includes('timeout')
       ) {
-        showError('Request timeout. Please try again.', 'error')
+        showError(notification, 'Request timeout. Please try again.', 'error')
       } else {
-        showError('Connection error. Please try again.', 'error')
+        showError(notification, 'Connection error. Please try again.', 'error')
       }
     }
   } else {
-    showError('An unexpected error occurred. Please try again.', 'error')
+    showError(
+      notification,
+      'An unexpected error occurred. Please try again.',
+      'error'
+    )
   }
 }
 

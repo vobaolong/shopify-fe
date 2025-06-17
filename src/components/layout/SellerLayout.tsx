@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react'
 import { Layout, Spin } from 'antd'
 import SellerSideBar from './menu/SellerSideBar'
-import BellButton from './menu/BellButton'
+import NotificationButton from './menu/NotificationButton'
 import AccountInit from '../init/AccountInit'
 import SellerInit from '../init/SellerInit'
 import Breadcrumb, { BreadcrumbPath } from '../ui/Breadcrumb'
@@ -30,7 +30,7 @@ const SellerLayout: React.FC<SellerLayoutProps> = ({
           <Header className='bg-white px-6 flex justify-end items-center sticky top-0 z-50 shadow-md'>
             <div className='flex items-center gap-4'>
               <Suspense fallback={<Spin size='small' />}>
-                <BellButton navFor='seller' />
+                <NotificationButton navFor='seller' />
               </Suspense>
               <Suspense fallback={<Spin size='small' />}>
                 <SellerInit />

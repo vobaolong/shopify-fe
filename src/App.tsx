@@ -26,8 +26,8 @@ function AppContent() {
 export default function App() {
   return (
     <ErrorBoundary>
-      <ReactQueryProvider>
-        <AntdConfigProvider>
+      <AntdConfigProvider>
+        <ReactQueryProvider>
           <CurrencyProvider>
             <Provider store={store}>
               <HelmetProvider>
@@ -35,8 +35,8 @@ export default function App() {
               </HelmetProvider>
             </Provider>
           </CurrencyProvider>
-        </AntdConfigProvider>
-      </ReactQueryProvider>
+        </ReactQueryProvider>
+      </AntdConfigProvider>
     </ErrorBoundary>
   )
 }

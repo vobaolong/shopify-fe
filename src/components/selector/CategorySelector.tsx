@@ -1,5 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { listCategories, listActiveCategories } from '../../apis/category.api'
 import { CategoryFilter, CategoryType } from '../../@types/entity.types'
@@ -9,21 +8,22 @@ import { useTranslation } from 'react-i18next'
 import { CloseOutlined } from '@ant-design/icons'
 
 interface CategorySelectorProps {
-  value?: CategoryType | ''
+  value?: CategoryType | undefined
   isActive?: boolean
   label?: string
-  onChange?: (category: CategoryType | '') => void
+  onChange?: (category: CategoryType | undefined) => void
   isRequired?: boolean
 }
 
 const CategorySelector: React.FC<CategorySelectorProps> = ({
-  value = '',
+  value = undefined,
   isActive = false,
   label = 'Chosen category',
   onChange = () => {},
   isRequired = false
 }) => {
   const { t } = useTranslation()
+  const isSettingFromProp = useRef(false)
   const [lv1, setLv1] = useState<string | undefined>(undefined)
   const [lv2, setLv2] = useState<string | undefined>(undefined)
   const [lv3, setLv3] = useState<string | undefined>(undefined)
@@ -32,6 +32,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
   )
 
   useEffect(() => {
+    isSettingFromProp.current = true
     if (typeof value === 'object' && value) {
       const lv3Id = value._id
       let lv2Id: string | undefined = undefined
@@ -53,12 +54,15 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
       setLv2(lv2Id)
       setLv3(lv3Id)
       setSelectedObj(value)
-    } else {
+    } else if (value === undefined || value === null) {
       setLv1(undefined)
       setLv2(undefined)
       setLv3(undefined)
       setSelectedObj(undefined)
     }
+    setTimeout(() => {
+      isSettingFromProp.current = false
+    }, 0)
   }, [value])
 
   const {
@@ -121,19 +125,23 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
   })
 
   useEffect(() => {
-    setLv2(undefined)
-    setLv3(undefined)
+    if (!isSettingFromProp.current) {
+      setLv2(undefined)
+      setLv3(undefined)
+    }
   }, [lv1])
 
   useEffect(() => {
-    setLv3(undefined)
+    if (!isSettingFromProp.current) {
+      setLv3(undefined)
+    }
   }, [lv2])
 
   const handleLv3Change = (id: string) => {
     setLv3(id)
     const catObj = lv3Categories.find((cat: CategoryType) => cat._id === id)
     setSelectedObj(catObj)
-    onChange && onChange(catObj || '')
+    onChange && onChange(catObj || undefined)
   }
 
   const handleDelete = () => {
@@ -141,7 +149,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
     setLv2(undefined)
     setLv3(undefined)
     setSelectedObj(undefined)
-    onChange && onChange('')
+    onChange && onChange(undefined)
   }
 
   return (

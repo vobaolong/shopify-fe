@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import {
   QueryClient,
   QueryClientProvider,
@@ -7,30 +7,7 @@ import {
 } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { handleQueryError, shouldRetry } from '../utils/errorHandler'
-
-// Create query client with error handling
-const queryClient = new QueryClient({
-  queryCache: new QueryCache({
-    onError: (error) => handleQueryError(error as Error)
-  }),
-  mutationCache: new MutationCache({
-    onError: (error) => handleQueryError(error as Error)
-  }),
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes
-      refetchOnReconnect: true,
-      retry: (failureCount, error) => shouldRetry(failureCount, error, 3),
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000)
-    },
-    mutations: {
-      retry: (failureCount, error) => shouldRetry(failureCount, error, 2),
-      retryDelay: 1000
-    }
-  }
-})
+import { useAntdApp } from '../hooks/useAntdApp'
 
 // Global error handler hook
 function useGlobalErrorHandler() {
@@ -63,11 +40,37 @@ function GlobalErrorHandlerWrapper({
   return <>{children}</>
 }
 
-export default function ReactQueryProvider({
-  children
-}: {
-  children: React.ReactNode
-}) {
+// Inner provider that has access to notification context
+function QueryClientProviderInner({ children }: { children: React.ReactNode }) {
+  const { notification } = useAntdApp()
+
+  // Create query client with notification context
+  const queryClient = useMemo(() => {
+    return new QueryClient({
+      queryCache: new QueryCache({
+        onError: (error) => handleQueryError(error as Error, notification)
+      }),
+      mutationCache: new MutationCache({
+        onError: (error) => handleQueryError(error as Error, notification)
+      }),
+      defaultOptions: {
+        queries: {
+          refetchOnWindowFocus: false,
+          staleTime: 5 * 60 * 1000, // 5 minutes
+          gcTime: 10 * 60 * 1000, // 10 minutes
+          refetchOnReconnect: true,
+          retry: (failureCount, error) => shouldRetry(failureCount, error, 3),
+          retryDelay: (attemptIndex) =>
+            Math.min(1000 * 2 ** attemptIndex, 30000)
+        },
+        mutations: {
+          retry: (failureCount, error) => shouldRetry(failureCount, error, 2),
+          retryDelay: 1000
+        }
+      }
+    })
+  }, [notification])
+
   return (
     <QueryClientProvider client={queryClient}>
       <GlobalErrorHandlerWrapper>
@@ -78,4 +81,12 @@ export default function ReactQueryProvider({
       </GlobalErrorHandlerWrapper>
     </QueryClientProvider>
   )
+}
+
+export default function ReactQueryProvider({
+  children
+}: {
+  children: React.ReactNode
+}) {
+  return <QueryClientProviderInner>{children}</QueryClientProviderInner>
 }

@@ -3,10 +3,11 @@ import { getToken } from '../../apis/auth.api'
 import { calcTime } from '../../helper/calcTime'
 import ConfirmDialog from '../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
-import { notification, Button, Tooltip } from 'antd'
+import { , Button, Tooltip } from 'antd'
 import { socketId } from '../../socket'
 import { OrderStatus } from '../../enums/OrderStatus.enum'
 import { useUserCancelOrder } from '../../hooks/useOrder'
+import { useAntdApp } from '../../hooks/useAntdApp'
 
 interface UserCancelOrderButtonProps {
   orderId: string
@@ -27,7 +28,7 @@ const UserCancelOrderButton = ({
   const [isConfirming, setIsConfirming] = useState(false)
   const { _id } = getToken()
   const { mutate, isPending, error } = useUserCancelOrder()
-
+const { notification} = useAntdApp()
   const handleCancelOrder = useCallback(() => {
     setIsConfirming(true)
   }, [])

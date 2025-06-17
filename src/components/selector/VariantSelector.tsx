@@ -4,7 +4,7 @@ import { Spin, Alert } from 'antd'
 import MultiVariantValueSelector from '../selector/MultiVariantValueSelector'
 import { useTranslation } from 'react-i18next'
 import { VariantValueType } from '../../@types/entity.types'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 
 interface VariantSelectorProps {
   defaultValue?: VariantValueType[]
@@ -21,26 +21,27 @@ const VariantSelector = ({
   const [selectedVariantValues, setSelectedVariantValues] = useState<
     VariantValueType[]
   >([])
+  const isInitialized = useRef(false)
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['variants', categoryId],
     queryFn: () => listVariantByCategory(categoryId),
     enabled: !!categoryId
   })
-
   useEffect(() => {
     if (!categoryId) {
       setSelectedVariantValues([])
       if (onSet) onSet([])
     }
-  }, [categoryId])
+  }, [categoryId, onSet])
 
   useEffect(() => {
-    if (defaultValue) {
+    if (defaultValue && defaultValue.length > 0 && !isInitialized.current) {
       setSelectedVariantValues(defaultValue)
       if (onSet) onSet(defaultValue)
+      isInitialized.current = true
     }
-  }, [defaultValue])
+  }, [defaultValue, onSet])
 
   const handleSet = (olds: VariantValueType[], news: VariantValueType[]) => {
     let newArray = [...selectedVariantValues]

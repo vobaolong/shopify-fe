@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { Button, Modal, Drawer, Space, Badge, Divider } from 'antd'
+import { Button, Modal, Drawer, Divider } from 'antd'
 import {
   ExclamationCircleOutlined,
   MenuOutlined,
@@ -15,15 +15,15 @@ import Logo from './Logo'
 import SearchBar from './SearchBar'
 import Language from '../../ui/Language'
 import CurrencyToggle from '../../ui/CurrencyToggle'
-import SellerInit from '../../init/SellerInit'
+import CartPopover from '../../ui/CartPopover'
 import AccountInit from '../../init/AccountInit'
 import UserSmallCard from '../../card/UserSmallCard'
 import StoreSmallCard from '../../card/StoreSmallCard'
 import { useTranslation } from 'react-i18next'
-import BellButton from './BellButton'
 import { selectAccountUser } from '../../../store/slices/accountSlice'
 import { selectSellerStore } from '../../../store/slices/sellerSlice'
 import { Role } from '../../../enums/OrderStatus.enum'
+import NotificationButton from './NotificationButton'
 
 const { confirm } = Modal
 
@@ -34,6 +34,7 @@ interface MainNavProps {
 const MainNav = ({ navFor = Role.USER }: MainNavProps) => {
   const { t } = useTranslation()
   const user = useSelector(selectAccountUser)
+  console.log(user)
   const store = useSelector(selectSellerStore)
   const cartCount = user?.cartCount || 0
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -84,18 +85,15 @@ const MainNav = ({ navFor = Role.USER }: MainNavProps) => {
               <>
                 {navFor === Role.USER ? (
                   <>
+                    {' '}
                     <Language />
                     <CurrencyToggle />
-                    <BellButton navFor={navFor} />
-                    <Link to='/cart'>
-                      <Badge count={cartCount > 99 ? '99+' : cartCount}>
-                        <Button
-                          type='text'
-                          icon={<ShoppingCartOutlined />}
-                          className='text-white hover:bg-white hover:text-blue-600'
-                        />
-                      </Badge>
-                    </Link>
+                    <NotificationButton navFor={navFor} />
+                    <CartPopover
+                      userId={user?._id || ''}
+                      cartCount={cartCount}
+                      className='text-white hover:bg-white hover:text-blue-600'
+                    />
                     <AccountInit className='text-white' />
                   </>
                 ) : (

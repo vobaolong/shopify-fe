@@ -89,8 +89,9 @@ const StoreCollectionPage = React.lazy(() => import('./store/CollectionPage'))
 const StoreReviewAndRatingPage = React.lazy(
   () => import('./store/ReviewAndRatingPage')
 )
-//product
-const ProductDetailPage = React.lazy(() => import('./product/DetailPage'))
+const ProductDetailPage = React.lazy(
+  () => import('./product/ProductDetailPage')
+)
 const Policy = React.lazy(() => import('./core/Policy'))
 
 const Routers = () => {
@@ -444,9 +445,7 @@ const Routers = () => {
           element={<StoreReviewAndRatingPage />}
         />
         <Route path='/store/about/:storeId' element={<StoreAboutPage />} />
-        {/* product */}
         <Route path='/product/:productId' element={<ProductDetailPage />} />
-        {/* Route 404 */}
         <Route path='*' element={<PageNotFound />} />
       </Routes>
     </BrowserRouter>

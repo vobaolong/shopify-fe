@@ -7,24 +7,14 @@ import {
 } from '../../../apis/product.api'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation } from '@tanstack/react-query'
-import {
-  notification,
-  Form,
-  Input,
-  Button,
-  Collapse,
-  Spin,
-  Drawer,
-  Upload,
-  Modal
-} from 'antd'
+import { Form, Input, Button, Spin, Drawer, Upload, Modal } from 'antd'
 import CategorySelector from '../../selector/CategorySelector'
 import VariantSelector from '../../selector/VariantSelector'
 import DropDownMenu from '../../ui/DropDownMenu'
-import InputFile from '../../ui/InputFile'
 import TextArea from '../../ui/TextArea'
 import { listBrandByCategory } from '../../../apis/brand.api'
 import { PlusOutlined } from '@ant-design/icons'
+import { useAntdApp } from '../../../hooks/useAntdApp'
 
 interface SellerProductFormProps {
   storeId: string
@@ -62,21 +52,19 @@ const ImageUploadAntd: React.FC<{
   const [previewOpen, setPreviewOpen] = useState(false)
   const [previewImage, setPreviewImage] = useState('')
   const [previewTitle, setPreviewTitle] = useState('')
-
-  // Convert value to fileList for antd Upload
   const fileList = (value || []).map((item, idx) => {
     if (typeof item === 'string') {
       return {
         uid: `img-${idx}`,
         name: `image${idx}`,
-        status: 'done',
+        status: 'done' as const,
         url: item
       }
     } else {
       return {
         uid: `img-${idx}`,
         name: (item as File).name || `image${idx}`,
-        status: 'done',
+        status: 'done' as const,
         originFileObj: item
       }
     }
@@ -112,10 +100,10 @@ const ImageUploadAntd: React.FC<{
     <>
       <Upload
         listType='picture-card'
-        fileList={fileList}
+        fileList={fileList as any}
         onChange={handleChange}
         onPreview={handlePreview}
-        beforeUpload={() => false} // prevent auto upload
+        beforeUpload={() => false}
         maxCount={maxCount}
         multiple
       >
@@ -151,7 +139,7 @@ const SellerProductForm: React.FC<SellerProductFormProps> = ({
   const { t } = useTranslation()
   const { _id } = getToken()
   const [form] = Form.useForm<FormValues>()
-
+  const { notification } = useAntdApp()
   const { data: productData, isLoading: isProductLoading } = useQuery({
     queryKey: ['product', productId, storeId],
     queryFn: async () => {
@@ -182,7 +170,6 @@ const SellerProductForm: React.FC<SellerProductFormProps> = ({
   })
   const brands: DropDownItem[] = brandsData || []
 
-  // Mutation: create or update
   const mutation = useMutation({
     mutationFn: async (values: FormValues) => {
       const formData = new FormData()
@@ -195,16 +182,14 @@ const SellerProductForm: React.FC<SellerProductFormProps> = ({
       if (values.brandId) formData.set('brandId', values.brandId)
       if (values.variantValueIds)
         formData.set('variantValueIds', values.variantValueIds)
-      if (values.images) {
-        values.images.forEach((img, idx) => {
-          formData.append(`image${idx}`, img as File)
+      if (values.images && values.images.length > 0) {
+        values.images.slice(0, 7).forEach((img) => {
+          formData.append('images', img as File)
         })
       }
       if (productId) {
-        // update
         return updateProduct(_id, formData, storeId, productId)
       } else {
-        // create
         return createProduct(_id, formData, storeId)
       }
     },
@@ -267,20 +252,14 @@ const SellerProductForm: React.FC<SellerProductFormProps> = ({
       })
       return
     }
-    // Convert images array to image0..image6 fields for backend
-    const images = values.images || []
-    const newValues = { ...values }
-    images.forEach((img, idx) => {
-      newValues[`image${idx}`] = img
-    })
-    mutation.mutate(newValues)
+    mutation.mutate(values)
   }
 
   return (
     <Drawer
       open={open}
       onClose={onClose}
-      width={800}
+      width={600}
       title={
         productId
           ? t('productDetail.editProduct')
@@ -288,7 +267,6 @@ const SellerProductForm: React.FC<SellerProductFormProps> = ({
       }
       destroyOnHidden
       maskClosable={false}
-      className='custom-drawer'
     >
       <Spin spinning={mutation.isPending || isProductLoading}>
         <Form
@@ -307,155 +285,141 @@ const SellerProductForm: React.FC<SellerProductFormProps> = ({
             variantValueIds: ''
           }}
         >
-          <Collapse defaultActiveKey={['1', '2']} ghost>
-            <Collapse.Panel
-              header={<span>1. {t('productDetail.basicInfo')}</span>}
-              key='1'
+          {' '}
+          <div className='p-3'>
+            <Form.Item
+              name='name'
+              label={t('productDetail.name')}
+              rules={[{ required: true, message: t('productValid.validName') }]}
             >
-              <div className='p-3'>
-                <Form.Item
-                  name='name'
-                  label={t('productDetail.name')}
-                  rules={[
-                    { required: true, message: t('productValid.validName') }
-                  ]}
-                >
-                  <Input placeholder={t('productDetail.name')} />
-                </Form.Item>
-                <div className='mt-3'>
-                  <Form.Item
-                    name='categoryId'
-                    label={t('productDetail.chooseCategory')}
-                    rules={[
-                      {
-                        required: true,
-                        message: t('productValid.chooseCategory')
-                      }
-                    ]}
-                  >
-                    <CategorySelector
-                      label={t('productDetail.selectedCategory')}
-                      isActive={true}
-                      isRequired={true}
-                      onChange={(category: any) => {
-                        form.setFieldsValue({ categoryId: category._id })
-                      }}
-                    />
-                  </Form.Item>
-                </div>
-                <div className='mt-3'>
-                  <Form.Item
-                    name='brandId'
-                    label={t('productDetail.chooseBrand')}
-                  >
-                    <DropDownMenu
-                      listItem={brands}
-                      value={form.getFieldValue('brandId')}
-                      setValue={(brandId: string) =>
-                        form.setFieldsValue({ brandId })
-                      }
-                      label={t('productDetail.chooseBrand')}
-                      size='lg'
-                    />
-                  </Form.Item>
-                </div>{' '}
-                <div className='mt-3'>
-                  <p>{t('productDetail.productImg')}</p>
-                  <Form.Item
-                    name='images'
-                    label={t('productDetail.images')}
-                    rules={[
-                      {
-                        required: true,
-                        message: t('productValid.avatarValid')
-                      }
-                    ]}
-                  >
-                    <ImageUploadAntd maxCount={7} required />
-                  </Form.Item>
-                </div>
-                <Form.Item
-                  name='description'
-                  label={t('productDetail.description')}
-                  rules={[
-                    {
-                      required: true,
-                      message: t('productValid.validDescription')
-                    }
-                  ]}
-                >
-                  <TextArea placeholder={t('productDetail.description')} />
-                </Form.Item>
-              </div>
-            </Collapse.Panel>
-            <Collapse.Panel
-              header={<span>2. {t('productDetail.detailInfo')}</span>}
-              key='2'
+              <Input placeholder={t('productDetail.name')} />
+            </Form.Item>
+            <div className='mt-3'>
+              <Form.Item
+                name='categoryId'
+                label={t('productDetail.chooseCategory')}
+                rules={[
+                  {
+                    required: true,
+                    message: t('productValid.chooseCategory')
+                  }
+                ]}
+              >
+                <CategorySelector
+                  label={t('productDetail.selectedCategory')}
+                  isActive={true}
+                  isRequired={true}
+                  onChange={(category: any) => {
+                    form.setFieldsValue({ categoryId: category._id })
+                  }}
+                />
+              </Form.Item>
+            </div>
+            <div className='mt-3'>
+              <Form.Item name='brandId' label={t('productDetail.chooseBrand')}>
+                <DropDownMenu
+                  listItem={brands}
+                  value={form.getFieldValue('brandId')}
+                  setValue={(brandId: string) =>
+                    form.setFieldsValue({ brandId })
+                  }
+                  label={t('productDetail.chooseBrand')}
+                  size='lg'
+                />
+              </Form.Item>
+            </div>{' '}
+            <div className='mt-3'>
+              <p></p>
+              <Form.Item
+                name='images'
+                label={t('productDetail.images')}
+                rules={[
+                  {
+                    required: true,
+                    message: t('productValid.avatarValid')
+                  }
+                ]}
+              >
+                <ImageUploadAntd maxCount={7} required />
+              </Form.Item>
+            </div>
+            <Form.Item
+              name='description'
+              label={t('productDetail.description')}
+              rules={[
+                {
+                  required: true,
+                  message: t('productValid.validDescription')
+                }
+              ]}
             >
-              {' '}
-              <div className='p-3'>
-                <div className='md:w-1/2 w-full px-2'>
-                  <Form.Item
-                    name='price'
-                    label={`${t('productDetail.price')} (₫)`}
-                    rules={[
-                      { required: true, message: t('productValid.priceValid') }
-                    ]}
-                  >
-                    <Input type='number' />
-                  </Form.Item>
-                </div>
-                <div className='md:w-1/2 w-full px-2'>
-                  <Form.Item
-                    name='salePrice'
-                    label={`${t('productDetail.salePrice')} (₫)`}
-                    rules={[
-                      {
-                        required: true,
-                        message: t('productValid.salePriceValid')
-                      }
-                    ]}
-                  >
-                    <Input type='number' />
-                  </Form.Item>
-                </div>
-                <div className='w-full px-2'>
-                  <Form.Item
-                    name='quantity'
-                    label={t('productDetail.quantity')}
-                    rules={[
-                      {
-                        required: true,
-                        message: t('productValid.quantityValid')
-                      }
-                    ]}
-                  >
-                    <Input type='number' />
-                  </Form.Item>
-                </div>{' '}
-                <div className='w-full mt-3 px-2'>
-                  <span>
-                    {t('productDetail.chooseStyles')}{' '}
-                    <small className='text-gray-500'>
-                      {t('productDetail.chooseCateFirst')}
-                    </small>
-                  </span>
-                  <Form.Item name='variantValueIds'>
-                    <VariantSelector
-                      categoryId={form.getFieldValue('categoryId')}
-                      onSet={(variantValues: any[]) => {
-                        form.setFieldsValue({
-                          variantValueIds: (
-                            variantValues.map((v) => v._id) as string[]
-                          ).join('|')
-                        })
-                      }}
-                    />
-                  </Form.Item>
-                </div>
-              </div>
-            </Collapse.Panel>
-          </Collapse>{' '}
+              <TextArea placeholder={t('productDetail.description')} />
+            </Form.Item>
+          </div>
+          <div className='p-3'>
+            <div className='md:w-1/2 w-full px-2'>
+              <Form.Item
+                name='price'
+                label={`${t('productDetail.price')} (₫)`}
+                rules={[
+                  {
+                    required: true,
+                    message: t('productValid.priceValid')
+                  }
+                ]}
+              >
+                <Input type='number' />
+              </Form.Item>
+            </div>
+            <div className='md:w-1/2 w-full px-2'>
+              <Form.Item
+                name='salePrice'
+                label={`${t('productDetail.salePrice')} (₫)`}
+                rules={[
+                  {
+                    required: true,
+                    message: t('productValid.salePriceValid')
+                  }
+                ]}
+              >
+                <Input type='number' />
+              </Form.Item>
+            </div>
+            <div className='w-full px-2'>
+              <Form.Item
+                name='quantity'
+                label={t('productDetail.quantity')}
+                rules={[
+                  {
+                    required: true,
+                    message: t('productValid.quantityValid')
+                  }
+                ]}
+              >
+                <Input type='number' />
+              </Form.Item>
+            </div>{' '}
+            <div className='w-full mt-3 px-2'>
+              <span>
+                {t('productDetail.chooseStyles')}{' '}
+                <small className='text-gray-500'>
+                  {t('productDetail.chooseCateFirst')}
+                </small>
+              </span>
+              <Form.Item name='variantValueIds'>
+                <VariantSelector
+                  categoryId={form.getFieldValue('categoryId')}
+                  onSet={(variantValues: any[]) => {
+                    form.setFieldsValue({
+                      variantValueIds: (
+                        variantValues.map((v) => v._id) as string[]
+                      ).join('|')
+                    })
+                  }}
+                />
+              </Form.Item>
+            </div>
+          </div>
           <div
             className='bg-white rounded-md shadow-sm p-4 my-3'
             style={{ position: 'sticky', bottom: 0 }}

@@ -1,16 +1,17 @@
 import { getToken } from '../../../apis/auth.api'
 import { updateCover } from '../../../apis/user.api'
 import { useMutation } from '@tanstack/react-query'
-import { notification, Upload, Spin } from 'antd'
+import { Upload, Spin } from 'antd'
 import { CameraOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import useInvalidate from '../../../hooks/useInvalidate'
+import { useAntdApp } from '../../../hooks/useAntdApp'
 
 const UserCoverUpload = () => {
   const invalidate = useInvalidate()
   const { t } = useTranslation()
   const { _id } = getToken()
-
+  const { notification } = useAntdApp()
   const coverMutation = useMutation({
     mutationFn: (formData: FormData) => updateCover(_id, formData),
     onSuccess: () => {

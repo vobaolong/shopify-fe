@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react'
+import { Button, Alert, Spin, Card, Typography } from 'antd'
+import { ShoppingCartOutlined, ThunderboltOutlined } from '@ant-design/icons'
+import { useTranslation } from 'react-i18next'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { getToken } from '../../../apis/auth.api'
 import { addToCart } from '../../../apis/cart.api'
 import VariantValueSelector from '../../selector/VariantValueSelector'
 import useUpdateDispatch from '../../../hooks/useUpdateDispatch'
-import { useTranslation } from 'react-i18next'
-import { toast } from 'react-toastify'
-import { Button, Alert, Spin } from 'antd'
-import { ShoppingCartOutlined } from '@ant-design/icons'
-import { useMutation } from '@tanstack/react-query'
+import { useAntdApp } from '../../../hooks/useAntdApp'
+
+const { Text } = Typography
 
 interface VariantValue {
   _id: string
@@ -31,9 +34,11 @@ interface CartItem {
 
 const AddToCartForm: React.FC<{ product: Product }> = ({ product }) => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [updateDispatch] = useUpdateDispatch()
-  const [error, setError] = useState('')
   const [cartItem, setCartItem] = useState<CartItem>({})
+  const { message } = useAntdApp()
 
   const addToCartMutation = useMutation({
     mutationFn: (cartData: CartItem) => {
@@ -42,20 +47,37 @@ const AddToCartForm: React.FC<{ product: Product }> = ({ product }) => {
     },
     onSuccess: (data: any) => {
       if (data.error) {
-        setError(data.error)
-        setTimeout(() => setError(''), 3000)
+        message.error(data.error)
       } else {
         updateDispatch('account', data.user)
-        toast.success(t('toastSuccess.cart.add'))
+        message.success(t('toastSuccess.cart.add'))
+        queryClient.invalidateQueries({ queryKey: ['cart'] })
         setCartItem({})
       }
     },
-    onError: () => {
-      setError('Server Error')
-      setTimeout(() => setError(''), 3000)
+    onError: (error: any) => {
+      message.error(error.message)
     }
   })
 
+  const buyNowMutation = useMutation({
+    mutationFn: (cartData: CartItem) => {
+      const { _id } = getToken()
+      return addToCart(_id, cartData)
+    },
+    onSuccess: (data: any) => {
+      if (data.error) {
+        message.error(data.error)
+      } else {
+        updateDispatch('account', data.user)
+        queryClient.invalidateQueries({ queryKey: ['cart'] })
+        navigate('/cart')
+      }
+    },
+    onError: (error: any) => {
+      message.error(error.message)
+    }
+  })
   useEffect(() => {
     let defaultList: VariantValue[][] = []
     product.variantValueIds?.forEach((value: VariantValue) => {
@@ -93,17 +115,30 @@ const AddToCartForm: React.FC<{ product: Product }> = ({ product }) => {
       variantValueIds: values.map((value) => value._id).join('|')
     })
   }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    addToCartMutation.mutate(cartItem)
+  const handleAddToCart = () => {
+    addToCartMutation.mutate({
+      ...cartItem,
+      count: 1
+    })
   }
+
+  const handleBuyNow = () => {
+    buyNowMutation.mutate({
+      ...cartItem,
+      count: 1
+    })
+  }
+
+  const isLoading = addToCartMutation.isPending || buyNowMutation.isPending
+
   return (
-    <div className='relative'>
-      <Spin spinning={addToCartMutation.isPending}>
-        <form className='space-y-4'>
+    <Spin spinning={isLoading}>
+      <div className='space-y-4'>
+        {product.variantValueIds && product.variantValueIds.length > 0 && (
           <div>
+            <Text strong className='block mb-2 text-gray-700'>
+              {t('productDetail.selectVariant')}
+            </Text>
             <VariantValueSelector
               listValues={product.variantValueIds}
               isEditable={true}
@@ -111,25 +146,32 @@ const AddToCartForm: React.FC<{ product: Product }> = ({ product }) => {
               onSet={(values: VariantValue[]) => handleSet(values)}
             />
           </div>
-
-          {error && (
-            <Alert message={error} type='error' showIcon className='mb-4' />
-          )}
-
-          <div className='flex justify-start'>
-            <Button
-              type='primary'
-              icon={<ShoppingCartOutlined />}
-              onClick={handleSubmit}
-              loading={addToCartMutation.isPending}
-              className='flex items-center gap-2 h-10 px-6 bg-orange-500 hover:bg-orange-600 border-orange-500 hover:border-orange-600'
-            >
-              <span className='text-base'>{t('productDetail.addToCart')}</span>
-            </Button>
-          </div>
-        </form>
-      </Spin>
-    </div>
+        )}
+        <div className='flex gap-3'>
+          <Button
+            type='primary'
+            icon={<ShoppingCartOutlined />}
+            onClick={handleAddToCart}
+            loading={addToCartMutation.isPending}
+            disabled={isLoading}
+            className='flex-1 font-medium text-base'
+          >
+            {t('productDetail.addToCart')}
+          </Button>
+          <Button
+            type='primary'
+            danger
+            icon={<ThunderboltOutlined />}
+            onClick={handleBuyNow}
+            loading={buyNowMutation.isPending}
+            disabled={isLoading}
+            className='flex-1 font-medium text-base'
+          >
+            {t('productDetail.buyNow')}
+          </Button>
+        </div>
+      </div>
+    </Spin>
   )
 }
 

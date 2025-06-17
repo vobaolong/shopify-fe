@@ -75,7 +75,7 @@ export const createProduct = async (
   product: any,
   storeId: string
 ): Promise<any> => {
-  return await clientImg.post(`/product/create/${storeId}/${userId}`, product)
+  return await clientImg.post(`/product/${storeId}/${userId}`, product)
 }
 
 export const updateProduct = async (
@@ -85,7 +85,7 @@ export const updateProduct = async (
   storeId: string
 ): Promise<any> => {
   return await clientImg.put(
-    `/product/update/${productId}/${storeId}/${userId}`,
+    `/product/${productId}/${storeId}/${userId}`,
     product
   )
 }

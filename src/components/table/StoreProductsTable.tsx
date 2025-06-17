@@ -1,6 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { getToken } from '../../apis/auth.api'
 import {
   listProductsForManager,
@@ -8,22 +6,19 @@ import {
 } from '../../apis/product.api'
 import { formatDate, humanReadableDate } from '../../helper/humanReadable'
 import { formatPrice } from '../../helper/formatPrice'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Table, Button, Modal, Alert, Spin, Tooltip, Tabs } from 'antd'
+import { useQuery } from '@tanstack/react-query'
+import { Table, Button, Modal, Alert, Tooltip, Tabs } from 'antd'
 import {
-  SearchOutlined,
   FileExcelOutlined,
   EditOutlined,
   EyeOutlined,
   EyeInvisibleOutlined
 } from '@ant-design/icons'
-import SortByButton from './sub/SortByButton'
 import CategorySmallCard from '../card/CategorySmallCard'
 import ProductActiveLabel from '../label/ProductActiveLabel'
 import { useTranslation } from 'react-i18next'
 import ProductSmallCard from '../card/ProductSmallCard'
 import { toast } from 'react-toastify'
-import boxImg from '../../assets/box.svg'
 import * as XLSX from 'xlsx'
 import {
   ProductFilterState,
@@ -32,34 +27,25 @@ import {
 import SellerProductForm from '../item/form/SellerProductForm'
 import SearchInput from '../ui/SearchInput'
 import { Empty } from 'antd/lib'
+import { useAntdApp } from '../../hooks/useAntdApp'
 
 interface StoreProductsTableProps {
-  storeId?: string
-  run?: boolean
+  storeId: string
+  run: boolean
 }
 
 const StoreProductsTable = ({
-  storeId = '',
+  storeId,
   run = false
 }: StoreProductsTableProps) => {
   const { t } = useTranslation()
-  const [error, setError] = useState('')
   const { _id } = getToken()
   const [isConfirming, setIsConfirming] = useState(false)
   const [sellingProduct, setSellingProduct] = useState<any>({})
-  const [alerts, setAlerts] = useState({
-    isAllAlert: true,
-    isSellingAlert: true,
-    isHiddenAlert: true,
-    isOutOfStockAlert: true,
-    isInfringingAlert: true
-  })
   const [filter, setFilter] = useState<ProductFilterState>(defaultProductFilter)
   const [pendingFilter, setPendingFilter] =
     useState<ProductFilterState>(defaultProductFilter)
-  const queryClient = useQueryClient()
-
-  // Tabs state
+  const { message } = useAntdApp()
   const [selectedOption, setSelectedOption] = useState('all')
   const productStatus = [
     {
@@ -126,7 +112,6 @@ const StoreProductsTable = ({
   }
 
   const onSubmit = async () => {
-    setError('')
     if (!isConfirming) return
     try {
       const value = { isSelling: !sellingProduct.isSelling }
@@ -134,16 +119,15 @@ const StoreProductsTable = ({
       const res = await showOrHide(_id, value, storeId, sellingProduct._id)
       const response = res.data || res
       if (response.error) {
-        setError(response.error)
+        message.error(response.error)
       } else {
         toast.success(t(`toastSuccess.product.${action}`))
         refetch()
       }
     } catch {
-      setError('Server Error')
+      message.error('Server Error')
     } finally {
       setIsConfirming(false)
-      setTimeout(() => setError(''), 3000)
     }
   }
 
@@ -321,15 +305,8 @@ const StoreProductsTable = ({
     }
   ]
 
-  const handleChangePage = (page: number) => {
-    setFilter((prev) => ({ ...prev, page }))
-  }
-
   return (
     <div className='w-full'>
-      {error && (
-        <Alert message={error} type='error' showIcon className='mb-2' />
-      )}
       {isError && (
         <Alert message='Server Error' type='error' showIcon className='mb-2' />
       )}

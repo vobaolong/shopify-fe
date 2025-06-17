@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
 import { updateCommission } from '../../../apis/commission.api'
-import { Form, Input, Button, notification, InputNumber, Modal } from 'antd'
+import { Form, Input, Button, InputNumber, Modal } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from '@tanstack/react-query'
 import { CommissionType } from '../../../@types/entity.types'
+import { useAntdApp } from '../../../hooks/useAntdApp'
 
 interface AdminEditCommissionFormProps {
   oldCommission?: CommissionType
@@ -16,7 +17,7 @@ const AdminEditCommissionForm = ({
 }: AdminEditCommissionFormProps) => {
   const { t } = useTranslation()
   const [form] = Form.useForm()
-
+  const { notification } = useAntdApp()
   useEffect(() => {
     if (oldCommission) {
       form.setFieldsValue({

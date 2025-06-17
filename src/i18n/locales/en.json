@@ -366,6 +366,8 @@
     "vat": "(VAT included)",
     "soldOut": "The product has been sold out!",
     "addToCart": "Add To Cart",
+    "buyNow": "BUY NOW",
+    "selectVariant": "Select Variant",
     "error": "The product is out of business, please remove it from your cart, you can continue with others",
     "warning": "Please update the quantity. Product only",
     "productReview": "Product Review",

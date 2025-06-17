@@ -24,15 +24,11 @@ interface Notification {
   createdAt: string
 }
 
-interface BellButtonProps {
-  navFor?: string
-}
-
-const BellButton = ({ navFor = '' }: BellButtonProps) => {
+const NotificationButton = ({ navFor = '' }: { navFor?: string }) => {
   const { t } = useTranslation()
   const user = useSelector(selectAccountUser)
   const store = useSelector(selectSellerStore)
-  const { data, isLoading, refetch } = useNotifications(user?._id as string)
+  const { data, refetch } = useNotifications(user?._id as string)
   const markReadMutation = useMarkNotificationsRead()
   const list: Notification[] = data?.notifications || []
   const notificationCount = data?.numberHidden || list.length
@@ -143,4 +139,4 @@ const BellButton = ({ navFor = '' }: BellButtonProps) => {
   )
 }
 
-export default BellButton
+export default NotificationButton

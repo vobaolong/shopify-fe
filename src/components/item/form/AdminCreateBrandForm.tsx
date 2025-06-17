@@ -7,9 +7,10 @@ import ConfirmDialog from '../../ui/ConfirmDialog'
 import MultiCategorySelector from '../../selector/MultiCategorySelector'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Form, Button, notification, Upload, Input } from 'antd'
+import { Form, Button, Upload, Input } from 'antd'
 import { CategoryType } from '../../../@types/entity.types'
 import { UploadOutlined } from '@ant-design/icons'
+import { useAntdApp } from '../../../hooks/useAntdApp'
 
 const AdminCreateBrandForm = ({
   onSuccessCreate
@@ -23,7 +24,7 @@ const AdminCreateBrandForm = ({
   const [form] = Form.useForm()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-
+  const { notification } = useAntdApp()
   useEffect(() => {
     const checkScroll = () => {
       const isBottom =

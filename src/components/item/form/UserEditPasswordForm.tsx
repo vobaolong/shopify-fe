@@ -3,20 +3,21 @@ import { getToken } from '../../../apis/auth.api'
 import { updatePassword } from '../../../apis/user.api'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from '@tanstack/react-query'
-import { Form, Input, Button, notification, Spin, Modal } from 'antd'
+import { Form, Input, Button, Spin, Modal } from 'antd'
 import useInvalidate from '../../../hooks/useInvalidate'
+import { useAntdApp } from '../../../hooks/useAntdApp'
 
 const UserEditPasswordForm = () => {
   const { t } = useTranslation()
   const [form] = Form.useForm()
   const { _id } = getToken()
   const invalidate = useInvalidate()
-
+  const { notification } = useAntdApp()
   const updatePasswordMutation = useMutation({
     mutationFn: (user: { currentPassword: string; newPassword: string }) =>
-      updatePassword(_id, user),    onSuccess: () => {
+      updatePassword(_id, user),
+    onSuccess: () => {
       form.resetFields()
-      // Invalidate all query keys để đảm bảo cache được cập nhật
       invalidate({ queryKey: ['userProfilePage', _id] })
       invalidate({ queryKey: ['userAccountInit', _id] })
       invalidate({ queryKey: ['adminProfilePage', _id] })

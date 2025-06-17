@@ -44,11 +44,10 @@ const InputFile: React.FC<InputFileProps> = ({
   }
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
-
   const handleReset = (e: React.MouseEvent<HTMLLabelElement, MouseEvent>) => {
     e.stopPropagation()
     setSrc('')
-    onChange('')
+    onChange(null as any) // Reset với null thay vì chuỗi rỗng để tránh lỗi formData
   }
 
   return (

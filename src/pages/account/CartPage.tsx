@@ -35,7 +35,6 @@ const CartPage = React.memo(() => {
   const query = useQuery()
   const navigate = useNavigate()
 
-  // Memoized fetch function
   const fetchCarts = useCallback(async () => {
     setIsLoading(true)
     setError('')
@@ -58,7 +57,6 @@ const CartPage = React.memo(() => {
     fetchCarts()
   }, [fetchCarts, run])
 
-  // Memoized order creation logic
   const handleOrderCreation = useCallback(
     async (isOrder: string, cartId: string, storeId: string) => {
       const orderString = localStorage.getItem('order')

@@ -1,16 +1,17 @@
 import { useState } from 'react'
 import { getToken } from '../../../apis/auth.api'
 import { createCommission } from '../../../apis/commission.api'
-import { Form, Input, Button, Spin, notification } from 'antd'
+import { Form, Input, Button, Spin } from 'antd'
 import ConfirmDialog from '../../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from '@tanstack/react-query'
+import { useAntdApp } from '../../../hooks/useAntdApp'
 
 const AdminCreateCommissionForm = ({ onRun = () => {} }) => {
   const { t } = useTranslation()
   const [isConfirming, setIsConfirming] = useState(false)
   const [form] = Form.useForm()
-
+  const { notification } = useAntdApp()
   const createCommissionMutation = useMutation({
     mutationFn: (values: { name: string; description: string; fee: number }) =>
       createCommission(values),

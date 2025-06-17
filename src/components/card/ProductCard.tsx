@@ -24,9 +24,6 @@ const ProductCard = ({ product, onRun }: ProductCardProps) => {
   const { t } = useTranslation()
   const { _id: userId } = getToken() || {}
 
-  const { data, isLoading: isLoadingFollowers } = useAddWishlistCount(
-    product._id
-  )
   const { data: isWishlist = false, isLoading: isLoadingWishlistStatus } =
     useIsWishlist(userId, product._id)
 

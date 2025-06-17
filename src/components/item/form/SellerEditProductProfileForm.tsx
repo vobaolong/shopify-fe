@@ -3,12 +3,13 @@ import { getToken } from '../../../apis/auth.api'
 import { updateProduct } from '../../../apis/product.api'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { notification, Form, Input, Button, Spin } from 'antd'
+import { Form, Input, Button, Spin } from 'antd'
 import CategorySelector from '../../selector/CategorySelector'
 import VariantSelector from '../../selector/VariantSelector'
 import DropDownMenu from '../../ui/DropDownMenu'
 import { listBrandByCategory } from '../../../apis/brand.api'
 import { useNavigate } from 'react-router-dom'
+import { useAntdApp } from '../../../hooks/useAntdApp'
 
 interface SellerEditProductProfileFormProps {
   product?: any
@@ -41,7 +42,7 @@ const SellerEditProductProfileForm = ({
   const { _id } = getToken()
   const [form] = Form.useForm<FormValues>()
   const navigate = useNavigate()
-
+  const { notification } = useAntdApp()
   // Brand list by category
   const categoryId = Form.useWatch('categoryId', form)
   const { data: brandsData } = useQuery({
@@ -165,7 +166,7 @@ const SellerEditProductProfileForm = ({
                 label={t('productDetail.selectedCategory')}
                 isActive={true}
                 isRequired={true}
-                onSet={(category: any) => {
+                onChange={(category: any) => {
                   form.setFieldsValue({ categoryId: category._id })
                 }}
               />

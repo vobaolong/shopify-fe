@@ -1,11 +1,11 @@
 import React, { Suspense } from 'react'
 import { Layout, Spin } from 'antd'
 import AdminSideBar from './menu/AdminSideBar'
-import BellButton from './menu/BellButton'
 import AccountInit from '../init/AccountInit'
 import Breadcrumb, { BreadcrumbPath } from '../ui/Breadcrumb'
 import { UserType } from '../../@types/entity.types'
 import { Role } from '../../enums/OrderStatus.enum'
+import NotificationButton from './menu/NotificationButton'
 
 const { Header, Content } = Layout
 
@@ -23,7 +23,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, user, paths }) => {
         <Header className='bg-white !px-6 flex justify-end items-center sticky top-0 z-50 border'>
           <div className='flex items-center gap-4'>
             <Suspense fallback={<Spin size='small' />}>
-              <BellButton navFor={Role.ADMIN} />
+              <NotificationButton navFor={Role.ADMIN} />
             </Suspense>
             <Suspense fallback={<Spin size='small' />}>
               <AccountInit />
