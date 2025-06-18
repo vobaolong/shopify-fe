@@ -205,7 +205,7 @@ const ProductDetailPage = () => {
 
   return (
     <MainLayout>
-      <div className='max-w-7xl mx-auto px-4 py-6'>
+      <div className='max-w-7xl mx-auto'>
         <MetaData title={`${product?.name} | ShopBase Việt Nam`} />
         <Breadcrumb className='my-3'>
           <Breadcrumb.Item>

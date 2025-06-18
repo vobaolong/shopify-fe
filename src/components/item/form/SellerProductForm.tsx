@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense, lazy } from 'react'
 import { getToken } from '../../../apis/auth.api'
 import {
   createProduct,
@@ -11,10 +11,12 @@ import { Form, Input, Button, Spin, Drawer, Upload, Modal } from 'antd'
 import CategorySelector from '../../selector/CategorySelector'
 import VariantSelector from '../../selector/VariantSelector'
 import DropDownMenu from '../../ui/DropDownMenu'
-import TextArea from '../../ui/TextArea'
 import { listBrandByCategory } from '../../../apis/brand.api'
 import { PlusOutlined } from '@ant-design/icons'
 import { useAntdApp } from '../../../hooks/useAntdApp'
+
+const ReactQuill = lazy(() => import('react-quill-new'))
+import 'react-quill-new/dist/quill.snow.css'
 
 interface SellerProductFormProps {
   storeId: string
@@ -129,6 +131,26 @@ const ImageUploadAntd: React.FC<{
   )
 }
 
+const Editor: React.FC<{
+  value?: string
+  onChange?: (value: string) => void
+  placeholder?: string
+}> = ({ value, onChange, placeholder }) => {
+  return (
+    <div className='!min-h-[300px]'>
+      <Suspense fallback={<Spin />}>
+        <ReactQuill
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          theme='snow'
+          className='!h-[250px] mb-2'
+        />
+      </Suspense>
+    </div>
+  )
+}
+
 const SellerProductForm: React.FC<SellerProductFormProps> = ({
   storeId,
   productId,
@@ -212,7 +234,6 @@ const SellerProductForm: React.FC<SellerProductFormProps> = ({
     }
   })
 
-  // Fill form when editing
   useEffect(() => {
     if (productId && productData && open) {
       const {
@@ -244,7 +265,6 @@ const SellerProductForm: React.FC<SellerProductFormProps> = ({
     }
   }, [productId, productData, open, form])
 
-  // Form submit
   const handleFinish = (values: FormValues) => {
     if (values.salePrice > values.price) {
       notification.error({
@@ -285,158 +305,134 @@ const SellerProductForm: React.FC<SellerProductFormProps> = ({
             variantValueIds: ''
           }}
         >
-          {' '}
-          <div className='p-3'>
-            <Form.Item
-              name='name'
-              label={t('productDetail.name')}
-              rules={[{ required: true, message: t('productValid.validName') }]}
-            >
-              <Input placeholder={t('productDetail.name')} />
-            </Form.Item>
-            <div className='mt-3'>
-              <Form.Item
-                name='categoryId'
-                label={t('productDetail.chooseCategory')}
-                rules={[
-                  {
-                    required: true,
-                    message: t('productValid.chooseCategory')
-                  }
-                ]}
-              >
-                <CategorySelector
-                  label={t('productDetail.selectedCategory')}
-                  isActive={true}
-                  isRequired={true}
-                  onChange={(category: any) => {
-                    form.setFieldsValue({ categoryId: category._id })
-                  }}
-                />
-              </Form.Item>
-            </div>
-            <div className='mt-3'>
-              <Form.Item name='brandId' label={t('productDetail.chooseBrand')}>
-                <DropDownMenu
-                  listItem={brands}
-                  value={form.getFieldValue('brandId')}
-                  setValue={(brandId: string) =>
-                    form.setFieldsValue({ brandId })
-                  }
-                  label={t('productDetail.chooseBrand')}
-                  size='lg'
-                />
-              </Form.Item>
-            </div>{' '}
-            <div className='mt-3'>
-              <p></p>
-              <Form.Item
-                name='images'
-                label={t('productDetail.images')}
-                rules={[
-                  {
-                    required: true,
-                    message: t('productValid.avatarValid')
-                  }
-                ]}
-              >
-                <ImageUploadAntd maxCount={7} required />
-              </Form.Item>
-            </div>
-            <Form.Item
-              name='description'
-              label={t('productDetail.description')}
-              rules={[
-                {
-                  required: true,
-                  message: t('productValid.validDescription')
-                }
-              ]}
-            >
-              <TextArea placeholder={t('productDetail.description')} />
-            </Form.Item>
-          </div>
-          <div className='p-3'>
-            <div className='md:w-1/2 w-full px-2'>
-              <Form.Item
-                name='price'
-                label={`${t('productDetail.price')} (₫)`}
-                rules={[
-                  {
-                    required: true,
-                    message: t('productValid.priceValid')
-                  }
-                ]}
-              >
-                <Input type='number' />
-              </Form.Item>
-            </div>
-            <div className='md:w-1/2 w-full px-2'>
-              <Form.Item
-                name='salePrice'
-                label={`${t('productDetail.salePrice')} (₫)`}
-                rules={[
-                  {
-                    required: true,
-                    message: t('productValid.salePriceValid')
-                  }
-                ]}
-              >
-                <Input type='number' />
-              </Form.Item>
-            </div>
-            <div className='w-full px-2'>
-              <Form.Item
-                name='quantity'
-                label={t('productDetail.quantity')}
-                rules={[
-                  {
-                    required: true,
-                    message: t('productValid.quantityValid')
-                  }
-                ]}
-              >
-                <Input type='number' />
-              </Form.Item>
-            </div>{' '}
-            <div className='w-full mt-3 px-2'>
-              <span>
-                {t('productDetail.chooseStyles')}{' '}
-                <small className='text-gray-500'>
-                  {t('productDetail.chooseCateFirst')}
-                </small>
-              </span>
-              <Form.Item name='variantValueIds'>
-                <VariantSelector
-                  categoryId={form.getFieldValue('categoryId')}
-                  onSet={(variantValues: any[]) => {
-                    form.setFieldsValue({
-                      variantValueIds: (
-                        variantValues.map((v) => v._id) as string[]
-                      ).join('|')
-                    })
-                  }}
-                />
-              </Form.Item>
-            </div>
-          </div>
-          <div
-            className='bg-white rounded-md shadow-sm p-4 my-3'
-            style={{ position: 'sticky', bottom: 0 }}
+          <Form.Item
+            name='name'
+            label={t('productDetail.name')}
+            rules={[{ required: true, message: t('productValid.validName') }]}
           >
-            <div className='flex justify-end gap-4 items-center'>
-              <Button onClick={onClose} type='default'>
-                {t('button.cancel')}
-              </Button>
-              <Button
-                type='primary'
-                htmlType='submit'
-                style={{ width: '200px', maxWidth: '100%' }}
-                loading={mutation.isPending}
-              >
-                {t('button.save')}
-              </Button>
-            </div>
+            <Input
+              showCount
+              maxLength={120}
+              placeholder={t('productDetail.name')}
+            />
+          </Form.Item>
+          <Form.Item
+            name='categoryId'
+            label={t('productDetail.chooseCategory')}
+            rules={[
+              {
+                required: true,
+                message: t('productValid.chooseCategory')
+              }
+            ]}
+          >
+            <CategorySelector
+              label={t('productDetail.selectedCategory')}
+              isActive={true}
+              isRequired={true}
+              onChange={(category: any) => {
+                form.setFieldsValue({ categoryId: category._id })
+              }}
+            />
+          </Form.Item>
+          <Form.Item name='brandId' label={t('productDetail.chooseBrand')}>
+            <DropDownMenu
+              listItem={brands}
+              value={form.getFieldValue('brandId')}
+              setValue={(brandId: string) => form.setFieldsValue({ brandId })}
+              size='lg'
+            />
+          </Form.Item>
+          <Form.Item
+            name='images'
+            label={t('productDetail.productImg')}
+            rules={[
+              {
+                required: true,
+                message: t('productValid.avatarValid')
+              }
+            ]}
+          >
+            <ImageUploadAntd maxCount={7} required />
+          </Form.Item>
+          <Form.Item
+            name='description'
+            label={t('productDetail.description')}
+            rules={[
+              {
+                required: true,
+                message: t('productValid.validDescription')
+              }
+            ]}
+          >
+            <Editor placeholder={t('productDetail.description')} />
+          </Form.Item>
+          <Form.Item
+            name='price'
+            label={`${t('productDetail.price')} (₫)`}
+            rules={[
+              {
+                required: true,
+                message: t('productValid.priceValid')
+              }
+            ]}
+          >
+            <Input type='number' />
+          </Form.Item>
+          <Form.Item
+            name='salePrice'
+            label={`${t('productDetail.salePrice')} (₫)`}
+            rules={[
+              {
+                required: true,
+                message: t('productValid.salePriceValid')
+              }
+            ]}
+          >
+            <Input type='number' />
+          </Form.Item>
+          <Form.Item
+            name='quantity'
+            label={t('productDetail.quantity')}
+            rules={[
+              {
+                required: true,
+                message: t('productValid.quantityValid')
+              }
+            ]}
+          >
+            <Input type='number' />
+          </Form.Item>
+          <span>
+            {t('productDetail.chooseStyles')}{' '}
+            <small className='text-gray-500'>
+              {t('productDetail.chooseCateFirst')}
+            </small>
+          </span>
+          <Form.Item name='variantValueIds'>
+            <VariantSelector
+              categoryId={form.getFieldValue('categoryId')}
+              onSet={(variantValues: any[]) => {
+                form.setFieldsValue({
+                  variantValueIds: (
+                    variantValues.map((v) => v._id) as string[]
+                  ).join('|')
+                })
+              }}
+            />
+          </Form.Item>
+          <div className='flex justify-end gap-4 items-center'>
+            <Button onClick={onClose} type='default'>
+              {t('button.cancel')}
+            </Button>
+            <Button
+              type='primary'
+              htmlType='submit'
+              style={{ width: '200px', maxWidth: '100%' }}
+              loading={mutation.isPending}
+            >
+              {t('button.save')}
+            </Button>
           </div>
         </Form>
       </Spin>

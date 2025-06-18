@@ -1,13 +1,13 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { getToken } from '../../apis/auth.api'
 import {
   listProductsForManager,
   sellingProduct as showOrHide
 } from '../../apis/product.api'
-import { formatDate, humanReadableDate } from '../../helper/humanReadable'
+import { formatDate } from '../../helper/humanReadable'
 import { formatPrice } from '../../helper/formatPrice'
 import { useQuery } from '@tanstack/react-query'
-import { Table, Button, Modal, Alert, Tooltip, Tabs } from 'antd'
+import { Table, Button, Modal, Alert, Tooltip, Tabs, Rate, Spin } from 'antd'
 import {
   FileExcelOutlined,
   EditOutlined,
@@ -19,15 +19,15 @@ import ProductActiveLabel from '../label/ProductActiveLabel'
 import { useTranslation } from 'react-i18next'
 import ProductSmallCard from '../card/ProductSmallCard'
 import { toast } from 'react-toastify'
-import * as XLSX from 'xlsx'
 import {
   ProductFilterState,
   defaultProductFilter
 } from '../../@types/filter.type'
 import SellerProductForm from '../item/form/SellerProductForm'
 import SearchInput from '../ui/SearchInput'
-import { Empty } from 'antd/lib'
 import { useAntdApp } from '../../hooks/useAntdApp'
+import { useExportProducts } from '../../hooks/useExportProducts'
+import { ProductStatus } from '../../enums/OrderStatus.enum'
 
 interface StoreProductsTableProps {
   storeId: string
@@ -40,39 +40,47 @@ const StoreProductsTable = ({
 }: StoreProductsTableProps) => {
   const { t } = useTranslation()
   const { _id } = getToken()
-  const [isConfirming, setIsConfirming] = useState(false)
-  const [sellingProduct, setSellingProduct] = useState<any>({})
-  const [filter, setFilter] = useState<ProductFilterState>(defaultProductFilter)
-  const [pendingFilter, setPendingFilter] =
-    useState<ProductFilterState>(defaultProductFilter)
   const { message } = useAntdApp()
-  const [selectedOption, setSelectedOption] = useState('all')
-  const productStatus = [
-    {
-      label: t('productDetail.all'),
-      value: 'all'
-    },
-    { label: t('productDetail.selling'), value: 'selling' },
-    { label: t('productDetail.hidden'), value: 'hidden' },
-    { label: t('productDetail.outOfStock'), value: 'outOfStock' },
-    { label: t('status.infringing'), value: 'infringing' }
-  ]
+  const { exportProducts } = useExportProducts()
+
+  const [uiState, setUiState] = useState({
+    isConfirming: false,
+    drawerOpen: false,
+    selectedOption: ProductStatus.ALL,
+    selectedRowKeys: [] as React.Key[]
+  })
+
+  const [filterState, setFilterState] = useState({
+    filter: defaultProductFilter,
+    pendingFilter: defaultProductFilter
+  })
+
+  const [productState, setProductState] = useState({
+    sellingProduct: {} as any,
+    editingProductId: undefined as string | undefined
+  })
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['products', filter, storeId, selectedOption, run],
+    queryKey: [
+      'products',
+      filterState.filter,
+      storeId,
+      uiState.selectedOption,
+      run
+    ],
     queryFn: async () => {
-      let filterCopy = { ...filter }
-      switch (selectedOption) {
-        case 'selling':
+      let filterCopy = { ...filterState.filter }
+      switch (uiState.selectedOption) {
+        case ProductStatus.SELLING:
           filterCopy.isSelling = true
           break
-        case 'hidden':
+        case ProductStatus.HIDDEN:
           filterCopy.isSelling = false
           break
-        case 'outOfStock':
+        case ProductStatus.OUT_OF_STOCK:
           filterCopy.quantity = 0
           break
-        case 'infringing':
+        case ProductStatus.INFRINGING:
           filterCopy.isActive = false
           break
         default:
@@ -95,28 +103,33 @@ const StoreProductsTable = ({
   }
 
   const handleChangeKeyword = (keyword: string) => {
-    setPendingFilter({
-      ...pendingFilter,
-      search: keyword,
-      page: 1
-    })
+    setFilterState((prev) => ({
+      ...prev,
+      pendingFilter: { ...prev.pendingFilter, search: keyword, page: 1 }
+    }))
   }
 
   const handleSearch = () => {
-    setFilter({ ...pendingFilter })
+    setFilterState((prev) => ({ ...prev, filter: { ...prev.pendingFilter } }))
   }
 
   const handleSellingProduct = (product: any) => {
-    setSellingProduct(product)
-    setIsConfirming(true)
+    setProductState((prev) => ({ ...prev, sellingProduct: product }))
+    setUiState((prev) => ({ ...prev, isConfirming: true }))
   }
 
+  const exportToXLSX = () => exportProducts(products, 'Products')
   const onSubmit = async () => {
-    if (!isConfirming) return
+    if (!uiState.isConfirming) return
     try {
-      const value = { isSelling: !sellingProduct.isSelling }
-      const action = sellingProduct.isSelling ? 'hide' : 'show'
-      const res = await showOrHide(_id, value, storeId, sellingProduct._id)
+      const value = { isSelling: !productState.sellingProduct.isSelling }
+      const action = productState.sellingProduct.isSelling ? 'hide' : 'show'
+      const res = await showOrHide(
+        _id,
+        value,
+        storeId,
+        productState.sellingProduct._id
+      )
       const response = res.data || res
       if (response.error) {
         message.error(response.error)
@@ -127,40 +140,15 @@ const StoreProductsTable = ({
     } catch {
       message.error('Server Error')
     } finally {
-      setIsConfirming(false)
+      setUiState((prev) => ({ ...prev, isConfirming: false }))
     }
   }
 
-  const exportToXLSX = () => {
-    const filteredProducts = Array.isArray(data?.products)
-      ? data.products.map((product: any, index: number) => ({
-          No: index + 1,
-          Id: product._id,
-          ProductName: product.name,
-          Price: `${formatPrice(product.price?.$numberDecimal)} đ`,
-          SalePrice: `${formatPrice(product.salePrice?.$numberDecimal)} đ`,
-          Quantity: product.quantity,
-          Sold: product.sold,
-          Category: product.categoryId?.name,
-          VariantValue: product.variantValueIds
-            ?.map((value: any) => value.name)
-            .join(', '),
-          Rating: product.rating,
-          Active: product.isActive,
-          Selling: product.isSelling,
-          CreatedAt: formatDate(product.createdAt)
-        }))
-      : []
-    const worksheet = XLSX.utils.json_to_sheet(filteredProducts)
-    const workbook = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Products')
-    XLSX.writeFile(workbook, 'Products.xlsx')
+  const rowSelection = {
+    selectedRowKeys: uiState.selectedRowKeys,
+    onChange: (keys: React.Key[]) =>
+      setUiState((prev) => ({ ...prev, selectedRowKeys: keys }))
   }
-
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const [editingProductId, setEditingProductId] = useState<string | undefined>(
-    undefined
-  )
 
   const columns = [
     {
@@ -169,8 +157,11 @@ const StoreProductsTable = ({
       key: 'index',
       width: 50,
       align: 'center' as const,
+      fixed: 'left' as const,
       render: (_: any, __: any, idx: number) =>
-        idx + 1 + ((filter.page || 1) - 1) * (filter.limit || 8)
+        idx +
+        1 +
+        ((filterState.filter.page || 1) - 1) * (filterState.filter.limit || 8)
     },
     {
       title: t('productDetail.name'),
@@ -183,7 +174,7 @@ const StoreProductsTable = ({
       title: t('productDetail.category'),
       dataIndex: 'categoryId',
       key: 'categoryId',
-      render: (cat: any) => <CategorySmallCard parent={false} category={cat} />
+      render: (cat: any) => <CategorySmallCard category={cat} />
     },
     {
       title: t('productDetail.brand'),
@@ -253,38 +244,50 @@ const StoreProductsTable = ({
       dataIndex: 'rating',
       key: 'rating',
       render: (rating: number) => (
-        <span>
-          <i className='fa-solid fa-star text-yellow-400 mr-1' />
-          {rating}
-        </span>
+        <Rate
+          disabled
+          allowHalf
+          value={rating}
+          className='!text-[13px] [&_.ant-rate-star]:!mr-0.5'
+        />
       )
     },
     {
       title: t('status.status'),
       dataIndex: 'isActive',
       key: 'isActive',
+      width: 100,
+      align: 'center' as const,
       render: (isActive: boolean) => <ProductActiveLabel isActive={isActive} />
     },
     {
       title: t('productDetail.date'),
       dataIndex: 'createdAt',
       key: 'createdAt',
-      render: (date: string) => <span>{humanReadableDate(date)}</span>
+      width: 100,
+      align: 'right' as const,
+      render: (date: string) => <span>{formatDate(date)}</span>
     },
     {
       title: t('action'),
       key: 'action',
+      width: 100,
+      align: 'center' as const,
+      fixed: 'right' as const,
       render: (_: any, record: any) => (
         <div className='flex gap-2'>
           <Tooltip title={t('button.edit')}>
             <Button
               icon={<EditOutlined />}
               size='small'
-              type='primary'
+              type='text'
               ghost
               onClick={() => {
-                setEditingProductId(record._id)
-                setDrawerOpen(true)
+                setProductState((prev) => ({
+                  ...prev,
+                  editingProductId: record._id
+                }))
+                setUiState((prev) => ({ ...prev, drawerOpen: true }))
               }}
             />
           </Tooltip>
@@ -296,7 +299,7 @@ const StoreProductsTable = ({
                 record.isSelling ? <EyeInvisibleOutlined /> : <EyeOutlined />
               }
               size='small'
-              type={record.isSelling ? 'default' : 'primary'}
+              type={record.isSelling ? 'text' : 'primary'}
               onClick={() => handleSellingProduct(record)}
             />
           </Tooltip>
@@ -305,90 +308,113 @@ const StoreProductsTable = ({
     }
   ]
 
-  return (
-    <div className='w-full'>
-      {isError && (
-        <Alert message='Server Error' type='error' showIcon className='mb-2' />
-      )}
-      <Modal
-        open={isConfirming}
-        title={
-          sellingProduct.isSelling
-            ? t('title.hideProduct')
-            : t('title.showProduct')
-        }
-        onOk={onSubmit}
-        onCancel={() => setIsConfirming(false)}
-        okText={sellingProduct.isSelling ? t('button.hide') : t('button.show')}
-        cancelText={t('button.cancel')}
-        confirmLoading={isLoading}
-      >
-        <p>
-          {sellingProduct.isSelling
-            ? t('message.confirmHideProduct')
-            : t('message.confirmShowProduct')}
-        </p>
-      </Modal>
-      <div className='p-3 bg-white rounded-md'>
-        <Tabs
-          activeKey={selectedOption}
-          onChange={setSelectedOption}
-          items={productStatus.map((status) => ({
-            key: status.value,
-            label: status.label
-          }))}
-        />
-        <div className='flex gap-3 items-center justify-between mb-3'>
-          <SearchInput
-            value={pendingFilter.search || ''}
-            onChange={handleChangeKeyword}
-            onSearch={handleSearch}
-            loading={isLoading}
-          />
-          {selectedOption === 'all' && (
-            <Button
-              icon={<FileExcelOutlined />}
-              type='primary'
-              variant='solid'
-              color='green'
-              onClick={exportToXLSX}
-            >
-              {t('productDetail.export')}
-            </Button>
-          )}
-        </div>
+  const productStatus = [
+    { label: t('productDetail.all'), value: ProductStatus.ALL },
+    { label: t('productDetail.selling'), value: ProductStatus.SELLING },
+    { label: t('productDetail.hidden'), value: ProductStatus.HIDDEN },
+    { label: t('productDetail.outOfStock'), value: ProductStatus.OUT_OF_STOCK },
+    { label: t('status.infringing'), value: ProductStatus.INFRINGING }
+  ]
 
-        <Table
-          columns={columns}
-          dataSource={products}
-          rowKey='_id'
-          className='mb-4'
-          scroll={{ x: 'max-content' }}
-          pagination={{
-            current: pagination.pageCurrent,
-            total: pagination.size,
-            pageSize: filter.limit,
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} of ${total} items`,
-            pageSizeOptions: ['5', '10', '20', '50']
-          }}
-          locale={{
-            emptyText: <Empty description={t('productDetail.noProduct')} />
+  return (
+    <Spin spinning={isLoading}>
+      <div className='w-full'>
+        {isError && !isLoading && storeId && (
+          <Alert
+            message='Server Error'
+            type='error'
+            showIcon
+            className='mb-2'
+          />
+        )}{' '}
+        <Modal
+          open={uiState.isConfirming}
+          title={
+            productState.sellingProduct.isSelling
+              ? t('title.hideProduct')
+              : t('title.showProduct')
+          }
+          onOk={onSubmit}
+          onCancel={() =>
+            setUiState((prev) => ({ ...prev, isConfirming: false }))
+          }
+          okText={
+            productState.sellingProduct.isSelling
+              ? t('button.hide')
+              : t('button.show')
+          }
+          cancelText={t('button.cancel')}
+          confirmLoading={isLoading}
+        >
+          <p>
+            {productState.sellingProduct.isSelling
+              ? t('message.confirmHideProduct')
+              : t('message.confirmShowProduct')}
+          </p>
+        </Modal>
+        <div className='p-3 bg-white rounded-md'>
+          <Tabs
+            activeKey={uiState.selectedOption}
+            onChange={(key) =>
+              setUiState((prev) => ({
+                ...prev,
+                selectedOption: key as ProductStatus
+              }))
+            }
+            items={productStatus.map((status) => ({
+              key: status.value,
+              label: status.label
+            }))}
+          />
+          <div className='flex gap-3 items-center justify-between mb-3'>
+            <SearchInput
+              value={filterState.pendingFilter.search || ''}
+              onChange={handleChangeKeyword}
+              onSearch={handleSearch}
+              loading={isLoading}
+            />
+            {uiState.selectedOption === ProductStatus.ALL && (
+              <Button
+                icon={<FileExcelOutlined />}
+                type='primary'
+                onClick={exportToXLSX}
+              >
+                {t('productDetail.export')}
+              </Button>
+            )}
+          </div>
+          <Table
+            columns={columns}
+            dataSource={products}
+            rowKey='_id'
+            className='mb-4'
+            scroll={{ x: 'max-content' }}
+            rowSelection={rowSelection}
+            bordered
+            pagination={{
+              current: pagination.pageCurrent,
+              total: pagination.size,
+              pageSize: filterState.filter.limit
+            }}
+            locale={{ emptyText: t('productDetail.noProduct') }}
+          />
+        </div>{' '}
+        <SellerProductForm
+          open={uiState.drawerOpen}
+          onClose={() => setUiState((prev) => ({ ...prev, drawerOpen: false }))}
+          storeId={storeId}
+          productId={productState.editingProductId}
+          onSuccess={() => {
+            setUiState((prev) => ({ ...prev, drawerOpen: false }))
+            setProductState((prev) => ({
+              ...prev,
+              editingProductId: undefined
+            }))
+            refetch()
           }}
         />
       </div>
-      <SellerProductForm
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        storeId={storeId}
-        productId={editingProductId}
-        onSuccess={() => {
-          setDrawerOpen(false)
-          setEditingProductId(undefined)
-          refetch()
-        }}
-      />
-    </div>
+    </Spin>
   )
 }
 

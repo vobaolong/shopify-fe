@@ -59,12 +59,6 @@ const ListHotStores = ({ heading = '' }) => {
         page: 1
       })
         .then((res) => {
-          console.log('ListHotStores API Response:', res)
-          console.log('ListHotStores API Response stores:', res?.stores)
-          console.log(
-            'ListHotStores API Response stores length:',
-            res?.stores?.length
-          )
           return res || { stores: [] }
         })
         .catch((err) => {
@@ -73,16 +67,8 @@ const ListHotStores = ({ heading = '' }) => {
           return { stores: [] }
         })
   })
-
   const stores: any[] = data?.stores || []
 
-  console.log('ListHotStores - Final stores:', stores)
-  console.log('ListHotStores - Stores length:', stores.length)
-  console.log('ListHotStores - Data:', data)
-  console.log(
-    'ListHotStores - Data keys:',
-    data ? Object.keys(data) : 'no data'
-  )
   return (
     <div className='position-relative bg-body box-shadow rounded-3 p-3'>
       {' '}

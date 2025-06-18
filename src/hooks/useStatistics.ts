@@ -119,10 +119,10 @@ export const useStatistics = (
           listProductsForManager(
             {
               search: '',
+              limit: 1000,
               sortBy: 'sold',
               isActive: 'true',
               order: 'desc',
-              limit: 1000,
               page: 1,
               ...(dateRange && {
                 createdAtFrom: dateRange[0],
@@ -134,16 +134,13 @@ export const useStatistics = (
         ])
 
         const orders = orderData?.data?.orders || []
-        const products = productData?.data?.products || []
+        const products = productData?.products || []
 
         const orderSize =
           orderData?.data?.pagination?.total ||
           orderData?.data?.size ||
           orders.length
-        const productSize =
-          productData?.data?.pagination?.total ||
-          productData?.data?.size ||
-          products.length
+        const productSize = productData?.size
         const sellerStats: SellerStats = {
           items: {
             orders: orders.slice().reverse(),
@@ -158,7 +155,6 @@ export const useStatistics = (
         return sellerStats
       }
 
-      // Fallback data
       const fallbackData: AdminStats = {
         items: {
           orders: [],
@@ -176,7 +172,6 @@ export const useStatistics = (
       }
       return fallbackData
     } catch (error) {
-      console.error('Error fetching stats:', error)
       throw error
     }
   }

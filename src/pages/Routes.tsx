@@ -70,12 +70,6 @@ const SellerOrderDetailPage = React.lazy(
 const SellerStaffPage = React.lazy(() => import('./seller/StaffPage'))
 const SellerWalletPage = React.lazy(() => import('./seller/WalletPage'))
 const ReviewPage = React.lazy(() => import('./seller/ReviewPage'))
-const SellerCreateProductPage = React.lazy(
-  () => import('./seller/CreateProductPage')
-)
-const SellerEditProductPage = React.lazy(
-  () => import('./seller/EditProductPage')
-)
 //auth
 const SignupPage = React.lazy(() => import('./auth/SignupPage'))
 const SignInPage = React.lazy(() => import('./auth/SignInPage'))
@@ -360,22 +354,6 @@ const Routers = () => {
           element={
             <PrivateRoute>
               <SellerProductsPage />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path='/seller/products/addNew/:storeId'
-          element={
-            <PrivateRoute>
-              <SellerCreateProductPage />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path='/seller/products/edit/:productId/:storeId'
-          element={
-            <PrivateRoute>
-              <SellerEditProductPage />
             </PrivateRoute>
           }
         />

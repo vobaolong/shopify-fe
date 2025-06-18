@@ -23,3 +23,11 @@ export enum TransactionType {
   DEPOSIT = 'deposit',
   WITHDRAW = 'withdraw'
 }
+
+export enum ProductStatus {
+  HIDDEN = 'hidden',
+  OUT_OF_STOCK = 'outOfStock',
+  INFRINGING = 'infringing',
+  SELLING = 'selling',
+  ALL = 'all'
+}

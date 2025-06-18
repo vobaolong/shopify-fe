@@ -2,7 +2,7 @@ import React from 'react'
 import { Table, Spin, Alert, Typography, Tooltip } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { CopyOutlined, EyeOutlined } from '@ant-design/icons'
-import { useOrdersForAdmin } from '../../hooks/useOrder'
+import { useOrdersForAdmin, useOrdersForStore } from '../../hooks/useOrder'
 import { humanReadableDate } from '../../helper/humanReadable'
 import { formatPrice } from '../../helper/formatPrice'
 import OrderStatusLabel from '../label/OrderStatusLabel'
@@ -10,6 +10,7 @@ import OrderPaymentLabel from '../label/OrderPaymentLabel'
 import StoreSmallCard from '../card/StoreSmallCard'
 import UserSmallCard from '../card/UserSmallCard'
 import { ColumnsType } from 'antd/es/table'
+import { Role } from '../../enums/OrderStatus.enum'
 
 interface OrderType {
   _id: string
@@ -25,13 +26,18 @@ interface OrderType {
 }
 
 interface RecentOrdersTableProps {
+  by?: Role
+  storeId?: string
   onViewOrderDetail?: (orderId: string) => void
 }
 
-const RecentOrdersTable: React.FC<RecentOrdersTableProps> = () => {
+const RecentOrdersTable: React.FC<RecentOrdersTableProps> = ({
+  by = Role.ADMIN,
+  storeId,
+  onViewOrderDetail
+}) => {
   const { t } = useTranslation()
   const { Text, Title } = Typography
-
   const filter = {
     search: '',
     sortBy: 'createdAt',
@@ -41,7 +47,14 @@ const RecentOrdersTable: React.FC<RecentOrdersTableProps> = () => {
     pageSize: 5,
     page: 1
   }
-  const { data, isLoading, error } = useOrdersForAdmin(filter)
+
+  const adminQuery = useOrdersForAdmin(filter, { enabled: by === Role.ADMIN })
+  const storeQuery = useOrdersForStore(storeId || '', filter, {
+    enabled: by !== Role.ADMIN && Boolean(storeId)
+  })
+
+  const { data, isLoading, error } = by === Role.ADMIN ? adminQuery : storeQuery
+
   const orders: OrderType[] = (data?.orders || []).slice(0, 5)
 
   const columns: ColumnsType<OrderType> = [
@@ -81,17 +94,20 @@ const RecentOrdersTable: React.FC<RecentOrdersTableProps> = () => {
         </Text>
       )
     },
-
-    {
-      title: t('seller'),
-      dataIndex: 'storeId',
-      key: 'storeId',
-      render: (store: any) => (
-        <div>
-          <StoreSmallCard store={store} isAvatar={false} />
-        </div>
-      )
-    },
+    ...(by === Role.ADMIN
+      ? [
+          {
+            title: t('seller'),
+            dataIndex: 'storeId',
+            key: 'storeId',
+            render: (store: any) => (
+              <div>
+                <StoreSmallCard store={store} isAvatar={false} />
+              </div>
+            )
+          }
+        ]
+      : []),
     {
       title: t('orderDetail.payment'),
       dataIndex: 'isPaidBefore',

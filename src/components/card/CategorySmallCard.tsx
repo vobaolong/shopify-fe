@@ -1,18 +1,13 @@
 import { Link } from 'react-router-dom'
 import chevronSvg from '../../assets/chevron-thin-right.svg'
 import { CategoryType } from '../../@types/entity.types'
+import { Tag } from 'antd'
 
 interface CategorySmallCardProps {
   category: CategoryType
-  style?: React.CSSProperties
-  parent?: boolean
 }
 
-const CategorySmallCard = ({
-  category,
-  style = {},
-  parent = true
-}: CategorySmallCardProps) => {
+const CategorySmallCard = ({ category }: CategorySmallCardProps) => {
   const getCategoryLine = (cat: CategoryType) => {
     const nodes: React.ReactNode[] = []
     let current: any = cat
@@ -41,14 +36,14 @@ const CategorySmallCard = ({
   }
 
   return (
-    <span className='flex items-center' style={style}>
+    <Tag>
       <Link
         className='text-reset text-decoration-none cus-link-hover'
         to={`/category/${category._id}`}
       >
         <span className='flex items-center'>{getCategoryLine(category)}</span>
       </Link>
-    </span>
+    </Tag>
   )
 }
 

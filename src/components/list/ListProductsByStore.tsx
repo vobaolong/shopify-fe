@@ -69,15 +69,6 @@ const ListProductsByStore = ({
         storeId
       )
         .then((res) => {
-          console.log('ListProductsByStore API Response:', res)
-          console.log(
-            'ListProductsByStore API Response products:',
-            res?.products
-          )
-          console.log(
-            'ListProductsByStore API Response products length:',
-            res?.products?.length
-          )
           return res || { products: [] }
         })
         .catch((err) => {
@@ -86,20 +77,8 @@ const ListProductsByStore = ({
           return { products: [] }
         })
   })
-
   const products: any[] = data?.products || []
 
-  console.log('ListProductsByStore - Final products:', products)
-  console.log('ListProductsByStore - Products length:', products.length)
-  console.log('ListProductsByStore - Data:', data)
-  console.log(
-    'ListProductsByStore - Data keys:',
-    data ? Object.keys(data) : 'no data'
-  )
-
-  console.log('ListProductsByStore - Final products:', products)
-  console.log('ListProductsByStore - Data:', data)
-  console.log('ListProductsByStore - storeId:', storeId)
   return (
     <div className='position-relative bg-body box-shadow rounded-2 p-3'>
       {' '}

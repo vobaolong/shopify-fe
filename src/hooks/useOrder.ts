@@ -95,7 +95,6 @@ export const orderKeys = {
   ]
 }
 
-// Order detail hooks
 export const useOrderByUser = (userId: string, orderId: string) => {
   return useQuery({
     queryKey: orderKeys.detail(orderId, userId),
@@ -104,15 +103,11 @@ export const useOrderByUser = (userId: string, orderId: string) => {
   })
 }
 
-export const useOrderByStore = (
-  userId: string,
-  orderId: string,
-  storeId: string
-) => {
+export const useOrderByStore = (orderId: string, storeId: string) => {
   return useQuery({
-    queryKey: orderKeys.storeDetail(orderId, storeId, userId),
-    queryFn: () => getOrderByStore(userId, orderId, storeId),
-    enabled: !!userId && !!orderId && !!storeId
+    queryKey: orderKeys.storeDetail(orderId, storeId, ''),
+    queryFn: () => getOrderByStore(orderId, storeId),
+    enabled: !!orderId && !!storeId
   })
 }
 
@@ -124,7 +119,6 @@ export const useOrderForAdmin = (userId: string, orderId: string) => {
   })
 }
 
-// Order items hooks
 export const useOrderItems = (userId: string, orderId: string) => {
   return useQuery({
     queryKey: orderKeys.itemsByOrder(orderId, userId),
@@ -153,7 +147,6 @@ export const useOrderItemsForAdmin = (userId: string, orderId: string) => {
   })
 }
 
-// Order list hooks
 export const useOrdersByUser = (userId: string, filters: FiltersType) => {
   return useQuery({
     queryKey: orderKeys.list(userId, filters),
@@ -162,15 +155,11 @@ export const useOrdersByUser = (userId: string, filters: FiltersType) => {
   })
 }
 
-export const useOrdersByStore = (
-  userId: string,
-  filters: FiltersType,
-  storeId: string
-) => {
+export const useOrdersByStore = (storeId: string, filters: FiltersType) => {
   return useQuery({
-    queryKey: orderKeys.storeList(storeId, userId, filters),
-    queryFn: () => listOrdersByStore(userId, filters, storeId),
-    enabled: !!userId && !!storeId
+    queryKey: orderKeys.storeList(storeId, '', filters),
+    queryFn: () => listOrdersByStore(storeId, filters),
+    enabled: !!storeId
   })
 }
 
@@ -186,18 +175,35 @@ export const useReturnsByStore = (
   })
 }
 
-export const useOrdersForAdmin = (filters: FiltersType) => {
+export const useOrdersForAdmin = (
+  filters: FiltersType,
+  options?: { enabled?: boolean }
+) => {
   return useQuery({
     queryKey: orderKeys.adminList(filters),
     queryFn: async () => {
       const response = await listOrdersForAdmin(filters)
       return response.data || response
     },
-    enabled: true
+    enabled: options?.enabled !== false
   })
 }
 
-// Order count hook
+export const useOrdersForStore = (
+  storeId: string,
+  filters: FiltersType,
+  options?: { enabled?: boolean }
+) => {
+  return useQuery({
+    queryKey: ['orders', 'store', storeId, filters],
+    queryFn: async () => {
+      const response = await listOrdersByStore(storeId, filters)
+      return response.data || response
+    },
+    enabled: options?.enabled !== false && !!storeId
+  })
+}
+
 export const useOrderCount = (
   status: string,
   userId: string,
@@ -210,7 +216,6 @@ export const useOrderCount = (
   })
 }
 
-// Order mutations
 export const useCreateOrder = () => {
   const queryClient = useQueryClient()
   return useMutation({

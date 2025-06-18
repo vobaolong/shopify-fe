@@ -23,17 +23,6 @@ const ProductsPage = () => {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [run, setRun] = useState(false)
 
-  const productStatus = [
-    {
-      label: t('productDetail.all'),
-      value: 'all'
-    },
-    { label: t('productDetail.selling'), value: 'selling' },
-    { label: t('productDetail.hidden'), value: 'hidden' },
-    { label: t('productDetail.outOfStock'), value: 'outOfStock' },
-    { label: t('status.infringing'), value: 'infringing' }
-  ]
-
   return (
     <SellerLayout user={user as any} store={store as any} paths={paths}>
       <div className='flex align-items-start justify-content-between mb-3'>

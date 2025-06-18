@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import {
   Table,
@@ -10,7 +10,7 @@ import {
   Divider,
   Rate
 } from 'antd'
-import { StarFilled, SyncOutlined } from '@ant-design/icons'
+import { SyncOutlined } from '@ant-design/icons'
 import SearchInput from '../ui/SearchInput'
 import { DatePicker } from 'antd'
 import dayjs from 'dayjs'
@@ -31,7 +31,6 @@ import {
 import useInvalidate from '../../hooks/useInvalidate'
 import { ColumnsType } from 'antd/es/table'
 import { formatPrice } from '../../helper/formatPrice'
-import { Star, StarIcon } from 'lucide-react'
 import StarRating from '../label/StarRating'
 
 const { RangePicker } = DatePicker
@@ -53,6 +52,7 @@ const AdminProductsTable = () => {
   const [error, setError] = useState('')
   const [isConfirming, setIsConfirming] = useState(false)
   const invalidate = useInvalidate()
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
   const mutation = useMutation({
     mutationFn: ({
       productId,
@@ -83,7 +83,6 @@ const AdminProductsTable = () => {
       setIsConfirming(false)
     }
   })
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
 
   const handleChangeKeyword = (keyword: string) => {
     setPendingFilter((prev) => ({ ...prev, search: keyword, page: 1 }))
@@ -171,9 +170,7 @@ const AdminProductsTable = () => {
       title: t('productDetail.category'),
       dataIndex: 'categoryId',
       key: 'categoryId',
-      render: (category: any) => (
-        <CategorySmallCard category={category} parent={false} />
-      )
+      render: (category: any) => <CategorySmallCard category={category} />
     },
     {
       title: t('productDetail.price'),
@@ -257,6 +254,11 @@ const AdminProductsTable = () => {
     mutation.mutate({ productId: activeProduct._id, value })
   }
 
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: setSelectedRowKeys
+  }
+
   return (
     <div className='w-full'>
       {error && <Alert message={error} type='error' />}
@@ -325,10 +327,7 @@ const AdminProductsTable = () => {
           rowKey='_id'
           loading={isLoading}
           bordered
-          rowSelection={{
-            selectedRowKeys,
-            onChange: setSelectedRowKeys
-          }}
+          rowSelection={rowSelection}
           pagination={{
             current: pagination.pageCurrent,
             pageSize: filter.limit,

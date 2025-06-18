@@ -10,6 +10,7 @@ import ChartSection from './ChartSection'
 import { Role } from '../../enums/OrderStatus.enum'
 import { Typography } from 'antd/lib'
 import RecentOrdersTable from './RecentOrdersTable'
+import DataTable from './DataTable'
 
 const { RangePicker } = DatePicker
 
@@ -123,7 +124,7 @@ const ListStatisticsItems: React.FC<ListStatisticsItemsProps> = ({
     <div className='!space-y-6 min-h-screen'>
       <div className='flex items-center gap-4 justify-between'>
         <Title level={5} className='!mb-0'>
-          Good Morning, Admin! <br />
+          Good Morning! <br />
           <Text className='!text-sm font-normal !text-gray-500'>
             Here's what's happening with your store today.
           </Text>
@@ -170,19 +171,19 @@ const ListStatisticsItems: React.FC<ListStatisticsItemsProps> = ({
             by={by}
           />
         </Col>
-        {/* <Col xs={24} lg={8}>
+        <Col xs={24} lg={8}>
           <DataTable
             options={options}
             items={currentItems}
             by={by}
             storeId={storeId}
           />
-        </Col> */}
-      </Row>
+        </Col>
+      </Row>{' '}
       <Row>
         <Col span={16}>
           <Card className='shadow-md'>
-            <RecentOrdersTable />
+            <RecentOrdersTable by={by} storeId={storeId} />
           </Card>
         </Col>
       </Row>
