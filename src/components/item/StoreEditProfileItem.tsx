@@ -31,27 +31,21 @@ const StoreEditProfileItem = ({ store }: StoreEditProfileItemProps) => {
   const showModal = () => {
     setIsModalOpen(true)
   }
- // Get address string from the populated Address object
   const getAddressString = (address: any) => {
     if (!address) {
       return ''
     }
-
-    // Since backend now consistently returns populated Address objects,
-    // we can directly access the address property
     if (typeof address === 'object' && address.address) {
       return address.address
     }
-
-    // Fallback for any edge cases
     return ''
   }
 
   const addressString = getAddressString(store.address)
 
   return (
-    <div className='relative inline-block'>
-      <Button type='primary' icon={<EditOutlined />} onClick={showModal}>
+    <div>
+      <Button icon={<EditOutlined />} onClick={showModal}>
         <span className='hidden sm:inline'>{t('button.edit')}</span>
       </Button>
 

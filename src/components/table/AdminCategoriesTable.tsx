@@ -5,13 +5,11 @@ import {
   restoreCategory
 } from '../../apis/category.api'
 import SearchInput from '../ui/SearchInput'
-import DeletedLabel from '../label/DeletedLabel'
 import CategorySmallCard from '../card/CategorySmallCard'
 import ActiveLabel from '../label/ActiveLabel'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'react-toastify'
 import CategorySelector from '../selector/CategorySelector'
-import { humanReadableDate } from '../../helper/humanReadable'
+import { formatDate } from '../../helper/humanReadable'
 import {
   Table,
   Button,
@@ -20,14 +18,20 @@ import {
   Avatar,
   Tooltip,
   Drawer,
-  Divider,
-  notification
+  Divider
 } from 'antd'
 import { useQuery } from '@tanstack/react-query'
 import { CategoryType } from '../../@types/entity.types'
 import { ColumnsType } from 'antd/es/table'
-import { Pen, Plus } from 'lucide-react'
 import AdminUpsertCategoryForm from '../item/form/AdminUpsertCategoryForm'
+import { useAntdApp } from '../../hooks/useAntdApp'
+import {
+  DeleteOutlined,
+  EditOutlined,
+  PlusOutlined,
+  SyncOutlined,
+  UnorderedListOutlined
+} from '@ant-design/icons'
 
 const AdminCategoriesTable = () => {
   const { t } = useTranslation()
@@ -36,6 +40,7 @@ const AdminCategoriesTable = () => {
   const [isConfirmingRestore, setIsConfirmingRestore] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
   const [run, setRun] = useState(false)
+  const { message } = useAntdApp()
   const [deletedCategory, setDeletedCategory] = useState<CategoryType | null>(
     null
   )
@@ -110,10 +115,10 @@ const AdminCategoriesTable = () => {
     setLoadingDelete(true)
     try {
       await removeCategory(deletedCategory._id)
-      notification.success({ message: t('toastSuccess.category.delete') })
+      message.success(t('toastSuccess.category.delete'))
       setRun((r) => !r)
     } catch (err: any) {
-      notification.error({ message: t('toastError.category.delete') })
+      message.error(t('toastError.category.delete'))
     } finally {
       setIsConfirming(false)
       setLoadingDelete(false)
@@ -124,10 +129,10 @@ const AdminCategoriesTable = () => {
     setLoadingRestore(true)
     try {
       await restoreCategory(restoredCategory._id)
-      notification.success({ message: t('toastSuccess.category.restore') })
+      message.success(t('toastSuccess.category.restore'))
       setRun((r) => !r)
     } catch (err: any) {
-      notification.error({ message: t('toastError.category.restore') })
+      message.error(t('toastError.category.restore'))
     } finally {
       setIsConfirmingRestore(false)
       setLoadingRestore(false)
@@ -146,13 +151,11 @@ const AdminCategoriesTable = () => {
           await Promise.all(
             selectedRowKeys.map((categoryId) => removeCategory(categoryId))
           )
-          notification.success({
-            message: t('toastSuccess.category.bulkDelete')
-          })
+          message.success(t('toastSuccess.category.bulkDelete'))
           setSelectedRowKeys([])
           setRun((r) => !r)
         } catch (err: any) {
-          notification.error({ message: t('toastError.category.bulkDelete') })
+          message.error(t('toastError.category.bulkDelete'))
         } finally {
           setLoadingDelete(false)
         }
@@ -175,13 +178,11 @@ const AdminCategoriesTable = () => {
           await Promise.all(
             selectedRowKeys.map((categoryId) => restoreCategory(categoryId))
           )
-          notification.success({
-            message: t('toastSuccess.category.bulkRestore')
-          })
+          message.success(t('toastSuccess.category.bulkRestore'))
           setSelectedRowKeys([])
           setRun((r) => !r)
         } catch (err: any) {
-          notification.error({ message: t('toastError.category.bulkRestore') })
+          message.error(t('toastError.category.bulkRestore'))
         } finally {
           setLoadingRestore(false)
         }
@@ -197,6 +198,7 @@ const AdminCategoriesTable = () => {
       dataIndex: 'index',
       key: 'index',
       align: 'center',
+      fixed: 'left',
       render: (_: any, __: any, idx: number) =>
         (pagination.pageCurrent - 1) * filter.limit + idx + 1,
       width: 60
@@ -217,7 +219,8 @@ const AdminCategoriesTable = () => {
     {
       title: t('categoryDetail.name'),
       dataIndex: 'name',
-      key: 'name'
+      key: 'name',
+      width: 250
     },
     {
       title: t('categoryDetail.parent'),
@@ -225,9 +228,7 @@ const AdminCategoriesTable = () => {
       key: 'categoryId',
       render: (categoryId: any) =>
         categoryId ? (
-          <span className='hidden-avatar badge bg-value text-dark-emphasis border rounded-1 fw-normal text-sm'>
-            <CategorySmallCard category={categoryId} />
-          </span>
+          <CategorySmallCard category={categoryId} />
         ) : (
           <span>-</span>
         )
@@ -236,32 +237,36 @@ const AdminCategoriesTable = () => {
       title: t('status.status'),
       dataIndex: 'isDeleted',
       key: 'isDeleted',
-      render: (isDeleted: boolean) =>
-        isDeleted ? <DeletedLabel /> : <ActiveLabel />
+      align: 'center',
+      width: 120,
+      render: (isDeleted: boolean) => <ActiveLabel isDeleted={isDeleted} />
     },
     {
       title: t('createdAt'),
       dataIndex: 'createdAt',
       key: 'createdAt',
-      render: (date: string) => humanReadableDate(date),
+      render: (date: string) => formatDate(date),
       sorter: true,
       align: 'right',
-      width: 180
+      width: 120
     },
     {
       title: t('action'),
       key: 'action',
+      fixed: 'right',
+      width: 120,
+      align: 'center',
       render: (_: any, category: CategoryType) => (
-        <div className='text-nowrap flex items-center gap-2'>
+        <div className='flex items-center justify-center gap-3'>
           <Tooltip placement='top' title={t('button.edit')}>
             <Button
-              type='primary'
-              size='middle'
+              type='text'
+              size='small'
               onClick={() => {
                 setEditingCategory(category)
                 setDrawerOpen(true)
               }}
-              icon={<Pen size={16} />}
+              icon={<EditOutlined />}
             />
           </Tooltip>
           <Tooltip
@@ -272,19 +277,19 @@ const AdminCategoriesTable = () => {
           >
             {!category.isDeleted ? (
               <Button
-                type='default'
-                size='middle'
+                type='text'
+                size='small'
                 danger
                 onClick={() => removeDeleteCategory(category)}
-                icon={<i className='fa-solid fa-trash-alt' />}
+                icon={<DeleteOutlined />}
               />
             ) : (
               <Button
                 color='green'
-                variant='outlined'
-                size='middle'
+                variant='text'
+                size='small'
                 onClick={() => handleRestoreCategory(category)}
-                icon={<i className='fa-solid fa-trash-can-arrow-up' />}
+                icon={<SyncOutlined />}
               />
             )}
           </Tooltip>
@@ -311,7 +316,6 @@ const AdminCategoriesTable = () => {
   return (
     <div>
       {error && <Alert message={error.message} type='error' />}
-      {/* Delete Confirmation Modal (AntD) */}
       <Modal
         open={isConfirming}
         title={t('categoryDetail.delete')}
@@ -327,7 +331,6 @@ const AdminCategoriesTable = () => {
           <div className='mb-3'>{t('message.delete')}</div>
         </div>
       </Modal>
-      {/* Restore Confirmation Modal (AntD) */}
       <Modal
         open={isConfirmingRestore}
         title={t('categoryDetail.restore')}
@@ -344,33 +347,23 @@ const AdminCategoriesTable = () => {
       </Modal>
 
       <div className='p-3 bg-white rounded-md'>
-        <div className='flex gap-3 items-center flex-wrap'>
+        <div className='flex gap-3 items-center flex-wrap justify-between'>
           <SearchInput
             value={pendingFilter.search || ''}
             onChange={handleChangeKeyword}
             onSearch={handleSearch}
             loading={isLoading}
           />
-          <div className='flex gap-1'>
+          <div className='flex gap-2'>
             <div className='items-center flex justify-content-end'>
-              <div className='position-relative d-inline-block'>
-                <button
-                  type='button'
-                  className='btn btn-outline-primary ripple cus-tooltip rounded-1'
-                  data-bs-toggle='modal'
-                  data-bs-target='#admin-category-tree'
-                >
-                  <i className='fa-light fa-list-tree' />
-                  <span className='res-hide ms-2'>
-                    {t('categoryDetail.tree')}
-                  </span>
-                </button>
-
-                <small className='cus-tooltip-msg'>
-                  {t('categoryDetail.tree')}
-                </small>
-              </div>
-            </div>{' '}
+              <Button
+                icon={<UnorderedListOutlined />}
+                type='default'
+                onClick={() => setModalOpen(true)}
+              >
+                <span className='res-hide'>{t('categoryDetail.tree')}</span>
+              </Button>
+            </div>
             <Modal
               title={t('categoryDetail.tree')}
               open={modalOpen}
@@ -378,7 +371,7 @@ const AdminCategoriesTable = () => {
               footer={null}
               width={1000}
             >
-              <CategorySelector isActive={true} isSelected={false} />
+              <CategorySelector isActive={true} />
             </Modal>
             <Button
               type='primary'
@@ -387,44 +380,37 @@ const AdminCategoriesTable = () => {
                 setEditingCategory(null)
                 setDrawerOpen(true)
               }}
-              icon={<Plus size={16} />}
+              icon={<PlusOutlined />}
             >
               <span className='res-hide'>{t('categoryDetail.add')}</span>
             </Button>
-          </div>{' '}
+          </div>
         </div>
         <Divider />
-
-        {/* Bulk Actions */}
         {hasSelected && (
-          <div className='flex items-center gap-4 mb-4 p-3 bg-blue-50 rounded-lg'>
-            <span className='text-sm text-gray-600'>
-              {t('table.selectedCount', { count: selectedRowKeys.length })}
-            </span>
-            <div className='flex gap-2'>
-              {hasActiveSelected && (
-                <Button
-                  size='small'
-                  danger
-                  onClick={handleBulkDelete}
-                  loading={loadingDelete}
-                  icon={<i className='fa-solid fa-trash-alt' />}
-                >
-                  {t('button.bulkDelete')}
-                </Button>
-              )}
-              {hasDeletedSelected && (
-                <Button
-                  size='small'
-                  onClick={handleBulkRestore}
-                  loading={loadingRestore}
-                  icon={<i className='fa-solid fa-trash-can-arrow-up' />}
-                  className='text-green-600 border-green-600 hover:text-green-700 hover:border-green-700'
-                >
-                  {t('button.bulkRestore')}
-                </Button>
-              )}
-            </div>{' '}
+          <div className='text-end mb-3'>
+            {hasActiveSelected && (
+              <Button
+                danger
+                type='default'
+                onClick={handleBulkDelete}
+                loading={loadingDelete}
+                icon={<DeleteOutlined />}
+              >
+                {t('button.bulkDelete')} ({selectedRowKeys.length})
+              </Button>
+            )}
+            {hasDeletedSelected && (
+              <Button
+                onClick={handleBulkRestore}
+                loading={loadingRestore}
+                icon={<SyncOutlined />}
+                color='green'
+                variant='outlined'
+              >
+                {t('button.bulkRestore')}
+              </Button>
+            )}
           </div>
         )}
 
@@ -434,6 +420,7 @@ const AdminCategoriesTable = () => {
             ...category,
             key: category._id || idx
           }))}
+          rowKey='_id'
           rowSelection={rowSelection}
           loading={isLoading}
           pagination={{
@@ -446,8 +433,8 @@ const AdminCategoriesTable = () => {
               `${range[0]}-${range[1]} ${t('of')} ${total} ${t('result')}`
           }}
           onChange={handleTableChange}
-          rowKey='_id'
           bordered
+          size='small'
           scroll={{ x: 'max-content' }}
         />
       </div>
@@ -457,7 +444,7 @@ const AdminCategoriesTable = () => {
         }
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        width={700}
+        width={600}
         destroyOnHidden
       >
         <AdminUpsertCategoryForm

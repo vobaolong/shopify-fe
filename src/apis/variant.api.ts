@@ -50,7 +50,7 @@ export const listActiveValues = async (
   variantId: string,
   params?: any
 ): Promise<any> => {
-  return await client.get(`/active/values/by/variant/${variantId}`, {
+  return await client.get(`/variants/${variantId}/values/active`, {
     params
   })
 }
@@ -59,7 +59,7 @@ export const listValues = async (
   variantId: string,
   params?: any
 ): Promise<any> => {
-  return await client.get(`/values/by/variant/${variantId}`, {
+  return await client.get(`/variants/${variantId}/values`, {
     params
   })
 }

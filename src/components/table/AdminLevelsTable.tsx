@@ -17,7 +17,7 @@ import {
   Select,
   Typography
 } from 'antd'
-import { SyncOutlined } from '@ant-design/icons'
+import { DeleteOutlined, SyncOutlined } from '@ant-design/icons'
 import { getToken } from '../../apis/auth.api'
 import {
   listUserLevels,
@@ -31,7 +31,6 @@ import useInvalidate from '../../hooks/useInvalidate'
 import { PaginationType } from '../../@types/pagination.type'
 import { LevelType } from '../../@types/entity.types'
 import SearchInput from '../ui/SearchInput'
-import DeletedLabel from '../label/DeletedLabel'
 import ActiveLabel from '../label/ActiveLabel'
 import LevelLabel from '../label/LevelLabel'
 import AdminCreateUserLevelItem from '../item/AdminCreateUserLevelItem'
@@ -263,8 +262,7 @@ const AdminLevelsTable = () => {
       key: 'isDeleted',
       width: 150,
       align: 'center' as const,
-      render: (isDeleted: boolean) =>
-        isDeleted ? <DeletedLabel /> : <ActiveLabel />
+      render: (isDeleted: boolean) => <ActiveLabel isDeleted={isDeleted} />
     },
     {
       title: t('levelDetail.createdAt'),
@@ -296,7 +294,7 @@ const AdminLevelsTable = () => {
               <Button
                 type='default'
                 size='small'
-                icon={<i className='fa-solid fa-trash-can-arrow-up' />}
+                icon={<SyncOutlined />}
                 onClick={() => handleRestore(record._id)}
                 loading={restoreMutation.isPending}
                 className='default-green-600 hover:text-green-700'
@@ -308,7 +306,7 @@ const AdminLevelsTable = () => {
                 type='default'
                 size='small'
                 danger
-                icon={<i className='fa-solid fa-trash-alt' />}
+                icon={<DeleteOutlined />}
                 onClick={() => handleDelete(record._id)}
                 loading={deleteMutation.isPending}
               />
@@ -436,18 +434,19 @@ const AdminLevelsTable = () => {
                       danger
                       onClick={handleBulkDelete}
                       loading={deleteMutation.isPending}
-                      icon={<i className='fa-solid fa-trash-alt' />}
+                      icon={<DeleteOutlined />}
                     >
                       {t('button.bulkDelete')}
                     </Button>
                   )}
                   {hasDeletedSelected && (
                     <Button
+                      color='green'
+                      type='text'
                       size='small'
                       onClick={handleBulkRestore}
                       loading={restoreMutation.isPending}
-                      icon={<i className='fa-solid fa-trash-can-arrow-up' />}
-                      className='text-green-600 border-green-600 hover:text-green-700 hover:border-green-700'
+                      icon={<SyncOutlined />}
                     >
                       {t('button.bulkRestore')}
                     </Button>

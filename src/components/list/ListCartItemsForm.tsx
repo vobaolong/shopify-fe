@@ -23,6 +23,7 @@ import { calcPercent } from '../../helper/calcPercent'
 import { toast } from 'react-toastify'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAntdApp } from '../../hooks/useAntdApp'
+import { DeleteOutlined } from '@ant-design/icons'
 
 const ListCartItems = ({
   cartId = '',
@@ -293,7 +294,7 @@ const ListCartItems = ({
                   className='btn btn-sm btn-outline-danger ripple rounded-1 cus-tooltip'
                   onClick={() => handleDelete(item)}
                 >
-                  <i className='fa-solid fa-trash-alt' />
+                  <DeleteOutlined />
                 </button>
                 <span className='cus-tooltip-msg'>{t('button.delete')}</span>
               </div>

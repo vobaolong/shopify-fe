@@ -77,6 +77,7 @@
       "create": "Thêm phân loại thành công",
       "update": "Chỉnh sửa phân loại thành công",
       "delete": "Xoá phân loại thành công",
+      "restore": "Khôi phục phân loại thành công",
       "none": "Ngành hàng này chưa có phân loại"
     },
     "brand": {
@@ -800,7 +801,8 @@
     "addLevel": "Thêm hạng mức",
     "add": "Thêm",
     "clearSelection": "Xóa lựa chọn",
-    "bulkDelete": "Xóa hàng loạt"
+    "bulkDelete": "Xóa hàng loạt",
+    "bulkRestore": "Khôi phục hàng loạt"
   },
   "signUpForm": {
     "enterOTP": "Nhập mã OTP",

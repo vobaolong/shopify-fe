@@ -119,8 +119,8 @@ const SellerSideBar = ({ user, store }: SellerSideBarProps) => {
       onCollapse={(value) => setCollapsed(value)}
       trigger={null}
       breakpoint='lg'
-      collapsedWidth='80'
-      width={220}
+      collapsedWidth='70'
+      width={250}
       style={siderStyle}
     >
       <div className='flex items-center justify-between px-4 py-3'>

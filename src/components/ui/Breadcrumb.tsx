@@ -1,6 +1,8 @@
 import clsx from 'clsx'
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Breadcrumb as AntBreadcrumb } from 'antd'
+import { HomeOutlined } from '@ant-design/icons'
 
 export interface BreadcrumbPath {
   name: string
@@ -12,48 +14,39 @@ interface BreadcrumbProps {
 }
 
 const Breadcrumb: React.FC<BreadcrumbProps> = ({ paths }) => {
-  const [isScrolled, setIsScrolled] = useState(false)
-
-  useEffect(() => {
-    const checkScroll = () => {
-      setIsScrolled(window.scrollY > 150)
-    }
-    window.addEventListener('scroll', checkScroll)
-    return () => window.removeEventListener('scroll', checkScroll)
-  }, [])
-
-  if (!Array.isArray(paths)) {
+  if (!Array.isArray(paths) || paths.length === 0) {
     return null
   }
 
+  const breadcrumbItems = paths.map((path, index) => {
+    const isLast = index === paths.length - 1
+    const isFirst = index === 0
+
+    return {
+      key: index,
+      title: isLast ? (
+        <span className='text-gray-600 font-medium'>{path.name}</span>
+      ) : (
+        <Link to={path.url} className='!no-underline'>
+          {isFirst ? (
+            <span className='flex items-center gap-1'>
+              <HomeOutlined />
+              {path.name}
+            </span>
+          ) : (
+            path.name
+          )}
+        </Link>
+      )
+    }
+  })
+
   return (
-    <nav
-      className={clsx(
-        'transition-all duration-300 ease-in-out rounded-md p-2.5 z-10',
-        isScrolled && 'sticky top-20 bg-white shadow-md translate-y-0',
-        !isScrolled && 'relative -translate-y-5'
-      )}
-      aria-label='breadcrumb'
-    >
-      <ol className='breadcrumb mb-0'>
-        {paths?.map((path, index) => (
-          <li key={index} className='breadcrumb-item'>
-            {index === paths.length - 1 ? (
-              <Link className='breadcrumb-item active' to={path.url}>
-                {path.name}
-              </Link>
-            ) : (
-              <Link
-                className='breadcrumb-item text-decoration-none'
-                to={path.url}
-              >
-                {path.name}
-              </Link>
-            )}
-          </li>
-        ))}
-      </ol>
-    </nav>
+    <AntBreadcrumb
+      items={breadcrumbItems}
+      separator='/'
+      className='text-sm py-2'
+    />
   )
 }
 

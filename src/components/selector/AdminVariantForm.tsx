@@ -1,16 +1,14 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CategoryType } from '../../@types/entity.types'
-import { getToken } from '../../apis/auth.api'
 import {
   getVariantById,
   updateVariant,
   createVariant
 } from '../../apis/variant.api'
-import { regexTest } from '../../constants/regex.constant'
 import { Spin, Alert, Input, Modal, Form, Button } from 'antd'
 import MultiCategorySelector from './MultiCategorySelector'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation } from '@tanstack/react-query'
 import { useAntdApp } from '../../hooks/useAntdApp'
 import useInvalidate from '../../hooks/useInvalidate'
 

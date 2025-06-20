@@ -1,7 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { listActiveValues } from '../../apis/variant.api'
-import { Spin, Alert } from 'antd'
+import { Spin, Alert, Tag, Button, Card, Empty } from 'antd'
+import { CloseOutlined, PlusOutlined } from '@ant-design/icons'
 import AddVariantValueItem from '../item/AddVariantValueItem'
 import { useTranslation } from 'react-i18next'
 import { VariantValueType } from '../../@types/entity.types'
@@ -21,34 +23,40 @@ const MultiVariantValueSelector = ({
   variantName = '',
   onSet
 }: MultiVariantValueSelectorProps) => {
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [run, setRun] = useState('')
-  const [values, setValues] = useState<VariantValueType[]>([])
   const [selectedValues, setSelectedValues] = useState<VariantValueType[]>([])
+  const [refreshKey, setRefreshKey] = useState(0)
   const { t } = useTranslation()
 
-  const init = () => {
-    setError('')
-    setIsLoading(true)
-    listActiveValues(variantId)
-      .then((res) => {
-        const data = res.data
-        if (data.error) setError(data.error)
-        else {
-          setValues(data.variantValues)
-        }
-        setIsLoading(false)
-      })
-      .catch((error) => {
-        setError(error)
-        setIsLoading(false)
-      })
+  const {
+    data: response,
+    isLoading,
+    error,
+    refetch
+  } = useQuery({
+    queryKey: ['variantValues', variantId, refreshKey],
+    queryFn: async () => {
+      if (!variantId) return { variantValues: [] }
+      const result = await listActiveValues(variantId)
+      return result.data || result
+    },
+    enabled: !!variantId,
+    retry: 1,
+    staleTime: 30000
+  })
+
+  const values = response?.variantValues || []
+
+  let errorMessage = ''
+  if (error) {
+    errorMessage =
+      typeof error === 'string' ? error : error?.message || 'Server Error'
+  } else if (response?.error) {
+    errorMessage =
+      typeof response.error === 'string'
+        ? response.error
+        : response.error?.message || 'Error occurred'
   }
-
   useEffect(() => {
-    init()
-
     const oldArray = selectedValues
     const newArray: VariantValueType[] = []
 
@@ -57,18 +65,14 @@ const MultiVariantValueSelector = ({
   }, [variantId, categoryId])
 
   useEffect(() => {
-    init()
-  }, [run])
-
-  useEffect(() => {
-    if (defaultValue) {
+    if (defaultValue && defaultValue.length > 0) {
       const oldArray = selectedValues
       const newArray = defaultValue.filter((v) => v.variantId._id === variantId)
 
       setSelectedValues(newArray)
       if (onSet) onSet(oldArray, newArray)
     }
-  }, [defaultValue])
+  }, [defaultValue, variantId])
 
   const handleChoose = (value: VariantValueType) => {
     const oldArray = selectedValues
@@ -88,79 +92,113 @@ const MultiVariantValueSelector = ({
     setSelectedValues(newArray)
     if (onSet) onSet(oldArray, newArray)
   }
-
   return (
-    <div className='position-relative'>
-      {isLoading && <Spin size='large' />}
-      {error && <Alert message={error} type='error' />}
+    <div className='relative'>
+      {isLoading && (
+        <div className='flex justify-center items-center py-4'>
+          <Spin size='large' />
+        </div>
+      )}
 
-      <div className='position-relative mt-4'>
-        <label
-          className='position-absolute text-muted mb-2'
-          style={{
-            fontSize: '0.8rem',
-            top: '-18px'
-          }}
-        >
-          {variantName}
-        </label>
+      {errorMessage && (
+        <Alert message={errorMessage} type='error' showIcon className='mb-4' />
+      )}
 
-        <div className=''>
+      <Card
+        title={variantName || t('productDetail.selectVariantValues')}
+        size='small'
+        className='mb-4'
+      >
+        {/* Selected Values Display */}
+        <div className='mb-4'>
+          <div className='text-sm text-gray-600 mb-2'>
+            {t('productDetail.selectedValues')}:
+          </div>
+
           {selectedValues?.length > 0 ? (
-            selectedValues?.map((value, index) => (
-              <span key={index} className='mb-1 d-inline-flex items-center'>
-                <span className='items-center bg-body border border-dark-subtle me-3 p-1 rounded-1'>
-                  {value.name}
-                  <button
-                    type='button'
-                    className='btn btn-outline-danger btn-sm ripple rounded-1 ms-2'
-                    onClick={() => handleRemove(index)}
-                  >
-                    <i className='fa-solid fa-xmark' />
-                  </button>
-                </span>
-              </span>
-            ))
-          ) : (
-            <small className='text-danger'>
-              {t('productDetail.noValuesSelected')}
-            </small>
-          )}
-
-          <div
-            className='mt-2'
-            style={{
-              maxHeight: '200px',
-              overflow: 'auto'
-            }}
-          >
-            <div className='list-group'>
-              {values.map((value, index) => (
-                <button
+            <div className='flex flex-wrap gap-2'>
+              {selectedValues.map((value, index) => (
+                <Tag
                   key={index}
-                  type='button'
-                  className={`list-group-item ripple list-group-item-action ${
-                    selectedValues?.map((v) => v._id).indexOf(value._id) !==
-                      -1 && 'active'
-                  }`}
-                  onClick={() => handleChoose(value)}
+                  closable
+                  color='blue'
+                  onClose={() => handleRemove(index)}
+                  closeIcon={<CloseOutlined />}
                 >
                   {value.name}
-                </button>
+                </Tag>
               ))}
-
-              <span className='list-group-item'>
-                <AddVariantValueItem
-                  variantId={variantId}
-                  variantName={variantName}
-                  onRun={() => setRun(run === '' ? '1' : '')}
-                  isFullWidth={true}
-                />
-              </span>
             </div>
-          </div>
+          ) : (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={t('productDetail.noValuesSelected')}
+              className='text-sm'
+            />
+          )}
         </div>
-      </div>
+
+        {/* Available Values List */}
+        <div className='border-t pt-4'>
+          <div className='text-sm text-gray-600 mb-2'>
+            {t('productDetail.availableValues')}:
+          </div>
+
+          {values?.length > 0 ? (
+            <div
+              className='max-h-48 overflow-y-auto border rounded-md'
+              style={{ maxHeight: '200px' }}
+            >
+              {values.map((value: VariantValueType, index: number) => {
+                const isSelected = selectedValues?.some(
+                  (v) => v._id === value._id
+                )
+
+                return (
+                  <Button
+                    key={index}
+                    type={isSelected ? 'primary' : 'text'}
+                    block
+                    className={`text-left justify-start mb-1 ${
+                      isSelected
+                        ? 'bg-blue-50 border-blue-200'
+                        : 'hover:bg-gray-50'
+                    }`}
+                    onClick={() => handleChoose(value)}
+                    disabled={isSelected}
+                  >
+                    {value.name}
+                    {isSelected && (
+                      <span className='ml-2 text-blue-600'>✓</span>
+                    )}
+                  </Button>
+                )
+              })}
+            </div>
+          ) : (
+            !isLoading && (
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description={t('productDetail.noValuesAvailable')}
+                className='text-sm py-4'
+              />
+            )
+          )}
+        </div>
+
+        {/* Add New Value Section */}
+        <div className='border-t pt-4 mt-4'>
+          <AddVariantValueItem
+            variantId={variantId}
+            variantName={variantName}
+            onRun={() => {
+              setRefreshKey((prev) => prev + 1)
+              refetch()
+            }}
+            isFullWidth={true}
+          />
+        </div>
+      </Card>
     </div>
   )
 }

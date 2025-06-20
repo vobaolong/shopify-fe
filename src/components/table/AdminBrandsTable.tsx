@@ -22,12 +22,12 @@ import { useAntdApp } from '../../hooks/useAntdApp'
 import { PaginationType } from '../../@types/pagination.type'
 import SearchInput from '../ui/SearchInput'
 import CategorySmallCard from '../card/CategorySmallCard'
-import DeletedLabel from '../label/DeletedLabel'
 import ActiveLabel from '../label/ActiveLabel'
 import AdminBrandForm from '../item/form/AdminBrandForm'
 import { humanReadableDate } from '../../helper/humanReadable'
 import { ColumnsType } from 'antd/es/table'
 import { BrandFilterState, defaultBrandFilter } from '../../@types/filter.type'
+import { DeleteOutlined, SyncOutlined } from '@ant-design/icons'
 
 interface BrandsResponse {
   brands: BrandType[]
@@ -271,8 +271,7 @@ const AdminBrandsTable = () => {
       key: 'isDeleted',
       width: 100,
       align: 'center',
-      render: (isDeleted: boolean) =>
-        isDeleted ? <DeletedLabel /> : <ActiveLabel />
+      render: (isDeleted: boolean) => <ActiveLabel isDeleted={isDeleted} />
     },
     {
       title: t('brandDetail.createdAt'),
@@ -315,13 +314,7 @@ const AdminBrandsTable = () => {
                   ? deleteMutation.isPending
                   : restoreMutation.isPending
               }
-              icon={
-                !brand.isDeleted ? (
-                  <i className='fa-solid fa-trash-alt' />
-                ) : (
-                  <i className='fa-solid fa-trash-can-arrow-up' />
-                )
-              }
+              icon={!brand.isDeleted ? <DeleteOutlined /> : <SyncOutlined />}
               onClick={() =>
                 !brand.isDeleted ? handleDelete(brand) : handleRestore(brand)
               }
@@ -415,7 +408,7 @@ const AdminBrandsTable = () => {
                       size='small'
                       loading={bulkDeleteMutation.isPending}
                       onClick={handleBulkDelete}
-                      icon={<i className='fa-solid fa-trash-alt' />}
+                      icon={<DeleteOutlined />}
                     >
                       {t('button.delete')} ({selectedActiveBrands.length})
                     </Button>
@@ -426,7 +419,7 @@ const AdminBrandsTable = () => {
                       size='small'
                       loading={bulkRestoreMutation.isPending}
                       onClick={handleBulkRestore}
-                      icon={<i className='fa-solid fa-trash-can-arrow-up' />}
+                      icon={<SyncOutlined />}
                     >
                       {t('button.restore')} ({selectedDeletedBrands.length})
                     </Button>

@@ -7,7 +7,6 @@ import {
 } from '../../apis/commission.api'
 import SearchInput from '../ui/SearchInput'
 import StoreCommissionLabel from '../label/StoreCommissionLabel'
-import DeletedLabel from '../label/DeletedLabel'
 import ActiveLabel from '../label/ActiveLabel'
 import AdminEditCommissionForm from '../item/form/AdminEditCommissionForm'
 import { Divider, Drawer, Modal, Tooltip, DatePicker, Select, Spin } from 'antd'
@@ -16,7 +15,7 @@ import { humanReadableDate } from '../../helper/humanReadable'
 import { Table, Button, notification, Alert } from 'antd'
 import { CommissionType } from '../../@types/entity.types'
 import { Dayjs } from 'dayjs'
-import { SyncOutlined } from '@ant-design/icons'
+import { DeleteOutlined, SyncOutlined } from '@ant-design/icons'
 import { ColumnsType } from 'antd/es/table'
 import { PaginationType } from '../../@types/pagination.type'
 
@@ -214,8 +213,7 @@ const AdminCommissionTable = () => {
       title: t('status.status'),
       dataIndex: 'isDeleted',
       key: 'isDeleted',
-      render: (isDeleted: boolean) =>
-        isDeleted ? <DeletedLabel /> : <ActiveLabel />
+      render: (isDeleted: boolean) => <ActiveLabel isDeleted={isDeleted} />
     },
     {
       title: t('createdAt'),
@@ -244,7 +242,7 @@ const AdminCommissionTable = () => {
                 size='middle'
                 danger
                 onClick={() => handleRemoveCommission(commission)}
-                icon={<i className='fa-solid fa-trash-alt' />}
+                icon={<DeleteOutlined />}
                 loading={
                   deleteMutation.isPending &&
                   deleteMutation.variables === commission._id
@@ -259,7 +257,7 @@ const AdminCommissionTable = () => {
                 variant='outlined'
                 size='middle'
                 onClick={() => handleRestoreCommission(commission)}
-                icon={<i className='fa-solid fa-trash-can-arrow-up' />}
+                icon={<SyncOutlined />}
                 loading={
                   restoreMutation.isPending &&
                   restoreMutation.variables === commission._id

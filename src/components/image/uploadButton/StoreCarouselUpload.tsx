@@ -9,6 +9,7 @@ import ConfirmDialog from '../../ui/ConfirmDialog'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { useMutation } from '@tanstack/react-query'
+import { DeleteOutlined } from '@ant-design/icons'
 
 interface StoreCarouselUploadProps {
   storeId?: string
@@ -112,7 +113,7 @@ const StoreCarouselUpload = ({
               className='cus-carousel-icon cus-carousel-icon--rm'
               onClick={() => handleRemove()}
             >
-              <i className='fa-solid fa-trash-alt' />
+              <DeleteOutlined />
               <span className='ms-2 res-hide-md'>{t('button.delete')}</span>
             </label>
           </div>{' '}

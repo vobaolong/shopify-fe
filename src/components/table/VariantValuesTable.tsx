@@ -18,12 +18,11 @@ import {
   SyncOutlined
 } from '@ant-design/icons'
 import { useAntdApp } from '../../hooks/useAntdApp'
-import DeletedLabel from '../label/DeletedLabel'
 import ActiveLabel from '../label/ActiveLabel'
 import AddVariantValueItem from '../item/AddVariantValueItem'
 import AdminEditVariantValueForm from '../item/form/AdminEditVariantValueForm'
 import SearchInput from '../ui/SearchInput'
-import { humanReadableDate } from '../../helper/humanReadable'
+import { formatDate, humanReadableDate } from '../../helper/humanReadable'
 import { ColumnsType } from 'antd/es/table'
 import { PaginationType } from '../../@types/pagination.type'
 import {
@@ -155,7 +154,7 @@ const VariantValuesTable = ({ variantId = '', isActive = false }) => {
               notification.success({
                 message: t('toastSuccess.variantValue.restore')
               })
-              refetch() // Refresh the data
+              refetch()
             }
           },
           onError: (error) => {
@@ -176,7 +175,6 @@ const VariantValuesTable = ({ variantId = '', isActive = false }) => {
       content: t('message.bulkDelete', { count: selectedRowKeys.length }),
       onOk: async () => {
         try {
-          // Process deletions sequentially to avoid overwhelming the server
           for (const valueId of selectedRowKeys) {
             await deleteMutation.mutateAsync(valueId)
           }
@@ -187,7 +185,7 @@ const VariantValuesTable = ({ variantId = '', isActive = false }) => {
               }) || `Successfully deleted ${selectedRowKeys.length} items`
           })
           setSelectedRowKeys([])
-          refetch() // Refresh the data
+          refetch()
         } catch (error) {
           console.error('Bulk delete error:', error)
           notification.error({
@@ -235,6 +233,7 @@ const VariantValuesTable = ({ variantId = '', isActive = false }) => {
       dataIndex: 'index',
       key: 'index',
       width: 50,
+      fixed: 'left' as const,
       render: (_: any, __: any, index: number) =>
         (pagination.pageCurrent - 1) * (filter.limit || 8) + index + 1,
       align: 'center' as const
@@ -253,17 +252,19 @@ const VariantValuesTable = ({ variantId = '', isActive = false }) => {
             dataIndex: 'isDeleted',
             key: 'status',
             width: 100,
-            render: (isDeleted: boolean) =>
-              isDeleted ? <DeletedLabel /> : <ActiveLabel />
+            align: 'center' as const,
+            render: (isDeleted: boolean) => (
+              <ActiveLabel isDeleted={isDeleted} />
+            )
           },
           {
             title: t('createdAt'),
             dataIndex: 'createdAt',
             key: 'createdAt',
-            width: 150,
+            width: 100,
             align: 'right' as const,
             sorter: true,
-            render: (date: string) => <Text>{humanReadableDate(date)}</Text>
+            render: (date: string) => <Text>{formatDate(date)}</Text>
           },
           {
             title: t('action'),
@@ -275,7 +276,7 @@ const VariantValuesTable = ({ variantId = '', isActive = false }) => {
               <Space size='small'>
                 <Tooltip title={t('button.edit')}>
                   <Button
-                    type='primary'
+                    type='text'
                     ghost
                     size='small'
                     icon={<EditOutlined />}
@@ -285,7 +286,7 @@ const VariantValuesTable = ({ variantId = '', isActive = false }) => {
                 {!record.isDeleted ? (
                   <Tooltip title={t('button.delete')}>
                     <Button
-                      type='primary'
+                      type='text'
                       danger
                       ghost
                       size='small'
@@ -297,7 +298,7 @@ const VariantValuesTable = ({ variantId = '', isActive = false }) => {
                 ) : (
                   <Tooltip title={t('button.restore')}>
                     <Button
-                      type='primary'
+                      type='text'
                       ghost
                       size='small'
                       icon={<UndoOutlined />}

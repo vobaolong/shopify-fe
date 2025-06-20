@@ -10,7 +10,7 @@ export const getProductByIdForManager = async (
   storeId: string
 ): Promise<any> => {
   return await client.get(
-    `/product/for/manager/${productId}/${storeId}/${userId}`
+    `store/${storeId}/manager/${userId}/product/${productId}`
   )
 }
 

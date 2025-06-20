@@ -17,7 +17,7 @@ const StoreAddFeaturedImageItem = ({ count = 6, storeId = '' }) => {
   }
 
   return (
-    <div className='relative inline-block'>
+    <div className='inline-block'>
       <Tooltip
         title={count >= 6 ? t('storeDetail.limitFeatured') : ''}
         placement='top'
@@ -27,12 +27,9 @@ const StoreAddFeaturedImageItem = ({ count = 6, storeId = '' }) => {
           icon={<PlusOutlined />}
           disabled={count >= 6}
           className='text-nowrap rounded'
-          size='small'
           onClick={showModal}
         >
-          <span className='ml-1 hidden sm:inline'>
-            {t('button.addFeaturedImg')}
-          </span>
+          <span className='hidden sm:inline'>{t('button.addFeaturedImg')}</span>
         </Button>
       </Tooltip>
 

@@ -1,28 +1,14 @@
+import { Tag } from 'antd'
 import { useTranslation } from 'react-i18next'
 
-const StoreActiveLabel = ({ isActive = false, detail = true }) => {
+const StoreActiveLabel = ({ isActive = false }: { isActive?: boolean }) => {
   const { t } = useTranslation()
-  return (
-    <span className='d-inline-block position-relative'>
-      <span
-        className={`badge border rounded-1 p-1 ${
-          isActive ? 'bg-success-rgba' : 'bg-danger-rgba'
-        }`}
-      >
-        {isActive ? (
-          <span className='px-1 text-success'>
-            <i className='fa-regular fa-circle-check' />
 
-            {detail && <span className='ms-2'>{t('status.active')}</span>}
-          </span>
-        ) : (
-          <span className='px-1 text-danger'>
-            <i className='fa-solid fa-ban' />
-            {detail && <span className='ms-2'>{t('status.banned')}</span>}
-          </span>
-        )}
-      </span>
-    </span>
+  return (
+    <Tag color={isActive ? 'success' : 'error'}>
+      <span>{isActive ? t('status.active') : t('status.banned')}</span>
+    </Tag>
   )
 }
+
 export default StoreActiveLabel

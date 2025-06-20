@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getToken } from '../../apis/auth.api'
 import { openStore } from '../../apis/store.api'
-import { Spin, Alert } from 'antd'
-import ConfirmDialog from '../ui/ConfirmDialog'
-import { toast } from 'react-toastify'
+import { Alert, Switch, Modal } from 'antd'
+import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from '@tanstack/react-query'
+import { useAntdApp } from '../../hooks/useAntdApp'
 
 interface OpenCloseStoreButtonProps {
   storeId: string
@@ -14,79 +14,72 @@ interface OpenCloseStoreButtonProps {
 }
 
 const OpenCloseStoreButton = ({
-  storeId = '',
+  storeId,
   isOpen = true,
   onRun
 }: OpenCloseStoreButtonProps) => {
-  const [isConfirming, setIsConfirming] = useState(false)
   const [openFlag, setOpenFlag] = useState(isOpen)
   const { _id } = getToken()
   const { t } = useTranslation()
+  const { message } = useAntdApp()
 
   useEffect(() => {
     setOpenFlag(isOpen)
   }, [isOpen, storeId])
-
   const { mutate, isPending, error } = useMutation({
     mutationFn: async () => {
       const value = { isOpen: !openFlag }
       return await openStore(_id, value, storeId)
     },
     onSuccess: (data: any) => {
-      if (data.data.error) {
-        // error will be handled by error state
-        return
-      }
       setOpenFlag(!openFlag)
-      if (onRun) onRun(data.data.store)
-      toast.success(
-        ` ${
-          openFlag ? t('toastSuccess.lockStore') : t('toastSuccess.unlockStore')
-        }`
+      if (onRun) onRun(data.store)
+      message.success(
+        openFlag ? t('toastSuccess.lockStore') : t('toastSuccess.unlockStore')
+      )
+    },
+    onError: (error: any) => {
+      message.error(
+        error?.response?.data?.error || error?.message || t('toastError.server')
       )
     }
   })
 
-  const handleOpenStore = useCallback(() => {
-    setIsConfirming(true)
-  }, [])
+  const handleToggleStore = useCallback(() => {
+    Modal.confirm({
+      title: openFlag ? t('title.closeStore') : t('title.openStore'),
+      icon: <ExclamationCircleOutlined className='text-orange-500' />,
+      content: <p className='mb-2'>{t('confirmDialog')}</p>,
+      okText: t('button.confirm'),
+      cancelText: t('button.cancel'),
+      okButtonProps: {
+        danger: openFlag,
+        loading: isPending
+      },
+      onOk: () => {
+        mutate()
+      }
+    })
+  }, [openFlag, t, isPending, mutate])
 
-  const onSubmit = useCallback(() => {
-    mutate()
-    setIsConfirming(false)
-  }, [mutate])
   return (
-    <div className='position-relative'>
-      {isPending && (
-        <div className='flex justify-content-center p-2'>
-          <Spin size='small' />
-        </div>
-      )}
+    <div className='relative'>
       {error && (
         <Alert
-          message={(error as any).message || 'Server Error'}
+          message={'Server Error'}
           type='error'
           showIcon
+          className='mb-2'
         />
       )}
-
-      {isConfirming && (
-        <ConfirmDialog
-          title={openFlag ? t('title.closeStore') : t('title.openStore')}
-          onSubmit={onSubmit}
-          onClose={() => setIsConfirming(false)}
-          message={t('confirmDialog')}
+      <div className='flex items-center gap-2'>
+        <Switch
+          checked={openFlag}
+          loading={isPending}
+          onChange={handleToggleStore}
+          className={`${openFlag ? '!bg-blue-500' : '!bg-gray-300'}`}
         />
-      )}
-      <label className='form-switch'>
-        <input
-          type='checkbox'
-          className='form-check-input'
-          checked={!openFlag}
-          onChange={handleOpenStore}
-        />
-        <i />
-      </label>
+      </div>
     </div>
   )
 }

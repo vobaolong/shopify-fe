@@ -37,7 +37,12 @@ const BrandSelector: React.FC<BrandSelectorProps> = ({
     listVariantByCategory(categoryId)
       .then((res) => {
         const data = res.data
-        if (data.error) setError(data.error)
+        if (data.error)
+          setError(
+            typeof data.error === 'string'
+              ? data.error
+              : data.error?.message || 'Error occurred'
+          )
         else {
           setVariants(data.variants)
           if (data.variants.length <= 0)

@@ -1,20 +1,13 @@
+import { Tag } from 'antd'
 import { useTranslation } from 'react-i18next'
+import { StoreRole } from '../../enums/OrderStatus.enum'
 
-const UserRoleLabel = ({ role = '', detail = true }) => {
+const UserRoleLabel = ({ role = '' }: { role?: string }) => {
   const { t } = useTranslation()
-  return (
-    <span className='position-relative d-inline-block'>
-      <span
-        className={`badge border cus-tooltip rounded-1
-			${
-        role === 'owner'
-          ? 'bg-primary-rgba text-primary'
-          : 'bg-success-rgba text-success'
-      }`}
-      >
-        {detail && <span>{t(`userDetail.${role}`)}</span>}
-      </span>
-    </span>
-  )
+  const getTagColor = (role: string) => {
+    return role === StoreRole.OWNER ? 'blue' : 'green'
+  }
+  return <Tag color={getTagColor(role)}>{t(`userDetail.${role}`)}</Tag>
 }
+
 export default UserRoleLabel

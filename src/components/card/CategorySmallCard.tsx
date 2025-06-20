@@ -13,8 +13,7 @@ const CategorySmallCard = ({ category }: CategorySmallCardProps) => {
     let current: any = cat
     const stack: string[] = []
     while (
-      current &&
-      current.categoryId &&
+      current?.categoryId &&
       typeof current.categoryId === 'object' &&
       'name' in current.categoryId
     ) {
@@ -38,7 +37,7 @@ const CategorySmallCard = ({ category }: CategorySmallCardProps) => {
   return (
     <Tag>
       <Link
-        className='text-reset text-decoration-none cus-link-hover'
+        className='!no-underline cus-link-hover'
         to={`/category/${category._id}`}
       >
         <span className='flex items-center'>{getCategoryLine(category)}</span>

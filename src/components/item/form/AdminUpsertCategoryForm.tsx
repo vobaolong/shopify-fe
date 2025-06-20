@@ -11,7 +11,6 @@ import {
   Form,
   Input,
   Button,
-  notification,
   Modal,
   Row,
   Col,
@@ -23,7 +22,7 @@ import {
 import { UploadOutlined } from '@ant-design/icons'
 import { useMutation } from '@tanstack/react-query'
 import type { UploadFile } from 'antd/es/upload/interface'
-import UploadFileComponent from '../../image/UploadFile'
+import { useAntdApp } from '../../../hooks/useAntdApp'
 
 interface Props {
   categoryId?: string
@@ -41,13 +40,16 @@ const getBase64 = (file: File): Promise<string> =>
 const AdminUpsertCategoryForm = ({ categoryId, onSuccess }: Props) => {
   const [form] = Form.useForm()
   const { t } = useTranslation()
-  const [isLoading, setIsLoading] = useState(false)
+  const { notification } = useAntdApp()
   const navigate = useNavigate()
   const [fileList, setFileList] = useState<UploadFile[]>([])
-  const [previewOpen, setPreviewOpen] = useState(false)
-  const [previewImage, setPreviewImage] = useState('')
+  const [formState, setFormState] = useState({
+    selectedCategory: null as any,
+    previewOpen: false,
+    previewImage: '',
+    isLoading: false
+  })
   const isEdit = !!categoryId
-
   const mutation = useMutation({
     mutationFn: (formData: FormData) =>
       isEdit && categoryId
@@ -61,6 +63,7 @@ const AdminUpsertCategoryForm = ({ categoryId, onSuccess }: Props) => {
             : 'toastSuccess.category.create'
         )
       })
+
       if (onSuccess) onSuccess()
       else navigate('/admin/categories')
     },
@@ -70,16 +73,36 @@ const AdminUpsertCategoryForm = ({ categoryId, onSuccess }: Props) => {
   })
 
   useEffect(() => {
-    if (!isEdit) return
-    setIsLoading(true)
+    if (!isEdit) {
+      setFormState((prev) => ({
+        ...prev,
+        selectedCategory: null
+      }))
+      form.resetFields()
+      setFileList([])
+      return
+    }
+
+    setFormState((prev) => ({
+      ...prev,
+      isLoading: true
+    }))
     getCategoryById(categoryId!)
       .then((res) => {
         const category = (res as any).category
         if (category) {
+          const parentCategory = category.categoryId || null
+
+          setFormState((prev) => ({
+            ...prev,
+            selectedCategory: parentCategory
+          }))
+
           form.setFieldsValue({
             name: category.name,
-            categoryId: category.categoryId || null
+            categoryId: parentCategory?._id || null
           })
+
           if (category.image) {
             setFileList([
               {
@@ -91,13 +114,19 @@ const AdminUpsertCategoryForm = ({ categoryId, onSuccess }: Props) => {
             ])
           }
         }
-        setIsLoading(false)
+        setFormState((prev) => ({
+          ...prev,
+          isLoading: false
+        }))
       })
       .catch(() => {
         notification.error({ message: 'Server Error' })
-        setIsLoading(false)
+        setFormState((prev) => ({
+          ...prev,
+          isLoading: false
+        }))
       })
-  }, [categoryId, form])
+  }, [categoryId, form, isEdit, notification])
 
   const handleFinish = () => {
     Modal.confirm({
@@ -111,27 +140,34 @@ const AdminUpsertCategoryForm = ({ categoryId, onSuccess }: Props) => {
 
   const handleConfirmSubmit = () => {
     const values = form.getFieldsValue()
+
     const formData = new FormData()
     formData.set('name', values.name)
 
-    if (
-      values.categoryId &&
-      values.categoryId._id &&
-      values.categoryId._id !== categoryId
-    ) {
-      formData.set('categoryId', values.categoryId._id)
+    if (values.categoryId && values.categoryId !== categoryId) {
+      formData.set('categoryId', values.categoryId)
     }
-    if (fileList.length > 0 && fileList[0].originFileObj) {
-      formData.set('image', fileList[0].originFileObj)
+
+    if (fileList.length > 0) {
+      const file = fileList[0]
+
+      if (file.originFileObj) {
+        formData.set('image', file.originFileObj)
+      }
     }
+
     mutation.mutate(formData)
   }
+
   const handlePreview = async (file: UploadFile) => {
     if (!file.url && !file.preview) {
       file.preview = await getBase64(file.originFileObj as File)
     }
-    setPreviewImage(file.url || (file.preview as string))
-    setPreviewOpen(true)
+    setFormState((prev) => ({
+      ...prev,
+      previewImage: file.url || (file.preview as string),
+      previewOpen: true
+    }))
   }
   const uploadProps: UploadProps = {
     fileList,
@@ -163,10 +199,9 @@ const AdminUpsertCategoryForm = ({ categoryId, onSuccess }: Props) => {
       showDownloadIcon: false
     }
   }
-
   return (
     <div className='relative'>
-      {(isLoading || mutation.isPending) && <Spin />}
+      {(formState.isLoading || mutation.isPending) && <Spin />}
       <Form
         form={form}
         layout='vertical'
@@ -177,9 +212,17 @@ const AdminUpsertCategoryForm = ({ categoryId, onSuccess }: Props) => {
           <Col span={24}>
             <Form.Item name='categoryId'>
               <CategorySelector
+                key={categoryId || 'create'}
                 label={t('categoryDetail.chosenParentCategory')}
-                selected='parent'
                 isActive={false}
+                value={formState.selectedCategory}
+                onChange={(category: any) => {
+                  setFormState((prev) => ({
+                    ...prev,
+                    selectedCategory: category
+                  }))
+                  form.setFieldsValue({ categoryId: category?._id || null })
+                }}
               />
             </Form.Item>
           </Col>
@@ -196,13 +239,11 @@ const AdminUpsertCategoryForm = ({ categoryId, onSuccess }: Props) => {
           </Col>
           <Col span={24}>
             <Form.Item label={t('categoryDetail.img')} required>
-              <UploadFileComponent
-                fileList={fileList}
-                setFileList={setFileList}
-                maxCount={1}
-                label={t('categoryDetail.img')}
-                required
-              />
+              <Upload {...uploadProps}>
+                <Button icon={<UploadOutlined />}>
+                  {t('categoryDetail.img')}
+                </Button>
+              </Upload>
             </Form.Item>
           </Col>
           <Col span={24} className='text-right'>
@@ -212,15 +253,18 @@ const AdminUpsertCategoryForm = ({ categoryId, onSuccess }: Props) => {
           </Col>
         </Row>
       </Form>
-      {previewImage && (
+      {formState.previewImage && (
         <Image
           wrapperStyle={{ display: 'none' }}
           preview={{
-            visible: previewOpen,
-            onVisibleChange: (visible) => setPreviewOpen(visible),
-            afterOpenChange: (visible) => !visible && setPreviewImage('')
+            visible: formState.previewOpen,
+            onVisibleChange: (visible) =>
+              setFormState((prev) => ({ ...prev, previewOpen: visible })),
+            afterOpenChange: (visible) =>
+              !visible &&
+              setFormState((prev) => ({ ...prev, previewImage: '' }))
           }}
-          src={previewImage}
+          src={formState.previewImage}
         />
       )}
     </div>

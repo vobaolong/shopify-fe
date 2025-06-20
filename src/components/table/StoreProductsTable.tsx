@@ -28,6 +28,7 @@ import SearchInput from '../ui/SearchInput'
 import { useAntdApp } from '../../hooks/useAntdApp'
 import { useExportProducts } from '../../hooks/useExportProducts'
 import { ProductStatus } from '../../enums/OrderStatus.enum'
+import { ColumnsType } from 'antd/es/table'
 
 interface StoreProductsTableProps {
   storeId: string
@@ -91,15 +92,12 @@ const StoreProductsTable = ({
     }
   })
 
-  const products = Array.isArray(data?.products) ? data.products : []
+  const products = data?.products || []
+
   const pagination = {
-    size: typeof data?.size === 'number' ? data.size : 0,
-    pageCurrent:
-      typeof data?.filter?.pageCurrent === 'number'
-        ? data.filter.pageCurrent
-        : 1,
-    pageCount:
-      typeof data?.filter?.pageCount === 'number' ? data.filter.pageCount : 1
+    size: data?.size || 0,
+    pageCurrent: data?.filter?.pageCurrent || 1,
+    pageCount: data?.filter?.pageCount || 1
   }
 
   const handleChangeKeyword = (keyword: string) => {
@@ -134,7 +132,7 @@ const StoreProductsTable = ({
       if (response.error) {
         message.error(response.error)
       } else {
-        toast.success(t(`toastSuccess.product.${action}`))
+        message.success(t(`toastSuccess.product.${action}`))
         refetch()
       }
     } catch {
@@ -150,14 +148,14 @@ const StoreProductsTable = ({
       setUiState((prev) => ({ ...prev, selectedRowKeys: keys }))
   }
 
-  const columns = [
+  const columns: ColumnsType<any> = [
     {
       title: '#',
       dataIndex: 'index',
       key: 'index',
       width: 50,
-      align: 'center' as const,
-      fixed: 'left' as const,
+      align: 'center',
+      fixed: 'left',
       render: (_: any, __: any, idx: number) =>
         idx +
         1 +
@@ -186,7 +184,7 @@ const StoreProductsTable = ({
       title: t('productDetail.price'),
       dataIndex: ['price', '$numberDecimal'],
       key: 'price',
-      align: 'right' as const,
+      align: 'right',
       render: (_: any, record: any) => (
         <span>
           {formatPrice(record.price?.$numberDecimal)}
@@ -198,7 +196,7 @@ const StoreProductsTable = ({
       title: t('productDetail.salePrice'),
       dataIndex: ['salePrice', '$numberDecimal'],
       key: 'salePrice',
-      align: 'right' as const,
+      align: 'right',
       render: (_: any, record: any) => (
         <span>
           {formatPrice(record.salePrice?.$numberDecimal)}
@@ -210,13 +208,13 @@ const StoreProductsTable = ({
       title: t('productDetail.stock'),
       dataIndex: 'quantity',
       key: 'quantity',
-      align: 'center' as const
+      align: 'center'
     },
     {
       title: t('productDetail.sold'),
       dataIndex: 'sold',
       key: 'sold',
-      align: 'center' as const
+      align: 'center'
     },
     {
       title: t('productDetail.values'),
@@ -242,6 +240,8 @@ const StoreProductsTable = ({
     {
       title: t('filters.rating'),
       dataIndex: 'rating',
+      align: 'center',
+      width: 120,
       key: 'rating',
       render: (rating: number) => (
         <Rate
@@ -257,25 +257,26 @@ const StoreProductsTable = ({
       dataIndex: 'isActive',
       key: 'isActive',
       width: 100,
-      align: 'center' as const,
+      align: 'center',
       render: (isActive: boolean) => <ProductActiveLabel isActive={isActive} />
     },
     {
       title: t('productDetail.date'),
       dataIndex: 'createdAt',
       key: 'createdAt',
+      sorter: true,
       width: 100,
-      align: 'right' as const,
+      align: 'right',
       render: (date: string) => <span>{formatDate(date)}</span>
     },
     {
       title: t('action'),
       key: 'action',
       width: 100,
-      align: 'center' as const,
-      fixed: 'right' as const,
+      align: 'center',
+      fixed: 'right',
       render: (_: any, record: any) => (
-        <div className='flex gap-2'>
+        <div className='flex gap-2 items-center justify-center'>
           <Tooltip title={t('button.edit')}>
             <Button
               icon={<EditOutlined />}
@@ -398,7 +399,7 @@ const StoreProductsTable = ({
             }}
             locale={{ emptyText: t('productDetail.noProduct') }}
           />
-        </div>{' '}
+        </div>
         <SellerProductForm
           open={uiState.drawerOpen}
           onClose={() => setUiState((prev) => ({ ...prev, drawerOpen: false }))}

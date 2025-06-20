@@ -105,7 +105,7 @@ export const openStore = async (
   value: any,
   storeId: string
 ): Promise<any> => {
-  return await client.put(`/store/open/${storeId}/${userId}`, value)
+  return await client.put(`/store/${storeId}/${userId}`, value)
 }
 
 export const activeStore = async (

@@ -18,12 +18,6 @@ const AdminCommissionPage = React.lazy(() => import('./admin/CommissionPage'))
 const AdminUserPage = React.lazy(() => import('./admin/UserPage'))
 const AdminStorePage = React.lazy(() => import('./admin/StorePage'))
 const AdminCategoryPage = React.lazy(() => import('./admin/CategoryPage'))
-const AdminCreateCategoryPage = React.lazy(
-  () => import('./admin/CreateCategoryPage')
-)
-const AdminEditCategoryPage = React.lazy(
-  () => import('./admin/EditCategoryPage')
-)
 const AdminVariantPage = React.lazy(() => import('./admin/VariantPage'))
 
 const AdminVariantValuesPage = React.lazy(
@@ -164,22 +158,6 @@ const Routers = () => {
           element={
             <AdminRoute>
               <AdminCategoryPage />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path='/admin/category/create'
-          element={
-            <AdminRoute>
-              <AdminCreateCategoryPage />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path='/admin/category/edit/:categoryId'
-          element={
-            <AdminRoute>
-              <AdminEditCategoryPage />
             </AdminRoute>
           }
         />

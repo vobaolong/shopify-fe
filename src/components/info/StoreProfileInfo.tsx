@@ -1,15 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import StoreEditProfileItem from '../item/StoreEditProfileItem'
 import { StoreType } from '../../@types/entity.types'
-import { Typography, Card, Space, Divider } from 'antd'
-import {
-  ShopOutlined,
-  MessageOutlined,
-  EnvironmentOutlined,
-  TrophyOutlined,
-  UserOutlined
-} from '@ant-design/icons'
-import store from '../../store/store'
+import { Card, Descriptions } from 'antd'
 
 interface StoreProfileInfoProps {
   store: StoreType
@@ -17,7 +9,6 @@ interface StoreProfileInfoProps {
   showProfile?: boolean
 }
 
-const { Title, Text } = Typography
 const getDisplayAddress = (address: any): string => {
   if (!address) {
     return '-'
@@ -34,92 +25,71 @@ const StoreProfileInfo = ({
   showProfile = true
 }: StoreProfileInfoProps) => {
   const { t } = useTranslation()
-  console.log(store.address)
 
   return (
-    <div className='w-full max-w-4xl mx-auto space-y-6'>
-      <Card className='shadow-sm border border-gray-200'>
-        {showProfile && (
-          <>
-            <Title level={4} className='mb-4 text-gray-800'>
-              {t('storeDetail.profile')}
-            </Title>
-            <Divider className='mt-0 mb-6' />
-          </>
-        )}
-
-        <Space direction='vertical' size='large' className='w-full'>
+    <div className='w-full'>
+      <Card className='p-3'>
+        {' '}
+        <Descriptions
+          title={t('storeDetail.profile')}
+          column={1}
+          size='middle'
+          layout='horizontal'
+          colon={true}
+          labelStyle={{
+            width: '20%'
+          }}
+        >
           {showProfile && (
-            <div className='flex gap-2'>
-              <Text strong>{t('storeDetail.storeName')}:</Text>
-              <Text>{store?.name || '-'}</Text>
-            </div>
+            <Descriptions.Item label={t('storeDetail.storeName')}>
+              {store?.name || '-'}
+            </Descriptions.Item>
           )}
-
-          <div className='flex gap-2'>
-            <Text strong>{t('storeDetail.bio')}:</Text>
-            <Text>{store?.bio || '-'}</Text>
-          </div>
-
+          <Descriptions.Item label={t('storeDetail.bio')}>
+            {store?.bio || '-'}
+          </Descriptions.Item>
           {showProfile && (
-            <div className='flex gap-2'>
-              <Text strong>{t('storeDetail.pickupAddress')}:</Text>
-              <Text>{getDisplayAddress(store.address)}</Text>
-            </div>
+            <Descriptions.Item label={t('storeDetail.pickupAddress')}>
+              {getDisplayAddress(store.address)}
+            </Descriptions.Item>
           )}
-        </Space>
-
+        </Descriptions>
         {isEditable && (
           <div className='flex justify-end mt-6 pt-4 border-t border-gray-100'>
-            <StoreEditProfileItem store={store as StoreType} />
+            <StoreEditProfileItem store={store as any} />
           </div>
         )}
       </Card>
 
       {showProfile && (
-        <Card className='shadow-sm border border-gray-200'>
-          <Title level={4} className='mb-4 text-gray-800'>
-            {t('storeDetail.contractNPoint')}
-          </Title>
-          <Divider className='mt-0 mb-6' />
-
-          <Space direction='vertical' size='large' className='w-full'>
-            <div className='flex items-start gap-3'>
-              <ShopOutlined className='text-purple-500 mt-1 text-lg' />
-              <div className='flex-1'>
-                <Text strong>{t('storeDetail.typeOfStall')}:</Text>
-                <Text>
-                  {typeof store.commissionId === 'object' &&
-                  store.commissionId !== null &&
-                  'name' in store.commissionId
-                    ? store.commissionId.name
-                    : '-'}
-                </Text>
-              </div>
-            </div>
-
-            <div className='flex items-start gap-3'>
-              <TrophyOutlined className='text-yellow-500 mt-1 text-lg' />
-              <div className='flex-1'>
-                <Text strong>{t('storeDetail.point')}:</Text>
-                <Text>{store.point ?? '-'}</Text>
-              </div>
-            </div>
-
-            <div className='flex items-start gap-3'>
-              <UserOutlined className='text-indigo-500 mt-1 text-lg' />
-              <div className='flex-1'>
-                <Text strong>{t('storeDetail.contactPerson')}:</Text>
-                <Text>
-                  {typeof store.ownerId === 'object' &&
-                  store.ownerId !== null &&
-                  'email' in store.ownerId
-                    ? store.ownerId.email
-                    : '-'}
-                </Text>
-              </div>
-            </div>
-          </Space>
+        <Card className='p-3 mt-3'>
+          <Descriptions
+            title={t('storeDetail.contractNPoint')}
+            column={1}
+            layout='horizontal'
+            colon={true}
+            labelStyle={{
+              width: '20%'
+            }}
+          >
+            <Descriptions.Item label={t('storeDetail.typeOfStall')}>
+              {typeof store.commissionId === 'object' &&
+              store.commissionId !== null &&
+              'name' in store.commissionId
+                ? store.commissionId.name
+                : '-'}
+            </Descriptions.Item>
+            <Descriptions.Item label={t('storeDetail.point')}>
+              {store.point ?? '-'}
+            </Descriptions.Item>
+            <Descriptions.Item label={t('storeDetail.contactPerson')}>
+              {typeof store.ownerId === 'object' &&
+              store.ownerId !== null &&
+              'email' in store.ownerId
+                ? store.ownerId.email
+                : '-'}
+            </Descriptions.Item>
+          </Descriptions>
         </Card>
       )}
     </div>

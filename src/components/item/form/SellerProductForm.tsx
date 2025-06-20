@@ -44,16 +44,18 @@ interface DropDownItem {
   icon?: React.ReactNode
 }
 
-// Image upload component using antd Upload
 const ImageUploadAntd: React.FC<{
   value?: (string | File)[]
   onChange?: (value: (string | File)[]) => void
   maxCount?: number
   required?: boolean
 }> = ({ value = [], onChange, maxCount = 7, required }) => {
-  const [previewOpen, setPreviewOpen] = useState(false)
-  const [previewImage, setPreviewImage] = useState('')
-  const [previewTitle, setPreviewTitle] = useState('')
+  const [previewState, setPreviewState] = useState({
+    open: false,
+    image: '',
+    title: ''
+  })
+
   const fileList = (value || []).map((item, idx) => {
     if (typeof item === 'string') {
       return {
@@ -73,7 +75,6 @@ const ImageUploadAntd: React.FC<{
   })
 
   const handleChange = ({ fileList }: any) => {
-    // Convert fileList back to (string | File)[]
     const files = fileList.map((file: any) => {
       if (file.originFileObj) return file.originFileObj
       if (file.url) return file.url
@@ -81,7 +82,6 @@ const ImageUploadAntd: React.FC<{
     })
     onChange && onChange(files)
   }
-
   const handlePreview = async (file: any) => {
     let src = file.url
     if (!src && file.originFileObj) {
@@ -91,11 +91,11 @@ const ImageUploadAntd: React.FC<{
         reader.onload = () => resolve(reader.result as string)
       })
     }
-    setPreviewImage(src || '')
-    setPreviewOpen(true)
-    setPreviewTitle(
-      file.name || file.url?.substring(file.url.lastIndexOf('/') + 1)
-    )
+    setPreviewState({
+      open: true,
+      image: src || '',
+      title: file.name || file.url?.substring(file.url.lastIndexOf('/') + 1)
+    })
   }
 
   return (
@@ -117,12 +117,12 @@ const ImageUploadAntd: React.FC<{
         )}
       </Upload>
       <Modal
-        open={previewOpen}
-        title={previewTitle}
+        open={previewState.open}
+        title={previewState.title}
         footer={null}
-        onCancel={() => setPreviewOpen(false)}
+        onCancel={() => setPreviewState((prev) => ({ ...prev, open: false }))}
       >
-        <img alt='preview' style={{ width: '100%' }} src={previewImage} />
+        <img alt='preview' style={{ width: '100%' }} src={previewState.image} />
       </Modal>
       {required && fileList.length === 0 && (
         <div className='text-red-500 text-xs mt-1'>* Required</div>
@@ -161,15 +161,44 @@ const SellerProductForm: React.FC<SellerProductFormProps> = ({
   const { t } = useTranslation()
   const { _id } = getToken()
   const [form] = Form.useForm<FormValues>()
-  const { notification } = useAntdApp()
-  const { data: productData, isLoading: isProductLoading } = useQuery({
+  const { message } = useAntdApp()
+
+  const {
+    data: productData,
+    isLoading: isProductLoading,
+    error: productError
+  } = useQuery({
     queryKey: ['product', productId, storeId],
     queryFn: async () => {
-      if (!productId) return null
-      const res = await getProductByIdForManager(_id, productId, storeId)
-      return res.data?.product || null
+      if (!productId || !storeId || !_id) {
+        console.log('Missing required params:', {
+          productId,
+          storeId,
+          userId: _id
+        })
+        return null
+      }
+      try {
+        console.log('Fetching product:', { productId, storeId, userId: _id })
+        const res = await getProductByIdForManager(_id, productId, storeId)
+        console.log('Product response:', res)
+
+        if (res?.product || res?.data?.product) {
+          return res.product || res.data.product
+        } else {
+          console.warn('No product in response:', res)
+          return null
+        }
+      } catch (error) {
+        console.error('Error fetching product:', error)
+        return null
+      }
     },
-    enabled: !!productId && !!storeId && open
+    enabled: !!productId && !!storeId && !!_id,
+    retry: false,
+    staleTime: 0,
+    gcTime: 0,
+    throwOnError: false
   })
 
   const categoryId = Form.useWatch('categoryId', form)
@@ -180,7 +209,7 @@ const SellerProductForm: React.FC<SellerProductFormProps> = ({
       const res = await listBrandByCategory(categoryId)
       const data = res.data
       if (data.error) {
-        notification.error({ message: data.error })
+        message.error('Error loading brands')
         return []
       }
       return (data.brands || []).map((brand: any) => ({
@@ -216,13 +245,13 @@ const SellerProductForm: React.FC<SellerProductFormProps> = ({
       }
     },
     onSuccess: (res) => {
-      if (res.data?.error) notification.error({ message: res.data.error })
+      if (res.data?.error) message.error('Server Error')
       else {
-        notification.success({
-          message: productId
+        message.success(
+          productId
             ? t('toastSuccess.product.edit')
             : t('toastSuccess.product.create')
-        })
+        )
         window.scrollTo({ top: 0, behavior: 'smooth' })
         form.resetFields()
         if (onSuccess) onSuccess()
@@ -230,46 +259,87 @@ const SellerProductForm: React.FC<SellerProductFormProps> = ({
       }
     },
     onError: () => {
-      notification.error({ message: 'Server Error' })
+      message.error('Server Error')
     }
   })
-
+  const [formState, setFormState] = useState({
+    selectedCategory: null as any,
+    isLoading: false,
+    initialData: null as any
+  })
   useEffect(() => {
     if (productId && productData && open) {
-      const {
-        name,
-        categoryId,
-        brandId,
-        description,
-        quantity,
-        price,
-        salePrice,
-        variantValueIds,
-        images = []
-      } = productData
-      form.setFieldsValue({
-        name,
-        categoryId,
-        brandId,
-        description,
-        quantity,
-        price,
-        salePrice,
-        variantValueIds: Array.isArray(variantValueIds)
-          ? variantValueIds.join('|')
-          : variantValueIds,
-        images
-      })
+      try {
+        if (typeof productData === 'object' && productData !== null) {
+          const {
+            name = '',
+            categoryId = '',
+            brandId = '',
+            description = '',
+            quantity = 0,
+            price = 0,
+            salePrice = 0,
+            variantValueIds = '',
+            listImages = [],
+            images = []
+          } = productData as any
+
+          const formattedPrice =
+            typeof price === 'object' && price?.$numberDecimal
+              ? price.$numberDecimal
+              : price
+
+          const formattedSalePrice =
+            typeof salePrice === 'object' && salePrice?.$numberDecimal
+              ? salePrice.$numberDecimal
+              : salePrice
+
+          const imageList = listImages.length > 0 ? listImages : images
+
+          const selectedCategory =
+            categoryId && typeof categoryId === 'object' ? categoryId : null
+
+          const formValues = {
+            name,
+            categoryId: categoryId?._id || categoryId,
+            brandId: brandId?._id || brandId,
+            description,
+            quantity,
+            price: formattedPrice,
+            salePrice: formattedSalePrice,
+            variantValueIds: Array.isArray(variantValueIds)
+              ? variantValueIds.join('|')
+              : variantValueIds,
+            images: imageList
+          }
+
+          setFormState((prev) => ({
+            ...prev,
+            selectedCategory,
+            initialData: formValues
+          }))
+
+          setTimeout(() => {
+            form.setFieldsValue(formValues)
+            form.validateFields().catch((err) => {})
+          }, 100)
+        }
+      } catch (error) {
+        message.error('Error processing product data')
+      }
     } else if (!productId && open) {
+      setFormState((prev) => ({
+        ...prev,
+        selectedCategory: null,
+        initialData: null
+      }))
       form.resetFields()
     }
-  }, [productId, productData, open, form])
+  }, [productId, productData, open, form, productError, message])
 
   const handleFinish = (values: FormValues) => {
     if (values.salePrice > values.price) {
-      notification.error({
-        message: t('productValid.salePriceCannotBeGreaterThan')
-      })
+      message.error(t('productValid.salePriceCannotBeGreaterThan'))
       return
     }
     mutation.mutate(values)
@@ -288,7 +358,9 @@ const SellerProductForm: React.FC<SellerProductFormProps> = ({
       destroyOnHidden
       maskClosable={false}
     >
-      <Spin spinning={mutation.isPending || isProductLoading}>
+      <Spin
+        spinning={mutation.isPending || isProductLoading || formState.isLoading}
+      >
         <Form
           form={form}
           layout='vertical'
@@ -330,8 +402,14 @@ const SellerProductForm: React.FC<SellerProductFormProps> = ({
               label={t('productDetail.selectedCategory')}
               isActive={true}
               isRequired={true}
+              value={formState.selectedCategory}
               onChange={(category: any) => {
-                form.setFieldsValue({ categoryId: category._id })
+                setFormState((prev) => ({
+                  ...prev,
+                  selectedCategory: category
+                }))
+                form.setFieldsValue({ categoryId: category?._id || '' })
+                form.validateFields(['categoryId']).catch(() => {})
               }}
             />
           </Form.Item>
@@ -407,11 +485,12 @@ const SellerProductForm: React.FC<SellerProductFormProps> = ({
             {t('productDetail.chooseStyles')}{' '}
             <small className='text-gray-500'>
               {t('productDetail.chooseCateFirst')}
-            </small>
+            </small>{' '}
           </span>
           <Form.Item name='variantValueIds'>
             <VariantSelector
-              categoryId={form.getFieldValue('categoryId')}
+              key={categoryId || 'no-category'}
+              categoryId={categoryId}
               onSet={(variantValues: any[]) => {
                 form.setFieldsValue({
                   variantValueIds: (

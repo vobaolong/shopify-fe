@@ -162,7 +162,6 @@ const CartPopover: React.FC<CartPopoverProps> = ({
                           type='text'
                           size='small'
                           icon={<MinusOutlined />}
-                          className='w-5 h-5 p-0 text-xs'
                           disabled={
                             item.count <= 1 || updateCartMutation.isPending
                           }
@@ -175,7 +174,6 @@ const CartPopover: React.FC<CartPopoverProps> = ({
                           type='text'
                           size='small'
                           icon={<PlusOutlined />}
-                          className='w-5 h-5 p-0 text-xs'
                           disabled={updateCartMutation.isPending}
                           onClick={() =>
                             handleUpdateQuantity(item._id, item.count + 1)
@@ -191,7 +189,7 @@ const CartPopover: React.FC<CartPopoverProps> = ({
                     type='text'
                     size='small'
                     icon={<DeleteOutlined />}
-                    className='text-red-500 hover:text-red-700'
+                    danger
                     disabled={deleteCartMutation.isPending}
                     onClick={() => handleRemoveItem(item._id)}
                   />

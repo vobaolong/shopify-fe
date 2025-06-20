@@ -10,11 +10,16 @@ import {
   Select,
   Modal,
   Spin,
-  Tag,
   Divider,
   Drawer
 } from 'antd'
-import { SyncOutlined } from '@ant-design/icons'
+import {
+  DeleteOutlined,
+  EditOutlined,
+  InfoCircleOutlined,
+  PlusOutlined,
+  SyncOutlined
+} from '@ant-design/icons'
 import {
   listVariants,
   removeVariant,
@@ -24,17 +29,17 @@ import useInvalidate from '../../hooks/useInvalidate'
 import { useAntdApp } from '../../hooks/useAntdApp'
 import { PaginationType } from '../../@types/pagination.type'
 import SearchInput from '../ui/SearchInput'
-import DeletedLabel from '../label/DeletedLabel'
 import ActiveLabel from '../label/ActiveLabel'
 import CategorySmallCard from '../card/CategorySmallCard'
 import VariantValuesTable from './VariantValuesTable'
-import { humanReadableDate } from '../../helper/humanReadable'
+import { formatDate } from '../../helper/humanReadable'
 import { ColumnsType } from 'antd/es/table'
 import {
   VariantFilterState,
   defaultVariantFilter
 } from '../../@types/filter.type'
 import AdminVariantForm from '../selector/AdminVariantForm'
+import { BaseStatus, SortType } from '../../enums/OrderStatus.enum'
 
 interface VariantsResponse {
   variants: any[]
@@ -44,144 +49,230 @@ interface VariantsResponse {
 
 const AdminVariantsTable = () => {
   const { t } = useTranslation()
-  const { notification } = useAntdApp()
+  const { message } = useAntdApp()
   const invalidate = useInvalidate()
-  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
-  const [filter, setFilter] = useState<VariantFilterState>(defaultVariantFilter)
-  const [pendingFilter, setPendingFilter] =
-    useState<VariantFilterState>(defaultVariantFilter)
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const [drawerMode, setDrawerMode] = useState<'CREATE' | 'UPDATE'>('CREATE')
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [variantValuesModalOpen, setVariantValuesModalOpen] = useState(false)
-  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
-    null
-  )
 
-  const fetchVariants = async (filter: any): Promise<VariantsResponse> => {
-    const res = await listVariants(filter)
-    return res.data || res
-  }
+  const [tableState, setTableState] = useState({
+    selectedRowKeys: [] as string[],
+    filter: defaultVariantFilter,
+    pendingFilter: defaultVariantFilter
+  })
+
+  const [uiState, setUiState] = useState({
+    drawerOpen: false,
+    drawerMode: 'CREATE' as 'CREATE' | 'UPDATE',
+    editingId: null as string | null,
+    variantValuesModalOpen: false,
+    selectedVariantId: null as string | null
+  })
 
   const { data, isLoading, error } = useQuery<VariantsResponse, Error>({
-    queryKey: ['variants', filter],
-    queryFn: () => fetchVariants(filter),
-    enabled: !!filter
+    queryKey: ['variants', tableState.filter],
+    queryFn: async () => {
+      const res = await listVariants(tableState.filter)
+      return res.data || res
+    },
+    enabled: !!tableState.filter
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (variantId: string) => removeVariant(variantId),
+    mutationFn: removeVariant,
     onSuccess: () => {
-      notification.success({ message: t('toastSuccess.variant.delete') })
+      message.success(t('toastSuccess.variant.delete'))
       invalidate({ queryKey: ['variants'] })
     },
     onError: (error: any) => {
-      const errorMessage =
+      message.error(
         error?.response?.data?.error || t('toastError.variant.delete')
-      notification.error({ message: errorMessage })
+      )
     }
   })
 
   const restoreMutation = useMutation({
-    mutationFn: (variantId: string) => restoreVariant(variantId),
+    mutationFn: restoreVariant,
     onSuccess: () => {
-      notification.success({ message: t('toastSuccess.variant.restore') })
+      message.success(t('toastSuccess.variant.restore'))
       invalidate({ queryKey: ['variants'] })
     },
     onError: (error: any) => {
-      const errorMessage =
+      message.error(
         error?.response?.data?.error || t('toastError.variant.restore')
-      notification.error({ message: errorMessage })
+      )
     }
   })
 
-  const handleFilterChange = (updates: Partial<VariantFilterState>) => {
-    setPendingFilter((prev) => ({
-      ...prev,
-      ...updates,
-      page: 1
-    }))
+  const handlers = {
+    filterChange: (updates: Partial<VariantFilterState>) => {
+      setTableState((prev) => ({
+        ...prev,
+        pendingFilter: { ...prev.pendingFilter, ...updates, page: 1 }
+      }))
+    },
+    search: () => {
+      setTableState((prev) => ({ ...prev, filter: { ...prev.pendingFilter } }))
+    },
+    changePage: (page: number, pageSize: number) => {
+      setTableState((prev) => ({
+        ...prev,
+        filter: { ...prev.filter, page, limit: pageSize }
+      }))
+    },
+    filterReset: () => {
+      setTableState((prev) => ({
+        ...prev,
+        filter: defaultVariantFilter,
+        pendingFilter: defaultVariantFilter
+      }))
+    },
+    showConfirm: (
+      title: string,
+      content: string,
+      onOk: () => void,
+      isDanger = false
+    ) => {
+      Modal.confirm({
+        title,
+        content,
+        onOk,
+        okText: isDanger ? t('button.delete') : t('button.restore'),
+        cancelText: t('button.cancel'),
+        ...(isDanger && { okType: 'danger' })
+      })
+    },
+    delete: (variantId: string) => {
+      handlers.showConfirm(
+        t('variantDetail.del'),
+        t('message.delete'),
+        () => deleteMutation.mutate(variantId),
+        true
+      )
+    },
+    restore: (variantId: string) => {
+      handlers.showConfirm(t('variantDetail.res'), t('message.restore'), () =>
+        restoreMutation.mutate(variantId)
+      )
+    },
+    bulkAction: (isDelete: boolean) => {
+      if (tableState.selectedRowKeys.length === 0) return
+      const title = isDelete ? t('variantDetail.del') : t('variantDetail.res')
+      const content = t(
+        isDelete ? 'message.bulkDelete' : 'message.bulkRestore',
+        {
+          count: tableState.selectedRowKeys.length
+        }
+      )
+      const mutation = isDelete ? deleteMutation : restoreMutation
+      handlers.showConfirm(
+        title,
+        content,
+        () => {
+          tableState.selectedRowKeys.forEach((id) => mutation.mutate(id))
+          setTableState((prev) => ({ ...prev, selectedRowKeys: [] }))
+        },
+        isDelete
+      )
+    },
+
+    openDrawer: (mode: 'CREATE' | 'UPDATE', id?: string) => {
+      setUiState((prev) => ({
+        ...prev,
+        drawerMode: mode,
+        editingId: id || null,
+        drawerOpen: true
+      }))
+    },
+
+    viewVariantValues: (variantId: string) => {
+      setUiState((prev) => ({
+        ...prev,
+        selectedVariantId: variantId,
+        variantValuesModalOpen: true
+      }))
+    },
+
+    closeDrawer: () => {
+      setUiState((prev) => ({ ...prev, drawerOpen: false }))
+    },
+
+    closeModal: () => {
+      setUiState((prev) => ({ ...prev, variantValuesModalOpen: false }))
+    },
+
+    tableChange: (selectedKeys: React.Key[]) => {
+      setTableState((prev) => ({
+        ...prev,
+        selectedRowKeys: selectedKeys as string[]
+      }))
+    },
+
+    sort: (sorter: any) => {
+      console.log(sorter)
+      if (!Array.isArray(sorter) && sorter.field) {
+        setTableState((prev) => ({
+          ...prev,
+          filter: {
+            ...prev.filter,
+            sortBy: sorter.field as string,
+            order: sorter.order === 'ascend' ? SortType.ASC : SortType.DESC
+          }
+        }))
+      }
+    }
+  }
+  const variants = data?.variants || []
+
+  const pagination: PaginationType = {
+    size: data?.size || 0,
+    pageCurrent: data?.filter?.pageCurrent || tableState.filter.page || 1,
+    pageCount: data?.filter?.pageCount || 1
+  }
+  const hasSelected = tableState.selectedRowKeys.length > 0
+  const hasDeletedSelected = variants
+    .filter((variant) => tableState.selectedRowKeys.includes(variant._id))
+    .some((variant) => variant.isDeleted)
+  const hasActiveSelected = variants
+    .filter((variant) => tableState.selectedRowKeys.includes(variant._id))
+    .some((variant) => !variant.isDeleted)
+
+  const config = {
+    statusFilterOptions: [
+      { label: t('filters.all'), value: BaseStatus.ALL },
+      { label: t('status.active'), value: BaseStatus.ACTIVE },
+      { label: t('status.deleted'), value: BaseStatus.DELETED }
+    ],
+
+    rowSelection: {
+      selectedRowKeys: tableState.selectedRowKeys,
+      onChange: handlers.tableChange
+    },
+
+    renderActionButton: (
+      icon: React.ReactNode,
+      tooltip: string,
+      onClick: () => void,
+      props?: any
+    ) => (
+      <Tooltip title={tooltip}>
+        <Button
+          type='text'
+          size='small'
+          icon={icon}
+          onClick={onClick}
+          {...props}
+        />
+      </Tooltip>
+    )
   }
 
-  const handleSearch = () => {
-    setFilter({ ...pendingFilter })
-  }
-
-  const handleChangePage = (page: number, pageSize: number) => {
-    setFilter((prev) => ({ ...prev, page, limit: pageSize }))
-  }
-
-  const handleFilterReset = () => {
-    setFilter(defaultVariantFilter)
-    setPendingFilter(defaultVariantFilter)
-  }
-
-  const handleDelete = (variantId: string) => {
-    Modal.confirm({
-      title: t('variantDetail.del'),
-      content: t('message.delete'),
-      onOk: () => deleteMutation.mutate(variantId),
-      okText: t('button.delete'),
-      cancelText: t('button.cancel'),
-      okType: 'danger'
-    })
-  }
-
-  const handleRestore = (variantId: string) => {
-    Modal.confirm({
-      title: t('variantDetail.res'),
-      content: t('message.restore'),
-      onOk: () => restoreMutation.mutate(variantId),
-      okText: t('button.restore'),
-      cancelText: t('button.cancel')
-    })
-  }
-
-  const handleBulkDelete = () => {
-    if (selectedRowKeys.length === 0) return
-
-    Modal.confirm({
-      title: t('variantDetail.del'),
-      content: t('message.bulkDelete', { count: selectedRowKeys.length }),
-      onOk: () => {
-        selectedRowKeys.forEach((variantId) => deleteMutation.mutate(variantId))
-        setSelectedRowKeys([])
-      },
-      okText: t('button.delete'),
-      cancelText: t('button.cancel'),
-      okType: 'danger'
-    })
-  }
-  const handleBulkRestore = () => {
-    if (selectedRowKeys.length === 0) return
-
-    Modal.confirm({
-      title: t('variantDetail.res'),
-      content: t('message.bulkRestore', { count: selectedRowKeys.length }),
-      onOk: () => {
-        selectedRowKeys.forEach((variantId) =>
-          restoreMutation.mutate(variantId)
-        )
-        setSelectedRowKeys([])
-      },
-      okText: t('button.restore'),
-      cancelText: t('button.cancel')
-    })
-  }
-
-  const handleViewVariantValues = (variantId: string) => {
-    setSelectedVariantId(variantId)
-    setVariantValuesModalOpen(true)
-  }
   const columns: ColumnsType<any> = [
     {
       title: '#',
       dataIndex: 'index',
       key: 'index',
-      align: 'center' as const,
+      align: 'center',
       fixed: 'left',
       render: (_: any, __: any, idx: number) =>
-        (pagination.pageCurrent - 1) * (filter.limit || 8) + idx + 1,
+        (pagination.pageCurrent - 1) * (tableState.filter.limit || 8) + idx + 1,
       width: 60
     },
     {
@@ -198,9 +289,9 @@ const AdminVariantsTable = () => {
       render: (categoryIds: any[]) => (
         <div className='flex flex-col gap-1 max-h-32 overflow-auto'>
           {categoryIds.map((category, index) => (
-            <Tag key={index} className='text-xs'>
+            <span key={index}>
               <CategorySmallCard category={category} />
-            </Tag>
+            </span>
           ))}
         </div>
       ),
@@ -211,246 +302,197 @@ const AdminVariantsTable = () => {
       dataIndex: 'isDeleted',
       key: 'isDeleted',
       width: 100,
-      align: 'center' as const,
-      render: (isDeleted: boolean) =>
-        isDeleted ? <DeletedLabel /> : <ActiveLabel />
+      align: 'center',
+      render: (isDeleted: boolean) => <ActiveLabel isDeleted={isDeleted} />
     },
     {
       title: t('variantDetail.createdAt'),
       dataIndex: 'createdAt',
       key: 'createdAt',
       sorter: true,
-      align: 'right' as const,
-      width: 140,
-      render: (createdAt: string) => humanReadableDate(createdAt)
+      align: 'right',
+      width: 100,
+      render: (createdAt: string) => formatDate(createdAt)
     },
     {
       title: t('action'),
       key: 'action',
-      width: 120,
+      width: 100,
+      align: 'center',
+      fixed: 'right',
       render: (_: any, record: any) => (
         <Space size='small'>
-          <Tooltip title={t('button.detail')}>
-            <Button
-              type='default'
-              size='small'
-              icon={<i className='fa-solid fa-circle-info' />}
-              onClick={() => handleViewVariantValues(record._id)}
-            />
-          </Tooltip>
-          <Tooltip title={t('button.edit')}>
-            <Button
-              type='primary'
-              size='small'
-              icon={<i className='fa-duotone fa-pen-to-square' />}
-              onClick={() => {
-                setDrawerMode('UPDATE')
-                setEditingId(record._id)
-                setDrawerOpen(true)
-              }}
-            />
-          </Tooltip>
-          {record.isDeleted ? (
-            <Tooltip title={t('button.restore')}>
-              <Button
-                type='default'
-                size='small'
-                icon={<i className='fa-solid fa-trash-can-arrow-up' />}
-                onClick={() => handleRestore(record._id)}
-                loading={restoreMutation.isPending}
-                className='text-green-600 border-green-600 hover:text-green-700 hover:border-green-700'
-              />
-            </Tooltip>
-          ) : (
-            <Tooltip title={t('button.delete')}>
-              <Button
-                type='default'
-                danger
-                size='small'
-                icon={<i className='fa-solid fa-trash-alt' />}
-                onClick={() => handleDelete(record._id)}
-                loading={deleteMutation.isPending}
-              />
-            </Tooltip>
+          {config.renderActionButton(
+            <InfoCircleOutlined />,
+            t('button.detail'),
+            () => handlers.viewVariantValues(record._id)
           )}
+          {config.renderActionButton(<EditOutlined />, t('button.edit'), () =>
+            handlers.openDrawer('UPDATE', record._id)
+          )}
+          {record.isDeleted
+            ? config.renderActionButton(
+                <SyncOutlined />,
+                t('button.restore'),
+                () => handlers.restore(record._id),
+                {
+                  loading: restoreMutation.isPending,
+                  className: '!text-green-600 !hover:text-green-700'
+                }
+              )
+            : config.renderActionButton(
+                <DeleteOutlined />,
+                t('button.delete'),
+                () => handlers.delete(record._id),
+                { danger: true, loading: deleteMutation.isPending }
+              )}
         </Space>
       )
     }
   ]
 
-  const variants = data?.variants || []
-  const pagination: PaginationType = {
-    size: data?.size || 0,
-    pageCurrent: data?.filter?.pageCurrent || filter.page || 1,
-    pageCount: data?.filter?.pageCount || 1
-  }
-
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (selectedKeys: React.Key[]) => {
-      setSelectedRowKeys(selectedKeys as string[])
-    }
-  }
-
-  const hasSelected = selectedRowKeys.length > 0
-  const hasDeletedSelected = variants
-    .filter((variant) => selectedRowKeys.includes(variant._id))
-    .some((variant) => variant.isDeleted)
-  const hasActiveSelected = variants
-    .filter((variant) => selectedRowKeys.includes(variant._id))
-    .some((variant) => !variant.isDeleted)
-
-  // Filter options
-  const statusFilterOptions = [
-    { label: t('filters.all'), value: 'all' },
-    { label: t('status.active'), value: 'active' },
-    { label: t('status.deleted'), value: 'deleted' }
-  ]
-
   return (
     <div className='w-full'>
+      {' '}
       {error && (
-        <Alert message={error.message} type='error' className='mb-4' showIcon />
+        <Alert
+          message={error?.message || String(error) || 'Error occurred'}
+          type='error'
+          className='mb-4'
+          showIcon
+        />
       )}
-      <Spin spinning={isLoading} size='large'>
+      <Spin spinning={isLoading}>
         <div className='p-3 bg-white rounded-md'>
-          <div className='flex gap-3 items-center flex-wrap mb-3'>
-            <SearchInput
-              value={pendingFilter.search || ''}
-              onChange={(keyword) => handleFilterChange({ search: keyword })}
-              onSearch={handleSearch}
-              loading={isLoading}
-            />
-            <Select
-              style={{ minWidth: 140 }}
-              value={pendingFilter.status}
-              onChange={(value) => handleFilterChange({ status: value })}
-              options={statusFilterOptions}
-              placeholder={t('status.status')}
-              allowClear
-            />
-            <Button type='primary' onClick={handleSearch}>
-              {t('search')}
-            </Button>
-            <Button onClick={handleFilterReset} type='default'>
-              {t('button.reset')}
-            </Button>
-            <Button
-              onClick={() => invalidate({ queryKey: ['variants'] })}
-              className='!w-10 flex items-center justify-center'
-              type='default'
-              loading={isLoading}
-              icon={<SyncOutlined spin={isLoading} />}
-            />
+          <div className='flex gap-3 items-center flex-wrap justify-between mb-3'>
+            <div className='flex gap-3 items-center flex-wrap'>
+              <SearchInput
+                value={tableState.pendingFilter.search || ''}
+                onChange={(keyword) =>
+                  handlers.filterChange({ search: keyword })
+                }
+                onSearch={handlers.search}
+                loading={isLoading}
+              />
+              <Select
+                style={{ minWidth: 140 }}
+                value={tableState.pendingFilter.status}
+                onChange={(value) => handlers.filterChange({ status: value })}
+                options={config.statusFilterOptions}
+                placeholder={t('status.status')}
+                allowClear
+              />
+              <Button type='primary' onClick={handlers.search}>
+                {t('search')}
+              </Button>
+              <Button onClick={handlers.filterReset} type='default'>
+                {t('button.reset')}
+              </Button>
+              <Button
+                onClick={() => invalidate({ queryKey: ['variants'] })}
+                type='default'
+                loading={isLoading}
+                icon={<SyncOutlined spin={isLoading} />}
+              />
+            </div>
             <Button
               type='primary'
-              icon={<i className='fa-light fa-plus' />}
-              onClick={() => {
-                setDrawerMode('CREATE')
-                setEditingId(null)
-                setDrawerOpen(true)
-              }}
+              icon={<PlusOutlined />}
+              onClick={() => handlers.openDrawer('CREATE')}
             >
               <span className='hidden sm:inline'>{t('variantDetail.add')}</span>
             </Button>
-          </div>
-
-          <div>
-            {/* Bulk Actions */}
-            {hasSelected && (
-              <div className='flex items-center gap-4 mb-4 p-3 bg-blue-50 rounded-lg'>
-                <span className='text-sm text-gray-600'>
-                  {t('table.selectedCount', { count: selectedRowKeys.length })}
-                </span>
-                <div className='flex gap-2'>
-                  {hasActiveSelected && (
-                    <Button
-                      size='small'
-                      danger
-                      onClick={handleBulkDelete}
-                      loading={deleteMutation.isPending}
-                      icon={<i className='fa-solid fa-trash-alt' />}
-                    >
-                      {t('button.bulkDelete')}
-                    </Button>
-                  )}
-                  {hasDeletedSelected && (
-                    <Button
-                      size='small'
-                      onClick={handleBulkRestore}
-                      loading={restoreMutation.isPending}
-                      icon={<i className='fa-solid fa-trash-can-arrow-up' />}
-                      className='text-green-600 border-green-600 hover:text-green-700 hover:border-green-700'
-                    >
-                      {t('button.bulkRestore')}
-                    </Button>
-                  )}
-                </div>
+          </div>{' '}
+          {hasSelected && (
+            <div className='flex items-center gap-4 mb-4 p-3 bg-blue-50 rounded-lg'>
+              <span className='text-sm text-gray-600'>
+                {t('table.selectedCount', {
+                  count: tableState.selectedRowKeys.length
+                })}
+              </span>
+              <div className='flex gap-2'>
+                {hasActiveSelected && (
+                  <Button
+                    size='small'
+                    type='text'
+                    danger
+                    onClick={() => handlers.bulkAction(true)}
+                    loading={deleteMutation.isPending}
+                    icon={<DeleteOutlined />}
+                  >
+                    {t('button.bulkDelete')}
+                  </Button>
+                )}
+                {hasDeletedSelected && (
+                  <Button
+                    size='small'
+                    type='text'
+                    className='text-green-600 hover:text-green-700'
+                    onClick={() => handlers.bulkAction(false)}
+                    loading={restoreMutation.isPending}
+                    icon={<SyncOutlined />}
+                  >
+                    {t('button.bulkRestore')}
+                  </Button>
+                )}
               </div>
-            )}
-            <Divider />
-            <Table
-              rowKey='_id'
-              columns={columns}
-              dataSource={variants}
-              rowSelection={rowSelection}
-              loading={false}
-              pagination={{
-                current: pagination.pageCurrent,
-                pageSize: filter.limit,
-                total: pagination.size,
-                onChange: handleChangePage,
-                showTotal: (total, range) =>
-                  `${range[0]}-${range[1]} ${t('of')} ${total} ${t('result')}`,
-                pageSizeOptions: [5, 10, 20, 50],
-                showSizeChanger: true
-              }}
-              onChange={(_, __, sorter: any) => {
-                if (!Array.isArray(sorter) && sorter.field) {
-                  setFilter((prev) => ({
-                    ...prev,
-                    sortBy: sorter.field as string,
-                    order: sorter.order === 'ascend' ? 'asc' : 'desc'
-                  }))
-                }
-              }}
-              scroll={{ x: 'max-content' }}
-              className='overflow-hidden'
-              bordered
-            />
-          </div>
+            </div>
+          )}
+          <Divider />
+          <Table
+            rowKey='_id'
+            columns={columns}
+            dataSource={variants}
+            rowSelection={config.rowSelection}
+            loading={false}
+            pagination={{
+              current: pagination.pageCurrent,
+              pageSize: tableState.filter.limit,
+              total: pagination.size,
+              onChange: handlers.changePage,
+              showTotal: (total, range) =>
+                `${range[0]}-${range[1]} ${t('of')} ${total} ${t('result')}`,
+              pageSizeOptions: [5, 10, 20, 50],
+              showSizeChanger: true
+            }}
+            onChange={(_, __, sorter: any) => handlers.sort(sorter)}
+            scroll={{ x: 'max-content' }}
+            className='overflow-hidden'
+            bordered
+          />
         </div>
       </Spin>
       <Drawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+        open={uiState.drawerOpen}
+        onClose={handlers.closeDrawer}
         width={600}
         title={
-          drawerMode === 'CREATE' ? t('variantDetail.add') : t('button.edit')
+          uiState.drawerMode === 'CREATE'
+            ? t('variantDetail.add')
+            : t('button.edit')
         }
         destroyOnHidden
       >
         <AdminVariantForm
-          mode={drawerMode}
-          variantId={editingId}
+          mode={uiState.drawerMode}
+          variantId={uiState.editingId}
           onSuccess={() => {
-            setDrawerOpen(false)
+            handlers.closeDrawer()
             invalidate({ queryKey: ['variants'] })
           }}
-          onClose={() => setDrawerOpen(false)}
-        />{' '}
+          onClose={handlers.closeDrawer}
+        />
       </Drawer>
-
       <Modal
-        open={variantValuesModalOpen}
-        onCancel={() => setVariantValuesModalOpen(false)}
+        open={uiState.variantValuesModalOpen}
+        onCancel={handlers.closeModal}
         width={1000}
         title={t('breadcrumbs.variantValues')}
         footer={null}
         destroyOnHidden
       >
-        {selectedVariantId && (
-          <VariantValuesTable variantId={selectedVariantId} />
+        {uiState.selectedVariantId && (
+          <VariantValuesTable variantId={uiState.selectedVariantId} />
         )}
       </Modal>
     </div>

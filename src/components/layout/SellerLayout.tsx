@@ -42,7 +42,7 @@ const SellerLayout: React.FC<SellerLayoutProps> = ({
               <Suspense fallback={null}>
                 <Breadcrumb paths={paths} />
               </Suspense>
-            )}{' '}
+            )}
             <Suspense
               fallback={
                 <div className='flex justify-center items-center h-64'>

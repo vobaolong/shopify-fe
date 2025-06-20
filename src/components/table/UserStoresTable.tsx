@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getToken } from '../../apis/auth.api'
 import { getStoresByUser } from '../../apis/store.api'
@@ -9,11 +9,12 @@ import StoreActiveLabel from '../label/StoreActiveLabel'
 import StoreStatusLabel from '../label/StoreStatusLabel'
 import SearchInput from '../ui/SearchInput'
 import UserCreateStoreForm from '../item/form/UserCreateStoreForm'
-import { Alert, Table, Button, Typography, Empty, Divider, Drawer } from 'antd'
-import { PlusOutlined, EyeOutlined } from '@ant-design/icons'
+import { Alert, Table, Button, Empty, Divider, Drawer, Tooltip } from 'antd'
+import { PlusOutlined, BarChartOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { useTranslation } from 'react-i18next'
 import { formatDate } from '../../helper/humanReadable'
+import { StoreRole } from '../../enums/OrderStatus.enum'
 
 const UserStoresTable = () => {
   const { t } = useTranslation()
@@ -91,50 +92,64 @@ const UserStoresTable = () => {
       key: 'index',
       width: 60,
       align: 'center',
+      fixed: 'left',
       render: (_, __, index) =>
         index + 1 + (pagination.pageCurrent - 1) * filter.limit
     },
     {
       title: t('storeDetail.storeName'),
       key: 'name',
+      width: 200,
       render: (_, store) => <StoreSmallCard store={store} />
     },
     {
       title: t('storeDetail.role'),
       key: 'role',
+      width: 100,
+      align: 'center',
       render: (_, store) => (
         <ManagerRoleLabel
-          role={_id === store.ownerId?._id ? 'owner' : 'staff'}
+          role={_id === store.ownerId?._id ? StoreRole.OWNER : StoreRole.STAFF}
         />
       )
     },
     {
       title: t('status.active'),
       key: 'isActive',
+      width: 120,
+      align: 'center',
       render: (_, store) => <StoreActiveLabel isActive={store.isActive} />
     },
     {
       title: t('status.status'),
       key: 'isOpen',
+      align: 'center',
+      width: 200,
       render: (_, store) => <StoreStatusLabel isOpen={store.isOpen} />
     },
     {
       title: t('joined'),
       key: 'createdAt',
       sorter: true,
+      align: 'right',
+      width: 100,
       render: (_, store) => <span>{formatDate(store.createdAt)}</span>
     },
     {
       title: t('action'),
       key: 'action',
-      width: 120,
+      width: 80,
       align: 'center',
+      fixed: 'right',
       render: (_, store) => (
-        <Button
-          size='small'
-          icon={<EyeOutlined />}
-          onClick={() => navigate(`/seller/${store._id}`)}
-        />
+        <Tooltip title={t('storeDetail.manage')}>
+          <Button
+            type='text'
+            size='small'
+            icon={<BarChartOutlined />}
+            onClick={() => navigate(`/seller/${store._id}`)}
+          />
+        </Tooltip>
       )
     }
   ]
@@ -173,7 +188,7 @@ const UserStoresTable = () => {
           onChange={handleTableChange}
           rowKey='_id'
           scroll={{ x: 800 }}
-          size='middle'
+          size='small'
           pagination={{
             current: pagination.pageCurrent,
             pageSize: filter.limit,

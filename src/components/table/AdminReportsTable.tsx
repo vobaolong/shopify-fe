@@ -22,7 +22,7 @@ import { PaginationType } from '../../@types/pagination.type'
 import { ReportType } from '../../@types/entity.types'
 import { Dayjs } from 'dayjs'
 import { ColumnType } from 'antd/es/table'
-import { CopyOutlined } from '@ant-design/icons'
+import { CopyOutlined, DeleteOutlined } from '@ant-design/icons'
 
 const tabOptions = [
   { labelKey: 'title.listReportShop', value: 'stores' },
@@ -169,7 +169,7 @@ const AdminReportsTable = () => {
                 type='default'
                 variant='outlined'
                 danger
-                icon={<i className='fa-solid fa-trash-alt' />}
+                icon={<DeleteOutlined />}
                 loading={deleteMutation.isPending}
                 onClick={() => handleDelete(record._id)}
               />
@@ -387,9 +387,8 @@ const AdminReportsTable = () => {
           <Button type='primary' onClick={handleSearch} loading={isLoading}>
             {t('search')}
           </Button>
-        </div>{' '}
+        </div>
         <Divider />
-        {/* Bulk Actions */}
         {selectedRowKeys.length > 0 && (
           <div className='mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg'>
             <div className='flex items-center justify-between'>
@@ -411,7 +410,7 @@ const AdminReportsTable = () => {
                 <Button
                   type='primary'
                   danger
-                  icon={<i className='fa-solid fa-trash-alt' />}
+                  icon={<DeleteOutlined />}
                   loading={isProcessingBulkDelete}
                   onClick={handleBulkDelete}
                 >

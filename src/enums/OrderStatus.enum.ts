@@ -19,9 +19,31 @@ export enum Role {
   SELLER = 'seller'
 }
 
+export enum StoreStatus {
+  OPEN = 'open',
+  CLOSED = 'closed',
+  BANNED = 'banned'
+}
+
+export enum StoreRole {
+  OWNER = 'owner',
+  STAFF = 'staff'
+}
+
 export enum TransactionType {
   DEPOSIT = 'deposit',
   WITHDRAW = 'withdraw'
+}
+
+export enum BaseStatus {
+  ALL = 'all',
+  ACTIVE = 'active',
+  DELETED = 'deleted'
+}
+
+export enum SortType {
+  ASC = 'asc',
+  DESC = 'desc'
 }
 
 export enum ProductStatus {

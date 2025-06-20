@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { listCategories, listActiveCategories } from '../../apis/category.api'
-import { CategoryFilter, CategoryType } from '../../@types/entity.types'
-import { Select, Alert, Row, Col, Typography, Spin, Button } from 'antd'
+import { CategoryType } from '../../@types/entity.types'
+import { Select, Alert, Row, Col, Typography, Button } from 'antd'
 import CategorySmallCard from '../card/CategorySmallCard'
 import { useTranslation } from 'react-i18next'
 import { CloseOutlined } from '@ant-design/icons'
@@ -30,25 +30,27 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
   const [selectedObj, setSelectedObj] = useState<CategoryType | undefined>(
     typeof value === 'object' && value ? value : undefined
   )
-
   useEffect(() => {
     isSettingFromProp.current = true
     if (typeof value === 'object' && value) {
-      const lv3Id = value._id
-      let lv2Id: string | undefined = undefined
       let lv1Id: string | undefined = undefined
-      if (value.categoryId && typeof value.categoryId === 'object') {
-        lv2Id = value.categoryId._id
-        if (
+      let lv2Id: string | undefined = undefined
+      let lv3Id: string | undefined = undefined
+
+      if (value.categoryId === null) {
+        lv1Id = value._id
+      } else if (value.categoryId && typeof value.categoryId === 'object') {
+        if (value.categoryId.categoryId === null) {
+          lv1Id = value.categoryId._id
+          lv2Id = value._id
+        } else if (
           value.categoryId.categoryId &&
           typeof value.categoryId.categoryId === 'object'
         ) {
           lv1Id = value.categoryId.categoryId._id
-        } else if (typeof value.categoryId.categoryId === 'string') {
-          lv1Id = value.categoryId.categoryId
+          lv2Id = value.categoryId._id
+          lv3Id = value._id
         }
-      } else if (typeof value.categoryId === 'string') {
-        lv2Id = value.categoryId
       }
       setLv1(lv1Id)
       setLv2(lv2Id)
@@ -137,11 +139,62 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
     }
   }, [lv2])
 
-  const handleLv3Change = (id: string) => {
+  const handleLv1Change = (id: string | undefined) => {
+    setLv1(id)
+    if (id) {
+      const catObj = lv1Categories.find((cat: CategoryType) => cat._id === id)
+      setSelectedObj(catObj)
+      onChange && onChange(catObj || undefined)
+    } else {
+      setSelectedObj(undefined)
+      onChange && onChange(undefined)
+    }
+  }
+
+  const handleLv2Change = (id: string | undefined) => {
+    setLv2(id)
+    if (id) {
+      const catObj = lv2Categories.find((cat: CategoryType) => cat._id === id)
+      setSelectedObj(catObj)
+      onChange && onChange(catObj || undefined)
+    } else {
+      if (lv1) {
+        const catObj = lv1Categories.find(
+          (cat: CategoryType) => cat._id === lv1
+        )
+        setSelectedObj(catObj)
+        onChange && onChange(catObj || undefined)
+      } else {
+        setSelectedObj(undefined)
+        onChange && onChange(undefined)
+      }
+    }
+  }
+
+  const handleLv3Change = (id: string | undefined) => {
     setLv3(id)
-    const catObj = lv3Categories.find((cat: CategoryType) => cat._id === id)
-    setSelectedObj(catObj)
-    onChange && onChange(catObj || undefined)
+    if (id) {
+      const catObj = lv3Categories.find((cat: CategoryType) => cat._id === id)
+      setSelectedObj(catObj)
+      onChange && onChange(catObj || undefined)
+    } else {
+      if (lv2) {
+        const catObj = lv2Categories.find(
+          (cat: CategoryType) => cat._id === lv2
+        )
+        setSelectedObj(catObj)
+        onChange && onChange(catObj || undefined)
+      } else if (lv1) {
+        const catObj = lv1Categories.find(
+          (cat: CategoryType) => cat._id === lv1
+        )
+        setSelectedObj(catObj)
+        onChange && onChange(catObj || undefined)
+      } else {
+        setSelectedObj(undefined)
+        onChange && onChange(undefined)
+      }
+    }
   }
 
   const handleDelete = () => {
@@ -156,12 +209,12 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
     <div>
       <Row gutter={16}>
         <Col span={8}>
-          <span>{t('categoryForm.lv1')}</span>
+          <span>{t('categoryForm.lv1')}</span>{' '}
           <Select
             style={{ width: '100%' }}
             placeholder={t('Chọn cấp 1')}
             value={lv1}
-            onChange={setLv1}
+            onChange={handleLv1Change}
             loading={lv1Loading}
             options={lv1Categories.map((cat: CategoryType) => ({
               label: cat.name,
@@ -179,12 +232,12 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
           />
         </Col>
         <Col span={8}>
-          <span>{t('categoryForm.lv2')}</span>
+          <span>{t('categoryForm.lv2')}</span>{' '}
           <Select
             style={{ width: '100%' }}
             placeholder={t('Chọn cấp 2')}
             value={lv2}
-            onChange={setLv2}
+            onChange={handleLv2Change}
             loading={lv2Loading}
             options={lv2Categories.map((cat: CategoryType) => ({
               label: cat.name,
@@ -203,7 +256,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
           />
         </Col>
         <Col span={8}>
-          <span>{t('categoryForm.lv3')}</span>
+          <span>{t('categoryForm.lv3')}</span>{' '}
           <Select
             style={{ width: '100%' }}
             placeholder={t('Chọn cấp 3')}

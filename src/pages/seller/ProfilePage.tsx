@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next'
 import StoreActiveLabel from '../../components/label/StoreActiveLabel'
 import { selectAccountUser } from '../../store/slices/accountSlice'
 import { selectSellerStore } from '../../store/slices/sellerSlice'
+import { MoonOutlined } from '@ant-design/icons'
 
 const ProfilePage = () => {
   const { t } = useTranslation()
@@ -32,7 +33,7 @@ const ProfilePage = () => {
   return (
     <SellerLayout user={user as any} store={store as any} paths={paths}>
       <div>
-        <div className='flex items-center bg-white rounded-md shadow p-3 gap-3 w-full'>
+        <div className='flex items-center bg-white shadow-sm rounded p-3 gap-3 w-full'>
           <div className='relative w-1/2'>
             <Cover
               cover={store.cover}
@@ -66,15 +67,13 @@ const ProfilePage = () => {
           </div>
         )}
 
-        <div className='items-center bg-white box-shadow flex justify-content-between my-3 px-4 py-3 rounded-1'>
-          <div className='flex justify-content-between align-items-start'>
+        <div className='items-center bg-white shadow-sm flex justify-between mt-3 p-3 rounded'>
+          <div className='flex justify-between items-center gap-3'>
             <StoreAddFeaturedImageItem
               count={store.featured_images?.length}
               storeId={store._id}
             />
-            <div className='cus-tooltip ms-2 m-auto'>
-              <StoreActiveLabel isActive={store.isActive} detail={true} />
-            </div>
+            <StoreActiveLabel isActive={store.isActive} />
           </div>
 
           <Link
@@ -87,25 +86,21 @@ const ProfilePage = () => {
           </Link>
         </div>
 
-        <div className='items-center bg-white box-shadow flex justify-content-between my-3 p-4 rounded-1'>
+        <div className='items-center bg-white shadow-sm flex justify-between my-3 p-4 rounded'>
           <div className='flex items-center gap-3'>
-            <div className='d-grid'>
-              <span style={{ fontSize: '1.1rem' }}>
-                {t('storeDetail.vacationMode')}{' '}
-                <i className='fa-light fa-moon text-secondary' />
-              </span>
+            <MoonOutlined className='text-2xl' />
+            <div className='grid'>
+              <span className='text-xl'>{t('storeDetail.vacationMode')}</span>
               <small className='text-secondary'>
                 {t('storeDetail.vacationModeContent')}
               </small>
             </div>
           </div>
-          <div className='position-relative ms-3'>
-            <OpenCloseStoreButton
-              storeId={store._id}
-              isOpen={store.isOpen}
-              onRun={(store: any) => onHandleRun(store)}
-            />
-          </div>
+          <OpenCloseStoreButton
+            storeId={store._id}
+            isOpen={store.isOpen}
+            onRun={(store: any) => onHandleRun(store)}
+          />
         </div>
         <div className='mt-3'>
           <StoreProfileInfo
